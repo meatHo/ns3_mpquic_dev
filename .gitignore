@@ -1,0 +1,8 @@
+*
+!.gitignore
+!contrib/
+!contrib/**
+!src/
+!src/**
+!scratch/
+!scratch/**
