@@ -719,10 +719,10 @@ int main(void)
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
     //인터페이스 확인하는 코드=============================================================================
-    // Ptr<Ipv4> pgwIpv4 = server->GetObject<Ipv4>();
-    // Ptr<NetDevice> deviceOnPgw = routerToServerNetDev.Get(1);
-    // uint32_t pgwRouterItf = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
-    // std::cout << "PGW to Router Interface Index: " << pgwRouterItf << std::endl;
+    // Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
+    // Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
+    // uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
+    // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
     uint32_t ueUuItf = 1;
@@ -756,6 +756,7 @@ int main(void)
 
     // router 라우팅
     Ptr<Ipv4StaticRouting> routerStaticRouting = Ipv4RoutingHelper.GetStaticRouting(router->GetObject<Ipv4>());
+
     routerStaticRouting->AddNetworkRouteTo(epcHelper->GetUeDefaultGatewayAddress(),
                                            Ipv4Mask("255.255.255.0"), // EPC망의 서브넷 마스크
                                            pgwRouterIp,
@@ -773,11 +774,29 @@ int main(void)
                                          groupAddress4,         // 멀티캐스트 그룹
                                          /* 라우터의 RSU 방향 인터페이스 (입력) */routerRsuItf,
                                          /* 라우터의 서버 방향 인터페이스 목록 (출력) */std::vector<uint32_t> {routerServerItf});
+
+    //포워딩
+    Ptr<Ipv4> rsuIpv4 = rsu->GetObject<Ipv4>();
+    rsuIpv4->SetAttribute("IpForward", BooleanValue(true));
+    for (uint32_t i =0; i < rsuIpv4->GetNInterfaces(); i++)
+    {
+        rsuIpv4->SetForwarding(i,true);
+    }
+
+
+    Ptr<Ipv4> routerIpv4 = router->GetObject<Ipv4>();
+    routerIpv4->SetAttribute("IpForward", BooleanValue(true));
+    for (uint32_t i =0; i < routerIpv4->GetNInterfaces(); i++)
+    {
+        routerIpv4->SetForwarding(i,true);
+    }
+
+
+
     StackHelper stackHelper;
     stackHelper.PrintRoutingTable(router);
     stackHelper.PrintRoutingTable(rsu);
     stackHelper.PrintRoutingTable(pgw);
-
 
     // sidelink 무선 베어러 설정=====================================================================
     Ptr<LteSlTft> tft;
@@ -838,7 +857,7 @@ int main(void)
     clientApp->SetAttribute("PacketSize", UintegerValue(100));
     clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
     clientApp->SetAttribute("slServerPort", UintegerValue(rsuSlPort));
-    clientApp->SetAttribute("uuServerAddress", AddressValue(routerServerIp));
+    clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
     clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
 
     ue->AddApplication(clientApp);
