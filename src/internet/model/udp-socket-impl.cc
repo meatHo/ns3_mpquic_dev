@@ -450,6 +450,7 @@ UdpSocketImpl::Send(Ptr<Packet> p, uint32_t flags)
 
     if (!m_connected)
     {
+        NS_LOG_UNCOND("UdpSocketImpl::Send not connected");
         m_errno = ERROR_NOTCONN;
         return -1;
     }
@@ -460,6 +461,7 @@ UdpSocketImpl::Send(Ptr<Packet> p, uint32_t flags)
 int
 UdpSocketImpl::DoSend(Ptr<Packet> p)
 {
+    NS_LOG_UNCOND("UdpSocketImpl::DoSend");
     NS_LOG_FUNCTION(this << p);
     if (m_endPoint == nullptr && Ipv4Address::IsMatchingType(m_defaultAddress))
     {
@@ -501,6 +503,7 @@ UdpSocketImpl::DoSend(Ptr<Packet> p)
 int
 UdpSocketImpl::DoSendTo(Ptr<Packet> p, Ipv4Address dest, uint16_t port, uint8_t tos)
 {
+    NS_LOG_UNCOND("UdpSocketImpl::DoSendTo");
     NS_LOG_FUNCTION(this << p << dest << port << (uint16_t)tos);
     if (m_boundnetdevice)
     {
@@ -832,6 +835,7 @@ UdpSocketImpl::GetTxAvailable() const
 int
 UdpSocketImpl::SendTo(Ptr<Packet> p, uint32_t flags, const Address& address)
 {
+    NS_LOG_UNCOND("UdpSocketImpl::SendTo");
     NS_LOG_FUNCTION(this << p << flags << address);
     if (InetSocketAddress::IsMatchingType(address))
     {

@@ -132,7 +132,7 @@ UdpKohClient::StartApplication()
     TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
     // listening 소켓 설정
     m_recvSocket = Socket::CreateSocket(GetNode(), tid);
-    Inet6SocketAddress local = Inet6SocketAddress(Ipv6Address::GetAny(), m_recvPort);
+    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), m_recvPort);
     if (m_recvSocket->Bind(local) == -1)
     {
         NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
@@ -143,9 +143,14 @@ UdpKohClient::StartApplication()
     m_uuSocket->BindToNetDevice(m_devUu); // Connect 전에 Bind
     if (Ipv6Address::IsMatchingType(m_uuServerAddress))
     {
-        NS_LOG_UNCOND("uu socket connection started");
+        NS_LOG_UNCOND("uu ipv6 socket connection started");
         m_uuSocket->Connect(
             Inet6SocketAddress(Ipv6Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
+    }else
+    {
+        NS_LOG_UNCOND("uu ipv4 socket connection started");
+        m_uuSocket->Connect(
+            InetSocketAddress(Ipv4Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
     }
 
     // Sl 소켓 설정
@@ -156,6 +161,11 @@ UdpKohClient::StartApplication()
         NS_LOG_UNCOND("sl socket connection started");
         m_slSocket->Connect(
             Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+    }else
+    {
+        NS_LOG_UNCOND("sl ipv4 socket connection started");
+        m_slSocket->Connect(
+            InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
     }
 
     // 수신 콜백 설정 (양방향 통신 시 필요)

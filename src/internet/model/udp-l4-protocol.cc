@@ -334,6 +334,7 @@ UdpL4Protocol::ReceiveIcmp(Ipv6Address icmpSource,
 IpL4Protocol::RxStatus
 UdpL4Protocol::Receive(Ptr<Packet> packet, const Ipv4Header& header, Ptr<Ipv4Interface> interface)
 {
+    NS_LOG_UNCOND("UdpL4Protocol::Receive");
     NS_LOG_FUNCTION(this << packet << header);
     UdpHeader udpHeader;
     if (Node::ChecksumEnabled())
@@ -392,6 +393,7 @@ UdpL4Protocol::Receive(Ptr<Packet> packet, const Ipv4Header& header, Ptr<Ipv4Int
 IpL4Protocol::RxStatus
 UdpL4Protocol::Receive(Ptr<Packet> packet, const Ipv6Header& header, Ptr<Ipv6Interface> interface)
 {
+    NS_LOG_UNCOND("UdpL4Protocol::Receive");
     NS_LOG_FUNCTION(this << packet << header.GetSource() << header.GetDestination());
     UdpHeader udpHeader;
     if (Node::ChecksumEnabled())
@@ -435,6 +437,7 @@ UdpL4Protocol::Send(Ptr<Packet> packet,
                     uint16_t sport,
                     uint16_t dport)
 {
+    NS_LOG_UNCOND("UdpL4Protocol::Send");
     NS_LOG_FUNCTION(this << packet << saddr << daddr << sport << dport);
 
     UdpHeader udpHeader;
@@ -459,6 +462,7 @@ UdpL4Protocol::Send(Ptr<Packet> packet,
                     uint16_t dport,
                     Ptr<Ipv4Route> route)
 {
+    NS_LOG_UNCOND("UdpL4Protocol::Send");
     NS_LOG_FUNCTION(this << packet << saddr << daddr << sport << dport << route);
 
     UdpHeader udpHeader;
@@ -482,6 +486,7 @@ UdpL4Protocol::Send(Ptr<Packet> packet,
                     uint16_t sport,
                     uint16_t dport)
 {
+    NS_LOG_UNCOND("UdpL4Protocol::Send");
     NS_LOG_FUNCTION(this << packet << saddr << daddr << sport << dport);
 
     UdpHeader udpHeader;
@@ -506,6 +511,7 @@ UdpL4Protocol::Send(Ptr<Packet> packet,
                     uint16_t dport,
                     Ptr<Ipv6Route> route)
 {
+    NS_LOG_UNCOND("UdpL4Protocol::Send");
     NS_LOG_FUNCTION(this << packet << saddr << daddr << sport << dport << route);
 
     UdpHeader udpHeader;

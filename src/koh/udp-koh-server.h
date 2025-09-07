@@ -52,7 +52,7 @@ namespace ns3
   void HandleRead(Ptr<Socket> socket);
   uint16_t m_port; //!< Port on which we listen for incoming packets.
   uint8_t m_tos;   //!< The packets Type of Service
-  // Ptr<Socket> m_socket;            //!< IPv4 Socket
+  Ptr<Socket> m_socket;            //!< IPv4 Socket
   Ptr<Socket> m_socket6;           //!< IPv6 Socket
   uint64_t m_received;             //!< Number of received packets
   PacketLossCounter m_lossCounter; //!< Lost packet counter

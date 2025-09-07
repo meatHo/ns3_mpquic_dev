@@ -99,6 +99,15 @@ UdpKohServer::StartApplication()
         NS_FATAL_ERROR("Failed to bind socket");
     }
     m_socket6->SetRecvCallback(MakeCallback(&UdpKohServer::HandleRead, this));
+
+    m_socket = Socket::CreateSocket(GetNode(), TypeId(UdpSocketFactory::GetTypeId()));
+    InetSocketAddress local_ipv4 = InetSocketAddress(Ipv4Address::GetAny(), m_port);
+
+    if (m_socket->Bind(local_ipv4) == -1)
+    {
+        NS_FATAL_ERROR("Failed to bind socket");
+    }
+    m_socket->SetRecvCallback(MakeCallback(&UdpKohServer::HandleRead, this));
 }
 
 void
@@ -225,7 +234,10 @@ UdpKohServer::SendPacket(uint16_t clientId, std::string message)
         // IPv6 주소일 경우 m_socket6 사용
         m_socket6->SendTo(packet, 0, destAddress);
         std::cout << "Sent an IPv6 packet to client ID " << clientId << std::endl;
-        ;
+    }else
+    {
+        m_socket->SendTo(packet, 0, destAddress);
+        std::cout << "Sent an IPv4 packet to client ID " << clientId << std::endl;
     }
 }
 

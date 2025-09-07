@@ -25,6 +25,43 @@
 #include <ns3/pointer.h>
 using namespace ns3;
 
+class StackHelper // 클래스 이름 변경
+{
+public:
+    // IPv4 라우팅 테이블 출력 함수
+    inline void PrintRoutingTable(Ptr<Node>& n)
+    {
+        // 모든 클래스를 Ipv4용으로 변경
+        Ptr<Ipv4StaticRouting> routing = nullptr;
+        Ipv4StaticRoutingHelper routingHelper;
+        Ptr<Ipv4> ipv4 = n->GetObject<Ipv4>();
+        uint32_t nbRoutes = 0;
+        Ipv4RoutingTableEntry route;
+
+        routing = routingHelper.GetStaticRouting(ipv4);
+        if (!routing)
+        {
+            std::cout << "Node " << n->GetId() << " has no static routing installed." << std::endl;
+            return;
+        }
+
+        std::cout << "--- IPv4 Routing table of Node " << n->GetId() << " ---" << std::endl;
+        std::cout << "Destination\tMask\t\tGateway\t\tInterface" << std::endl;
+
+        nbRoutes = routing->GetNRoutes();
+        for (uint32_t i = 0; i < nbRoutes; i++)
+        {
+            route = routing->GetRoute(i);
+            std::cout << route.GetDest() << "\t"
+                      << route.GetDestNetworkMask() << "\t"
+                      << route.GetGateway() << "\t"
+                      << route.GetInterface()
+                      << std::endl;
+        }
+        std::cout << "------------------------------------" << std::endl;
+    }
+};
+
 
 struct WaypointData
 {
@@ -229,22 +266,32 @@ void Ipv4PacketTraceAtRsu(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t int
               << std::endl;
 }
 
-void Ipv4PacketTraceAtGnb(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
-{
-    Ipv4Header Ipv4Header;
-    packet->PeekHeader(Ipv4Header);
-
-    std::cout << "[Gnb Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
-              << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
-              << std::endl;
-}
-
 void Ipv4PacketTraceAtPgw(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
     Ipv4Header Ipv4Header;
     packet->PeekHeader(Ipv4Header);
 
     std::cout << "[PGW Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
+              << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
+              << std::endl;
+}
+
+void Ipv4PacketTraceAtRouter(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
+{
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
+
+    std::cout << "[Router Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
+              << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
+              << std::endl;
+}
+
+void Ipv4PacketTraceAtServer(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
+{
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
+
+    std::cout << "[Server Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
               << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
               << std::endl;
 }
@@ -615,7 +662,7 @@ int main(void)
     p2ph.SetChannelAttribute("Delay", StringValue("10ms"));
     NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
     NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
-    NetDeviceContainer routerToServerNetDev=p2ph.Install(router,server);
+    NetDeviceContainer routerToServerNetDev = p2ph.Install(router,server);
 
 
 
@@ -648,8 +695,8 @@ int main(void)
     // router server
     Ipv4h.SetBase("10.1.3.0", "255.255.255.0");
     Ipv4InterfaceContainer iic3 = Ipv4h.Assign(routerToServerNetDev); //10.1.1.3
-    Ipv4Address serverRouterIp = iic3.GetAddress(0);
-    Ipv4Address routerServerIp = iic3.GetAddress(1);
+    Ipv4Address routerServerIp = iic3.GetAddress(0);
+    Ipv4Address serverRouterIp = iic3.GetAddress(1);
     std::cout<<"serverRouterIp : "<<serverRouterIp<<std::endl;
     std::cout<<"routerServerIp : "<<routerServerIp<<std::endl;
 
@@ -726,8 +773,10 @@ int main(void)
                                          groupAddress4,         // 멀티캐스트 그룹
                                          /* 라우터의 RSU 방향 인터페이스 (입력) */routerRsuItf,
                                          /* 라우터의 서버 방향 인터페이스 목록 (출력) */std::vector<uint32_t> {routerServerItf});
-
-
+    StackHelper stackHelper;
+    stackHelper.PrintRoutingTable(router);
+    stackHelper.PrintRoutingTable(rsu);
+    stackHelper.PrintRoutingTable(pgw);
 
 
     // sidelink 무선 베어러 설정=====================================================================
@@ -802,7 +851,7 @@ int main(void)
 
     // 인터페이스 바꾸는거 그냥 예시
     clientApp->setInterface(ueUuNetDev.Get(0), ueSlNetDev.Get(0));
-    //Simulator::Schedule(Seconds(5.0), &UdpKohClient::changeInterface, clientApp);
+    Simulator::Schedule(Seconds(5.0), &UdpKohClient::changeInterface, clientApp);
 
     Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
     for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)
@@ -824,14 +873,15 @@ int main(void)
     Config::ConnectWithoutContext("/NodeList/" + std::to_string(pgw->GetId()) +
                                       "/$ns3::Ipv4L3Protocol/Rx",
                                   MakeCallback(&Ipv4PacketTraceAtPgw));
-    Config::ConnectWithoutContext("/NodeList/" + std::to_string(gnb->GetId()) +
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(router->GetId()) +
                                   "/$ns3::Ipv4L3Protocol/Rx",
-                              MakeCallback(&Ipv4PacketTraceAtGnb));
+                              MakeCallback(&Ipv4PacketTraceAtRouter));
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(server->GetId()) +
+                              "/$ns3::Ipv4L3Protocol/Rx",
+                          MakeCallback(&Ipv4PacketTraceAtServer));
+
 
     Simulator::Schedule(Seconds(0.0), &PrintUeInfo, ueNodeContainer.Get(0));
-
-    //pcap설정
-    p2ph.EnablePcapAll("trace-p2p",true);
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);
