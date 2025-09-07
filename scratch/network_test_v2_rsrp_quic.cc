@@ -374,7 +374,7 @@ main(void)
     // 1. CSV 파일 읽기
     // ==========================================================
     std::vector<WaypointData> waypoints;
-    std::string csvFileName = "/home/loapp/ns-simulator/quic_test/ns-3-dev/scratch/final_3d_trace.csv";
+    std::string csvFileName = "/home/kiho/ns-3-quic/scratch/final_3d_trace.csv";
     std::ifstream file(csvFileName);
 
     if (!file.is_open())

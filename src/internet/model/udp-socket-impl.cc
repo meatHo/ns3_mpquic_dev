@@ -445,6 +445,7 @@ UdpSocketImpl::Listen()
 int
 UdpSocketImpl::Send(Ptr<Packet> p, uint32_t flags)
 {
+    NS_LOG_UNCOND("UdpSocketImpl::Send");
     NS_LOG_FUNCTION(this << p << flags);
 
     if (!m_connected)
@@ -861,6 +862,7 @@ UdpSocketImpl::GetRxAvailable() const
 Ptr<Packet>
 UdpSocketImpl::Recv(uint32_t maxSize, uint32_t flags)
 {
+    NS_LOG_UNCOND("UdpSocketImpl::Recv");
     NS_LOG_FUNCTION(this << maxSize << flags);
 
     Address fromAddress;

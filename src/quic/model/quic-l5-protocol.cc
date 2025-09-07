@@ -168,6 +168,7 @@ QuicL5Protocol::SetSocket (Ptr<QuicSocketBase> sock)
 int
 QuicL5Protocol::DispatchSend (Ptr<Packet> data)
 {
+    NS_LOG_UNCOND("QuicL5Protocol::DispatchSend");
   NS_LOG_FUNCTION (this);
 
   int sentData = 0;
@@ -327,6 +328,7 @@ QuicL5Protocol::Recv (Ptr<Packet> frame, Address &address)
 std::vector<Ptr<Packet> >
 QuicL5Protocol::DisgregateSend (Ptr<Packet> data)
 {
+    NS_LOG_UNCOND("QuicL5Protocol::DisgregateSend");
   NS_LOG_FUNCTION (this);
 
   uint32_t dataSizeByte = data->GetSize ();

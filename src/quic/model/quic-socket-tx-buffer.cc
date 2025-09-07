@@ -703,6 +703,7 @@ void QuicSocketTxBuffer::SetScheduler (Ptr<QuicSocketTxScheduler> sched)
 
 void QuicSocketTxBuffer::UpdatePacketSent (SequenceNumber32 seq, uint32_t sz)
 {
+    NS_LOG_UNCOND("QuicSocketTxBuffer::UpdatePacketSent");
   NS_LOG_FUNCTION (this << seq << sz);
 
   if (!m_tcb or sz == 0)
