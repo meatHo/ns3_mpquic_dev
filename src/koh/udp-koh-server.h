@@ -17,6 +17,7 @@
 #include "ns3/ipv4-address.h"
 #include "ns3/internet-module.h"
 #include "ns3/ptr.h"
+#include "ns3/address-utils.h"
 #include "ns3/packet-loss-counter.h"
 #include <ns3/traced-callback.h>
 
@@ -57,7 +58,6 @@ namespace ns3
   uint64_t m_received;             //!< Number of received packets
   PacketLossCounter m_lossCounter; //!< Lost packet counter
   uint16_t m_nextClientId;
-
   /// Callbacks for tracing the packet Rx events
   TracedCallback<Ptr<const Packet>> m_rxTrace;
 

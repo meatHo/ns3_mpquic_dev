@@ -727,7 +727,7 @@ int main(void)
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
     uint32_t ueUuItf = 1;
     uint32_t ueSlItf = 2;
-    // uint32_t rsuSlItf = 2;
+    uint32_t rsuSlItf = 2;
     uint32_t rsuRouterItf = 1;
     uint32_t routerServerItf = 3;
     uint32_t serverRouterItf = 1;
@@ -745,6 +745,10 @@ int main(void)
     // rsu 라우팅
     Ptr<Ipv4StaticRouting> rsuStaticRouting = Ipv4RoutingHelper.GetStaticRouting(rsu->GetObject<Ipv4>());
     rsuStaticRouting->SetDefaultRoute(routerRsuIp, rsuRouterItf);
+    rsuStaticRouting->AddMulticastRoute(Ipv4Address("0.0.0.0"), // all sources (ASM)
+                                   groupAddress4,
+                                   /* input interface */ rsuSlItf,
+                                   /* output interfaces */ std::vector<uint32_t>{ rsuRouterItf });
 
     // pgw 라우팅
     Ptr<Ipv4StaticRouting> pgwStaticRouting = Ipv4RoutingHelper.GetStaticRouting(pgw->GetObject<Ipv4>());
@@ -753,12 +757,18 @@ int main(void)
     // server 라우팅
     Ptr<Ipv4StaticRouting> serverStaticRouting = Ipv4RoutingHelper.GetStaticRouting(server->GetObject<Ipv4>());
     serverStaticRouting->SetDefaultRoute(routerServerIp, serverRouterItf);
+    // serverStaticRouting->AddNetworkRouteTo(
+    //     Ipv4Address("7.0.0.0"),
+    //     Ipv4Mask("255.0.0.0"),
+    //     routerServerIp,
+    //     serverRouterItf
+    // );
 
     // router 라우팅
     Ptr<Ipv4StaticRouting> routerStaticRouting = Ipv4RoutingHelper.GetStaticRouting(router->GetObject<Ipv4>());
 
-    routerStaticRouting->AddNetworkRouteTo(epcHelper->GetUeDefaultGatewayAddress(),
-                                           Ipv4Mask("255.255.255.0"), // EPC망의 서브넷 마스크
+    routerStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
+                                           Ipv4Mask("255.0.0.0"), // EPC망의 서브넷 마스크
                                            pgwRouterIp,
                                            /* 라우터의 PGW 방향 인터페이스 */routerPgwItf);
 
@@ -790,8 +800,6 @@ int main(void)
     {
         routerIpv4->SetForwarding(i,true);
     }
-
-
 
     StackHelper stackHelper;
     stackHelper.PrintRoutingTable(router);

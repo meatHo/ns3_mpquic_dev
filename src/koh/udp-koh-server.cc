@@ -107,6 +107,23 @@ UdpKohServer::StartApplication()
     {
         NS_FATAL_ERROR("Failed to bind socket");
     }
+
+    //멀티캐스트 설정
+    InetSocketAddress local_multi_ipv4 = InetSocketAddress("224.1.1.1", m_port);
+
+    if (addressUtils::IsMulticast(local_multi_ipv4))
+    {
+        Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket>(m_socket);
+        if (udpSocket)
+        {
+            // equivalent to setsockopt (MCAST_JOIN_GROUP)
+            udpSocket->MulticastJoinGroup(1, local_multi_ipv4);
+        }
+        else
+        {
+            NS_FATAL_ERROR("Error: joining multicast on a non-UDP socket");
+        }
+    }
     m_socket->SetRecvCallback(MakeCallback(&UdpKohServer::HandleRead, this));
 }
 
@@ -135,6 +152,7 @@ UdpKohServer::SetPacketWindowSize(uint16_t size)
 void
 UdpKohServer::HandleRead(Ptr<Socket> socket)
 {
+    NS_LOG_UNCOND("UdpKohServer::HandleRead");
     Ptr<Packet> packet;
     Address from;
     Address localAddress;
