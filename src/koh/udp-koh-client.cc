@@ -132,11 +132,11 @@ UdpKohClient::StartApplication()
     TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
     // listening 소켓 설정
     m_recvSocket = Socket::CreateSocket(GetNode(), tid);
-    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), m_recvPort);
+    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 49154);
     if (m_recvSocket->Bind(local) == -1)
     {
         NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
-    }// todo: handle read 안만들음 나중에 콜백으로 이으셈 필요하면
+    }
 
     // Uu 소켓 설정
     m_uuSocket = Socket::CreateSocket(GetNode(), tid);
@@ -183,7 +183,6 @@ void
 UdpKohClient::HandleRecv(Ptr<Socket> socket)
 {
     NS_LOG_FUNCTION(this << socket);
-
     Address from;
     Ptr<Packet> packet = socket->RecvFrom(from);
     uint8_t* buffer = new uint8_t[packet->GetSize() + 1];

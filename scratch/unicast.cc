@@ -1,13 +1,3 @@
-/*
- * network test 1ue 1rsu 1gnb 1router 1server
- *
- *      gnb - pgw
- *    /           \
- *  ue            router ----server
- *   \              /
- *     rsu --------
-*/
-
 #include "ns3/address.h"
 #include "ns3/antenna-module.h"
 #include "ns3/applications-module.h"
@@ -762,48 +752,18 @@ int main(void)
     ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), ueUuItf);
     ueStaticRouting->SetDefaultMulticastRoute(ueSlItf);
 
-    // Ptr<NetDevice> ueSlNetDevice = ue->GetDevice(ueSlItf);
-    // Mac48Address ueSlMacAddress = Mac48Address::ConvertFrom(ueSlNetDevice->GetAddress());
+
 
     // rsu 라우팅
     Ptr<Ipv4StaticRouting> rsuStaticRouting = Ipv4RoutingHelper.GetStaticRouting(rsu->GetObject<Ipv4>());
-    // rsuStaticRouting->SetDefaultRoute(routerRsuIp, rsuRouterItf);
-    rsuStaticRouting->AddMulticastRoute(Ipv4Address("192.168.10.1"), // all sources (ASM)
-                                   groupAddress4,
-                                   /* input interface */ rsuSlItf,
-                                   /* output interfaces */ std::vector<uint32_t>{ rsuRouterItf });
+    rsuStaticRouting->AddNetworkRouteTo(Ipv4Address("10.1.3.2"),
+                                         Ipv4Mask("255.255.255.255"),
+                                         routerRsuIp,
+                                         rsuRouterItf);
 
     rsuStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
                                          Ipv4Mask("255.255.255.0"),
                                          rsuSlItf);
-
-    rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
-
-
-
-
-    // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
-    // Ptr<Node> rsuNode = rsu;
-    // Ptr<Ipv4L3Protocol> rsuIpv41 = rsuNode->GetObject<Ipv4L3Protocol>();
-    // Ptr<Ipv4Interface> rsuSlInterface = rsuIpv41->GetInterface(rsuSlItf); // rsuSlItf는 RSU의 Sidelink 인터페이스 인덱스
-    //
-    //
-    // // 3. 해당 Ipv4Interface에서 ArpCache를 가져옵니다.
-    // Ptr<ArpCache> rsuArpCache = rsuSlInterface->GetArpCache();
-    // Mac48Address hardcodedMac("04:06:C0:A8:0A:01");
-    //
-    // // 4. ArpCache에 정적 항목을 'Add -> Set -> Mark' 3단계로 추가합니다.
-    // if (rsuArpCache) // rsuArpCache가 유효한지 확인
-    // {
-    //     // 1단계: IP 주소로 빈 엔트리 생성
-    //     ArpCache::Entry* entry = rsuArpCache->Add(Ipv4Address("192.168.10.1"));
-    //
-    //     // 2단계: 생성된 엔트리에 MAC 주소 설정
-    //     entry->SetMacAddress(hardcodedMac);
-    //
-    //     // 3단계: 엔트리를 영구(PERMANENT) 상태로 변경
-    //     entry->MarkPermanent();
-    // }
 
     // pgw 라우팅
     Ptr<Ipv4StaticRouting> pgwStaticRouting = Ipv4RoutingHelper.GetStaticRouting(pgw->GetObject<Ipv4>());
@@ -834,11 +794,14 @@ int main(void)
                                            /* 라우터의 RSU 방향 인터페이스 */routerRsuItf);
 
     // -> 멀티캐스트 트래픽은 서버 쪽으로 포워딩한다.
-    //    (정적 멀티캐스트 라우팅 설정)
-    routerStaticRouting->AddMulticastRoute(Ipv4Address("0.0.0.0"), // 모든 소스
-                                         groupAddress4,         // 멀티캐스트 그룹
-                                         /* 라우터의 RSU 방향 인터페이스 (입력) */routerRsuItf,
-                                         /* 라우터의 서버 방향 인터페이스 목록 (출력) */std::vector<uint32_t> {routerServerItf});
+    // //    (정적 멀티캐스트 라우팅 설정)
+    // routerStaticRouting->AddNetworkRouteTo(Ipv4Address("0.0.0.0"), // 모든 소스
+    //                                      groupAddress4,         // 멀티캐스트 그룹
+    //                                      /* 라우터의 RSU 방향 인터페이스 (입력) */routerRsuItf,
+    //                                      /* 라우터의 서버 방향 인터페이스 목록 (출력) */routerServerItf);
+
+    routerStaticRouting->SetDefaultRoute(serverRouterIp, routerServerItf);
+
 
     //포워딩
     Ptr<Ipv4> rsuIpv4 = rsu->GetObject<Ipv4>();
@@ -863,38 +826,19 @@ int main(void)
 
     // sidelink 무선 베어러 설정=====================================================================
     Ptr<LteSlTft> tft;
-    uint32_t dstL2Id = 255;
+    uint32_t rsuL2Id = 255; //todo:이거 수정
     Time delayBudget = Seconds(0);
 
     SidelinkInfo slInfo;
-    slInfo.m_castType = SidelinkInfo::CastType::Groupcast;
-    slInfo.m_dstL2Id = dstL2Id;
+    slInfo.m_castType = SidelinkInfo::CastType::Unicast;
+    slInfo.m_dstL2Id = rsuL2Id;
     slInfo.m_rri = MilliSeconds(100);
     slInfo.m_pdb = delayBudget;
     slInfo.m_dynamic = false;
     slInfo.m_harqEnabled = true;
 
-    tft = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, groupAddress4, slInfo);
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft);
-
-    // sidelink 무선 베어러 설정=====================================================================
-    Ptr<LteSlTft> tft1;
-
-    SidelinkInfo slInfo1;
-    slInfo1.m_castType = SidelinkInfo::CastType::Unicast;
-    slInfo1.m_dstL2Id = dstL2Id;
-    slInfo1.m_rri = MilliSeconds(100);
-    slInfo1.m_pdb = delayBudget;
-    slInfo1.m_dynamic = false;
-    slInfo1.m_harqEnabled = true;
-
-    tft1 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft1);
-
-
-
-
-    // sidelink 무선 베어러 설정 끝=====================================================================
+    tft = Create<LteSlTft>(LteSlTft::Direction::TRANSMIT, serverRouterIp, slInfo);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), SlNetDev, tft);
 
     // // Uu PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
     Ptr<NrUeNetDevice> ueUuDev = DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0));
@@ -937,7 +881,7 @@ int main(void)
     clientApp->SetAttribute("MaxPackets", UintegerValue(45));
     clientApp->SetAttribute("Interval", TimeValue(Seconds(1.0)));
     clientApp->SetAttribute("PacketSize", UintegerValue(100));
-    clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
+    clientApp->SetAttribute("slServerAddress", AddressValue(serverRouterIp));
     clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
     clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
     clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
@@ -945,23 +889,6 @@ int main(void)
     ue->AddApplication(clientApp);
     clientApp->SetStartTime(Seconds(2.0));
     clientApp->SetStopTime(simTime);
-
-    // rsu 애플리케이션
-    Ptr<OnOffApplication> rsuApp = CreateObject<OnOffApplication>();
-    rsuApp->SetAttribute("PacketSize", UintegerValue(1));
-    rsuApp->SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=0.01]"));
-    rsuApp->SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0.09]"));
-    rsuApp->SetAttribute("Protocol", TypeIdValue(UdpSocketFactory::GetTypeId()));
-    Address remoteAddress(InetSocketAddress(ueSlIp, 5555));
-    rsuApp->SetAttribute("Remote", AddressValue(remoteAddress));
-
-
-    rsu->AddApplication(rsuApp);
-    rsuApp->SetStartTime(Seconds(0.0));
-    rsuApp->SetStopTime(simTime);
-
-
-
 
     // todo:여기다가포트랑 주소 넣어야함
     // clientApp->setAddressSlUu(gnbServerIpv4, serverPort, groupAddress6, rsuSlPort);
@@ -997,14 +924,11 @@ int main(void)
     Config::ConnectWithoutContext("/NodeList/" + std::to_string(server->GetId()) +
                               "/$ns3::Ipv4L3Protocol/Rx",
                           MakeCallback(&Ipv4PacketTraceAtServer));
-    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(ue->GetId()) +
-    //                           "/$ns3::Ipv4L3Protocol/Rx",
-    //                       MakeCallback(&Ipv4PacketTraceAtUe));
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(ue->GetId()) +
+                              "/$ns3::Ipv4L3Protocol/Rx",
+                          MakeCallback(&Ipv4PacketTraceAtUe));
 
     Simulator::Schedule(Seconds(0.0), &PrintUeInfo, ueNodeContainer.Get(0));
-
-    // LogComponentEnable("UdpSocketImpl", LOG_LEVEL_INFO);
-    // LogComponentEnable("UdpSocketImpl", LOG_LEVEL_FUNCTION);
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);

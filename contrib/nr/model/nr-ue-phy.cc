@@ -2057,7 +2057,7 @@ void
 NrUePhy::PhyPscchPduReceived(const Ptr<Packet>& p, const SpectrumValue& psd)
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_UNCOND("NrUePhy::PhyPscchPduReceived");
+    // NS_LOG_UNCOND("NrUePhy::PhyPscchPduReceived");
     NrSlSciF1aHeader sciF1a;
     NrSlMacPduTag tag;
 

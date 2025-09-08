@@ -108,22 +108,6 @@ UdpKohServer::StartApplication()
         NS_FATAL_ERROR("Failed to bind socket");
     }
 
-    //멀티캐스트 설정
-    InetSocketAddress local_multi_ipv4 = InetSocketAddress("224.1.1.1", m_port);
-
-    if (addressUtils::IsMulticast(local_multi_ipv4))
-    {
-        Ptr<UdpSocket> udpSocket = DynamicCast<UdpSocket>(m_socket);
-        if (udpSocket)
-        {
-            // equivalent to setsockopt (MCAST_JOIN_GROUP)
-            udpSocket->MulticastJoinGroup(1, local_multi_ipv4);
-        }
-        else
-        {
-            NS_FATAL_ERROR("Error: joining multicast on a non-UDP socket");
-        }
-    }
     m_socket->SetRecvCallback(MakeCallback(&UdpKohServer::HandleRead, this));
 }
 
@@ -174,7 +158,6 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
         // 새 클라이언트 저장
         if (!clientFound)
         {
-            std::cout << "new client detected" << std::endl;
             uint16_t newId = m_nextClientId++;
             clientInfos newClient;
             newClient.address = from;
@@ -185,6 +168,8 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
             newClient.totalBytesReceived = 0;
             clients[newId] = newClient;
             clientId = newId;
+            std::cout << "New client detected | Address: " << newClient.address
+                 << " | Connection Time: " << newClient.connectionTime << std::endl;
         }
 
         // 수신
@@ -201,7 +186,7 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
             {
                 std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
                           << InetSocketAddress::ConvertFrom(from).GetIpv4()
-                          << "port: " << InetSocketAddress::ConvertFrom(from).GetPort()
+                          << " port: " << InetSocketAddress::ConvertFrom(from).GetPort()
                           << " Sequence Number: " << currentSequenceNumber
                           << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
                           << " RXtime: " << Simulator::Now()
@@ -222,7 +207,7 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
             m_received++;
 
             SendPacket(clientId, "good");
-            std::cout << "sent to client - clientId : " << clientId << std::endl;
+            std::cout << "sent to client - clientId : " << clientId << "  Address : "<<InetSocketAddress::ConvertFrom(clients[clientId].address).GetIpv4()<< std::endl;
         }
     }
 }

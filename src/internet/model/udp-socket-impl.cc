@@ -836,7 +836,7 @@ int
 UdpSocketImpl::SendTo(Ptr<Packet> p, uint32_t flags, const Address& address)
 {
     // NS_LOG_UNCOND("UdpSocketImpl::SendTo");
-    NS_LOG_FUNCTION(this << p << flags << address);
+    // NS_LOG_FUNCTION(this << p << flags << address);
     if (InetSocketAddress::IsMatchingType(address))
     {
         InetSocketAddress transport = InetSocketAddress::ConvertFrom(address);
@@ -877,7 +877,7 @@ UdpSocketImpl::Recv(uint32_t maxSize, uint32_t flags)
 Ptr<Packet>
 UdpSocketImpl::RecvFrom(uint32_t maxSize, uint32_t flags, Address& fromAddress)
 {
-    NS_LOG_FUNCTION(this << maxSize << flags);
+    NS_LOG_FUNCTION(this << maxSize << flags<<fromAddress);
 
     if (m_deliveryQueue.empty())
     {
