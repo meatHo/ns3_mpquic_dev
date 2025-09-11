@@ -57,7 +57,9 @@ namespace ns3
         uint64_t m_totalTx;
         Ptr<Socket> m_uuSocket;
         Ptr<Socket> m_slSocket;
-        Ptr<Socket> m_socket;
+        Ptr<Socket> m_sendSocket;
+        Ptr<Socket> m_recvSocket;
+        Ptr<Socket> m_rsrpSocket;
         Address m_slServerAddress;
         uint16_t m_slServerPort;
         Address m_uuServerAddress;

@@ -1,3 +1,13 @@
+/*
+ * network test 1ue 1rsu 1gnb 1router 1server
+ *
+ *      gnb - pgw
+ *    /           \
+ *  ue            router ----server
+ *   \              /
+ *     rsu --------
+*/
+
 #include "ns3/address.h"
 #include "ns3/antenna-module.h"
 #include "ns3/applications-module.h"
@@ -26,6 +36,44 @@
 #include <ns3/pointer.h>
 using namespace ns3;
 
+class StackHelper // 클래스 이름 변경
+{
+public:
+    // IPv4 라우팅 테이블 출력 함수
+    inline void PrintRoutingTable(Ptr<Node>& n)
+    {
+        // 모든 클래스를 Ipv4용으로 변경
+        Ptr<Ipv4StaticRouting> routing = nullptr;
+        Ipv4StaticRoutingHelper routingHelper;
+        Ptr<Ipv4> ipv4 = n->GetObject<Ipv4>();
+        uint32_t nbRoutes = 0;
+        Ipv4RoutingTableEntry route;
+
+        routing = routingHelper.GetStaticRouting(ipv4);
+        if (!routing)
+        {
+            std::cout << "Node " << n->GetId() << " has no static routing installed." << std::endl;
+            return;
+        }
+
+        std::cout << "--- IPv4 Routing table of Node " << n->GetId() << " ---" << std::endl;
+        std::cout << "Destination\tMask\t\tGateway\t\tInterface" << std::endl;
+
+        nbRoutes = routing->GetNRoutes();
+        for (uint32_t i = 0; i < nbRoutes; i++)
+        {
+            route = routing->GetRoute(i);
+            std::cout << route.GetDest() << "\t"
+                      << route.GetDestNetworkMask() << "\t"
+                      << route.GetGateway() << "\t"
+                      << route.GetInterface()
+                      << std::endl;
+        }
+        std::cout << "------------------------------------" << std::endl;
+    }
+};
+
+
 struct WaypointData
 {
     double time;
@@ -35,16 +83,13 @@ struct WaypointData
     double speed;
 };
 
-
-void
-UeMeasCallback(uint16_t cellId, uint16_t IMSI, uint16_t RNTI, double RSRP, uint8_t BWPId)
+void UeMeasCallback(uint16_t cellId, uint16_t IMSI, uint16_t RNTI, double RSRP, uint8_t BWPId)
 {
     std::cout << "📶Uu [Meas] cellId=" << cellId << " IMSI=" << IMSI << " BWPId=" << BWPId
               << "  RNTI=" << RNTI << " RSRP=" << RSRP << " dB\n";
 }
 
-void
-UeSlMeasCallback(uint16_t RNTI, uint32_t L2ID, double RSRP)
+void UeSlMeasCallback(uint16_t RNTI, uint32_t L2ID, double RSRP)
 {
     std::cout << "📶Sl [Meas] RNTI=" << RNTI << " L2ID=" << L2ID << " RSRP=" << RSRP << " dB\n";
 }
@@ -59,15 +104,12 @@ UeSlMeasCallback(uint16_t RNTI, uint32_t L2ID, double RSRP)
 #include "ns3/net-device.h"
 #include "ns3/node.h"
 
-
-
-void
-UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
+void UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
 {
     static uint8_t cnt = 0;
     static double sum = 0.0;
     static double totalsum = 0.0;
-    static uint16_t totalcnt=0;
+    static uint16_t totalcnt = 0;
     cnt++;
     sum += rssidBm;
 
@@ -79,18 +121,18 @@ UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
         Ptr<NetDevice> dev = nrPhy->GetDevice();
         Ptr<Node> node = dev->GetNode();
 
-        uint32_t nodeId  = node->GetId();
-        uint32_t devIdx  = dev->GetIfIndex();
+        uint32_t nodeId = node->GetId();
+        uint32_t devIdx = dev->GetIfIndex();
 
-        uint16_t cellId  = nrPhy->GetCellId();
-        //uint16_t rnti    = nrPhy->GetRnti();
-        uint16_t bwpId   = nrPhy->GetBwpId();
+        uint16_t cellId = nrPhy->GetCellId();
+        // uint16_t rnti    = nrPhy->GetRnti();
+        uint16_t bwpId = nrPhy->GetBwpId();
 
-        std::cout << "[Uu Node "   << nodeId
-                  << " | Dev "   << devIdx
-                  << " | Cell "  << cellId
+        std::cout << "[Uu Node " << nodeId
+                  << " | Dev " << devIdx
+                  << " | Cell " << cellId
                   //<< " | RNTI "  << rnti
-                  << " | BWP "   << bwpId
+                  << " | BWP " << bwpId
                   << "] 10‑Chunk Avg RSSI = "
                   << avg << " dBm"
                   << std::endl;
@@ -101,13 +143,12 @@ UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
     }
 }
 
-void
-UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
+void UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
 {
     static uint8_t cnt = 0;
     static double sum = 0.0;
     static double totalsum = 0.0;
-    static uint16_t totalcnt=0;
+    static uint16_t totalcnt = 0;
     cnt++;
     sum += rssidBm;
 
@@ -119,18 +160,18 @@ UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
         Ptr<NetDevice> dev = nrPhy->GetDevice();
         Ptr<Node> node = dev->GetNode();
 
-        uint32_t nodeId  = node->GetId();
-        uint32_t devIdx  = dev->GetIfIndex();
+        uint32_t nodeId = node->GetId();
+        uint32_t devIdx = dev->GetIfIndex();
 
-        uint16_t cellId  = nrPhy->GetCellId();
-        //uint16_t rnti    = nrPhy->GetRnti();
-        uint16_t bwpId   = nrPhy->GetBwpId();
+        uint16_t cellId = nrPhy->GetCellId();
+        // uint16_t rnti    = nrPhy->GetRnti();
+        uint16_t bwpId = nrPhy->GetBwpId();
 
-        std::cout << "[SideLink Node "   << nodeId
-                  << " | Dev "   << devIdx
-                  << " | Cell "  << cellId
+        std::cout << "[SideLink Node " << nodeId
+                  << " | Dev " << devIdx
+                  << " | Cell " << cellId
                   //<< " | RNTI "  << rnti
-                  << " | BWP "   << bwpId
+                  << " | BWP " << bwpId
                   << "] 10‑Chunk Avg RSSI = "
                   << avg << " dBm"
                   << std::endl;
@@ -141,10 +182,7 @@ UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
     }
 }
 
-
-
-void
-printRssi(Ptr<const SpectrumValue> psd)
+void printRssi(Ptr<const SpectrumValue> psd)
 {
     // 스펙트럼 모델을 통해 sub‑carrier 간격(Hz)을 구함
     Ptr<const SpectrumModel> sm = psd->GetSpectrumModel();
@@ -156,17 +194,17 @@ printRssi(Ptr<const SpectrumValue> psd)
     // W → dBm 변환
     double rssiDbm = 10.0 * std::log10(powerW * 1e3);
 
-    std::cout << "[printRssi] RSSI = " << rssiDbm << " dBm" << std::endl << std::endl;
+    std::cout << "[printRssi] RSSI = " << rssiDbm << " dBm" << std::endl
+              << std::endl;
 }
 
-void
-psdCallback(const SfnSf& sfnSf,
-            Ptr<const SpectrumValue> v,
-            const Time& phyTime,
-            uint16_t rnti,
-            uint64_t imsi,
-            uint16_t bwpId,
-            uint16_t cellId)
+void psdCallback(const SfnSf &sfnSf,
+                 Ptr<const SpectrumValue> v,
+                 const Time &phyTime,
+                 uint16_t rnti,
+                 uint64_t imsi,
+                 uint16_t bwpId,
+                 uint16_t cellId)
 {
     // 1) 시뮬레이션 현재 시각(Time)과 SFN/Subframe
     std::cout << "[PSD Callback] SimTime="
@@ -185,7 +223,8 @@ psdCallback(const SfnSf& sfnSf,
     {
         // 8개 단위로 줄 바꿈
         if (idx % 8 == 0)
-            std::cout << std::endl << "   ";
+            std::cout << std::endl
+                      << "   ";
         std::cout << *it;
         if (it + 1 != v->ConstValuesEnd())
             std::cout << "\t";
@@ -193,12 +232,11 @@ psdCallback(const SfnSf& sfnSf,
     printRssi(v);
 }
 
-void
-RxDataCallback(const SfnSf& sfnSf,
-               Ptr<const SpectrumValue> rxPsd,
-               const Time& duration,
-               uint16_t bwpId,
-               uint16_t cellId)
+void RxDataCallback(const SfnSf &sfnSf,
+                    Ptr<const SpectrumValue> rxPsd,
+                    const Time &duration,
+                    uint16_t bwpId,
+                    uint16_t cellId)
 {
     // 1) 스펙트럼 모델에서 주파수 분할폭(Hz) 가져오기
     Ptr<const SpectrumModel> sm = rxPsd->GetSpectrumModel();
@@ -216,8 +254,7 @@ RxDataCallback(const SfnSf& sfnSf,
 }
 
 // UE의 위치와 속도를 출력하는 함수
-void
-PrintUeInfo(Ptr<Node> ueNode)
+void PrintUeInfo(Ptr<Node> ueNode)
 {
     Ptr<MobilityModel> mob = ueNode->GetObject<MobilityModel>();
     Vector pos = mob->GetPosition();
@@ -230,147 +267,59 @@ PrintUeInfo(Ptr<Node> ueNode)
 }
 
 // 패킷 정보를 출력할 콜백 함수
-void
-Ipv6PacketTraceAtRsu(Ptr<const Packet> packet, Ptr<Ipv6> ipv6, uint32_t interfaceIndex)
+void Ipv4PacketTraceAtRsu(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
-    Ipv6Header ipv6Header;
-    packet->PeekHeader(ipv6Header);
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
 
     std::cout << "[RSU Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
               << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
               << std::endl;
 }
 
-void
-Ipv6PacketTraceAtPgw(Ptr<const Packet> packet, Ptr<Ipv6> ipv6, uint32_t interfaceIndex)
+void Ipv4PacketTraceAtPgw(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
-    Ipv6Header ipv6Header;
-    packet->PeekHeader(ipv6Header);
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
 
     std::cout << "[PGW Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
               << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
               << std::endl;
 }
 
-// RSU에 설치할 UDP 릴레이 애플리케이션
-class UdpRelay : public Application
+void Ipv4PacketTraceAtRouter(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
-  public:
-    static TypeId GetTypeId();
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
 
-    UdpRelay()
-    {
-    }
-
-    ~UdpRelay() override
-    {
-    }
-
-  private:
-    void StartApplication() override;
-    void StopApplication() override;
-    void HandleRead(Ptr<Socket> socket); // UE로부터 패킷을 수신하는 콜백 함수
-
-    Ptr<Socket> m_inSocket;  // UE로부터 수신용 소켓
-    Ptr<Socket> m_outSocket; // 서버로 송신용 소켓
-
-    uint16_t m_inPort;    // 수신 포트 (UE가 여기로 보냄)
-    Address m_outAddress; // 최종 목적지 서버 주소
-    uint16_t m_outPort;   // 최종 목적지 서버 포트
-};
-
-NS_OBJECT_ENSURE_REGISTERED(UdpRelay);
-
-TypeId
-UdpRelay::GetTypeId()
-{
-    static TypeId tid =
-        TypeId("UdpRelay")
-            .SetParent<Application>()
-            .SetGroupName("Applications")
-            .AddConstructor<UdpRelay>()
-            .AddAttribute("InPort",
-                          "Port on which we listen for incoming packets from UEs.",
-                          UintegerValue(8000), // 기본 수신 포트
-                          MakeUintegerAccessor(&UdpRelay::m_inPort),
-                          MakeUintegerChecker<uint16_t>())
-            .AddAttribute("OutAddress",
-                          "The destination Address of the outbound packets to the server.",
-                          AddressValue(),
-                          MakeAddressAccessor(&UdpRelay::m_outAddress),
-                          MakeAddressChecker())
-            .AddAttribute("OutPort",
-                          "The destination port of the outbound packets to the server.",
-                          UintegerValue(5000), // 서버의 포트
-                          MakeUintegerAccessor(&UdpRelay::m_outPort),
-                          MakeUintegerChecker<uint16_t>());
-    return tid;
+    std::cout << "[Router Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
+              << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
+              << std::endl;
 }
 
-void
-UdpRelay::StartApplication()
+void Ipv4PacketTraceAtServer(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
-    // 1. UE로부터 패킷을 받을 소켓(수신용) 설정
-    m_inSocket = Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::UdpSocketFactory"));
-    Inet6SocketAddress local = Inet6SocketAddress(Ipv6Address::GetAny(), m_inPort);
-    if (m_inSocket->Bind(local) == -1)
-    {
-        NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
-    }
-    m_inSocket->SetRecvCallback(MakeCallback(&UdpRelay::HandleRead, this));
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
 
-    // 2. 서버로 패킷을 보낼 소켓(송신용) 설정
-    m_outSocket = Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::UdpSocketFactory"));
-    if (m_outSocket->Connect(
-            Inet6SocketAddress(Ipv6Address::ConvertFrom(m_outAddress), m_outPort)) == -1)
-    {
-        NS_FATAL_ERROR("UdpRelay: Failed to connect Out-Socket to server");
-    }
-
-    std::cout << "RSU Relay Application Started. Listening on port " << m_inPort << ", Relaying to "
-              << m_outAddress << ":" << m_outPort << std::endl;
+    std::cout << "[Server Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
+              << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
+              << std::endl;
 }
 
-void
-UdpRelay::StopApplication()
+void Ipv4PacketTraceAtUe(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
-    if (m_inSocket)
-    {
-        m_inSocket->Close();
-        m_inSocket->SetRecvCallback(MakeNullCallback<void, Ptr<Socket>>());
-    }
-    if (m_outSocket)
-    {
-        m_outSocket->Close();
-    }
+    Ipv4Header Ipv4Header;
+    packet->PeekHeader(Ipv4Header);
+
+    std::cout << "[Ue Packet Trace] Time: " << Simulator::Now().GetSeconds() << "s"
+              << " | Interface: " << interfaceIndex << " | Size: " << packet->GetSize() << " bytes"
+              << std::endl;
 }
 
-void
-UdpRelay::HandleRead(Ptr<Socket> socket)
+int main(void)
 {
-    Ptr<Packet> packet;
-    Address from;
-    while ((packet = socket->RecvFrom(from)))
-    {
-        if (packet->GetSize() == 0)
-        {
-            break;
-        }
-
-        std::cout << "RSU Relay: Received " << packet->GetSize() << " bytes from "
-                  << Inet6SocketAddress::ConvertFrom(from).GetIpv6() << std::endl;
-
-        // 받은 패킷 그대로 서버로 전달 (송신용 소켓 사용)
-        m_outSocket->Send(packet->Copy());
-
-        std::cout << "RSU Relay: Relayed packet to server." << std::endl;
-    }
-}
-
-
-int
-main(void)
-{
+    Ipv4Address groupAddress4("224.1.1.1");
     // 1. CSV 파일 읽기
     // ==========================================================
     std::vector<WaypointData> waypoints;
@@ -419,7 +368,7 @@ main(void)
     NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV.");
 
     // ns3 세팅 시작
-    Time simTime = Seconds(93);
+    Time simTime = Seconds(10);
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
@@ -433,12 +382,15 @@ main(void)
     serverNodeContainer.Create(1);
     NodeContainer ueNodeContainer;
     ueNodeContainer.Create(1);
+    NodeContainer routerNodeContainer;
+    routerNodeContainer.Create(1);
 
-    Ptr<Node> pgw = epcHelper->GetPgwNode(); // ipv4, ipv6 둘다 설치되어 있음. 듀얼스택
+    Ptr<Node> pgw = epcHelper->GetPgwNode(); // ipv4, Ipv4 둘다 설치되어 있음. 듀얼스택
     Ptr<Node> server = serverNodeContainer.Get(0);
     Ptr<Node> rsu = rsuNodeContainer.Get(0);
     Ptr<Node> gnb = gnbNodeContainer.Get(0);
     Ptr<Node> ue = ueNodeContainer.Get(0);
+    Ptr<Node> router = routerNodeContainer.Get(0);
 
     MobilityHelper mobility;
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
@@ -449,20 +401,21 @@ main(void)
     mobility.Install(serverNodeContainer);
     serverNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(1900.0, 3800.0, 60.0));
+    mobility.Install(routerNodeContainer);
+    routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,70.0));
 
-
-    mobility.SetMobilityModel("ns3::WaypointMobilityModel");
+    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(ueNodeContainer);
-    ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4315.03, 59));
-    Ptr<WaypointMobilityModel> ueMobility =
-        ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
-
-    // 읽어온 CSV 데이터를 Waypoint로 추가
-    for (const auto& data : waypoints)
-    {
-        Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
-        ueMobility->AddWaypoint(waypoint);
-    }
+    ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
+    // Ptr<WaypointMobilityModel> ueMobility =
+    //     ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
+    //
+    // // 읽어온 CSV 데이터를 Waypoint로 추가
+    // for (const auto& data : waypoints)
+    // {
+    //     Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
+    //     ueMobility->AddWaypoint(waypoint);
+    // }
 
     // gnb bwp 설정
 
@@ -481,7 +434,7 @@ main(void)
                                                       gNbBandwidthBand,
                                                       gNbnumContiguousCc,
                                                       BandwidthPartInfo::UMi_StreetCanyon_nLoS); //
-    gNbBandConf.m_numBwp = 1; // 1 BWP per CC
+    gNbBandConf.m_numBwp = 1;                                                                    // 1 BWP per CC
     gNbBand = gNbCcBwpCreators.CreateOperationBandContiguousCc(gNbBandConf);
 
     nrHelper->InitializeOperationBand(&gNbBand);
@@ -682,7 +635,7 @@ main(void)
     LteRrcSap::SlFreqConfigCommonNr slFreConfigCommonNr;
     // Array for BWPs. Here we will iterate over the BWPs, which
     // we want to use for SL.
-    for (const auto& it : bwpIdContainer)
+    for (const auto &it : bwpIdContainer)
     {
         // it is the BWP id
         slFreConfigCommonNr.slBwpList[it] = slBwpConfigCommonNr;
@@ -718,58 +671,202 @@ main(void)
 
     nrSlHelper->InstallNrSlPreConfiguration(SlNetDev, slPreConfigNr);
 
-
     // 진짜 시작todo:
     // ===============================================================================
 
     NodeContainer nodes(server);
-    NodeContainer routers(pgw, rsu);
+    NodeContainer routers(pgw, rsu, router);
 
     // 여기서 p2p를 쓸지 csma를 쓸지 결정해야할듯
     PointToPointHelper p2ph;
     p2ph.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
     p2ph.SetChannelAttribute("Delay", StringValue("10ms"));
-    NetDeviceContainer pgwToServerNetDev = p2ph.Install(pgw, server);
-    NetDeviceContainer rsuToServerNetDev = p2ph.Install(rsu, server);
-    p2ph.EnablePcap("rsu-to-server", rsuToServerNetDev.Get(0), true);
+    NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
+    NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
+    NetDeviceContainer routerToServerNetDev = p2ph.Install(router,server);
+
+
 
     // 인터넷 설정
     InternetStackHelper internet;
-    internet.SetIpv4StackInstall(false);
     internet.Install(ueNodeContainer);
     internet.Install(nodes);
     internet.Install(routers);
 
-    // ip설정
-    Ipv6AddressHelper ipv6h;
+    QuicHelper quic;
+    quic.InstallQuic(ueNodeContainer);
+    quic.InstallQuic(nodes);
 
-    // quic
-    QuicHelper quic_helper;
-    quic_helper.InstallQuic (nodes);
-    quic_helper.InstallQuic (ueNodeContainer);
+    // ip설정===================================================
+    Ipv4AddressHelper Ipv4h;
 
-    // rsu server
-    ipv6h.SetBase("fd00:1::", Ipv6Prefix(64));
-    Ipv6InterfaceContainer iic1 = ipv6h.Assign(rsuToServerNetDev);
-    iic1.SetForwarding(0, true);
+    // rsu router
+    Ipv4h.SetBase("10.1.1.0", "255.255.255.0");
+    Ipv4InterfaceContainer iic1 = Ipv4h.Assign(rsuToRouterNetDev); //10.1.1.1
+    Ipv4Address rsuRouterIp=iic1.GetAddress(0);
+    Ipv4Address routerRsuIp=iic1.GetAddress(1);
+    std::cout<<"rsuRouterIp : "<<rsuRouterIp<<std::endl;
+    std::cout<<"routerRsuIp : "<<routerRsuIp<<std::endl;
 
-    Ipv6Address rsuServerIpv6 = iic1.GetAddress(1, 1);
+    // pgw router
+    Ipv4h.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer iic2 = Ipv4h.Assign(pgwToRouterNetDev); //10.1.1.2
+    Ipv4Address pgwRouterIp= iic2.GetAddress(0);
+    Ipv4Address routerPgwIp= iic2.GetAddress(1);
+    std::cout<<"pgwRouterIp : "<<pgwRouterIp<<std::endl;
+    std::cout<<"routerPgwIp : "<<routerPgwIp<<std::endl;
 
-    // pgw server
-    ipv6h.SetBase("fd00:3::", Ipv6Prefix(64));
-    Ipv6InterfaceContainer iic3 = ipv6h.Assign(pgwToServerNetDev);
-    iic3.SetForwarding(0, true);
-    Ipv6Address gnbServerIpv6 = iic3.GetAddress(1, 1);
 
-    Ipv6InterfaceContainer ueUuIface = epcHelper->AssignUeIpv6Address(ueUuNetDev);
+    // router server
+    Ipv4h.SetBase("10.1.3.0", "255.255.255.0");
+    Ipv4InterfaceContainer iic3 = Ipv4h.Assign(routerToServerNetDev); //10.1.1.3
+    Ipv4Address routerServerIp = iic3.GetAddress(0);
+    Ipv4Address serverRouterIp = iic3.GetAddress(1);
+    std::cout<<"serverRouterIp : "<<serverRouterIp<<std::endl;
+    std::cout<<"routerServerIp : "<<routerServerIp<<std::endl;
+
+    // ue uu
+    Ipv4InterfaceContainer ueUuIface = epcHelper->AssignUeIpv4Address(ueUuNetDev);
+    std::cout<<"ueUUIp : "<<ueUuIface.GetAddress(0)<<std::endl;
+
+    // ue sl
+    // Ipv4InterfaceContainer ueSlIface = epcHelper->AssignUeIpv4Address(SlNetDev);
+    Ipv4h.SetBase("192.168.10.0", "255.255.255.0");
+    Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
+    Ipv4Address ueSlIp = ueSlIface.GetAddress(0);
+    Ipv4Address rsuSlIp = ueSlIface.GetAddress(1);
+    std::cout<<"ueSlIp : "<<ueSlIp<<std::endl;
+    std::cout<<"rsuSlIp : "<<rsuSlIp<<std::endl;
+
+
+    // 라우팅======================================================
+    // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
-    Ipv6InterfaceContainer ueSlIface = epcHelper->AssignUeIpv6Address(SlNetDev);
-    ueSlIface.SetForwarding(1, true);
-    Ipv6Address temp = ueSlIface.GetAddress(1, 1);
+    //인터페이스 확인하는 코드=============================================================================
+    // Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
+    // Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
+    // uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
+    // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
+
+    Ipv4StaticRoutingHelper Ipv4RoutingHelper;
+    uint32_t ueUuItf = 1;
+    uint32_t ueSlItf = 2;
+    uint32_t rsuSlItf = 2;
+    uint32_t rsuRouterItf = 1;
+    uint32_t routerServerItf = 3;
+    uint32_t serverRouterItf = 1;
+    uint32_t routerPgwItf = 2;
+    uint32_t routerRsuItf = 1;
+    uint32_t pgwRouterItf = 3;
 
 
-    // sidelink 무선 베어러 설정
+
+    // ue 라우팅
+    Ptr<Ipv4StaticRouting> ueStaticRouting = Ipv4RoutingHelper.GetStaticRouting(ue->GetObject<Ipv4>());
+    ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), ueUuItf);
+    ueStaticRouting->SetDefaultMulticastRoute(ueSlItf);
+
+    // Ptr<NetDevice> ueSlNetDevice = ue->GetDevice(ueSlItf);
+    // Mac48Address ueSlMacAddress = Mac48Address::ConvertFrom(ueSlNetDevice->GetAddress());
+
+    // rsu 라우팅
+    Ptr<Ipv4StaticRouting> rsuStaticRouting = Ipv4RoutingHelper.GetStaticRouting(rsu->GetObject<Ipv4>());
+    // rsuStaticRouting->SetDefaultRoute(routerRsuIp, rsuRouterItf);
+    rsuStaticRouting->AddMulticastRoute(Ipv4Address("192.168.10.1"), // all sources (ASM)
+                                   groupAddress4,
+                                   /* input interface */ rsuSlItf,
+                                   /* output interfaces */ std::vector<uint32_t>{ rsuRouterItf });
+
+    rsuStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
+                                         Ipv4Mask("255.255.255.0"),
+                                         rsuSlItf);
+
+    rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
+
+
+
+
+    // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
+    // Ptr<Node> rsuNode = rsu;
+    // Ptr<Ipv4L3Protocol> rsuIpv41 = rsuNode->GetObject<Ipv4L3Protocol>();
+    // Ptr<Ipv4Interface> rsuSlInterface = rsuIpv41->GetInterface(rsuSlItf); // rsuSlItf는 RSU의 Sidelink 인터페이스 인덱스
+    //
+    //
+    // // 3. 해당 Ipv4Interface에서 ArpCache를 가져옵니다.
+    // Ptr<ArpCache> rsuArpCache = rsuSlInterface->GetArpCache();
+    // Mac48Address hardcodedMac("04:06:C0:A8:0A:01");
+    //
+    // // 4. ArpCache에 정적 항목을 'Add -> Set -> Mark' 3단계로 추가합니다.
+    // if (rsuArpCache) // rsuArpCache가 유효한지 확인
+    // {
+    //     // 1단계: IP 주소로 빈 엔트리 생성
+    //     ArpCache::Entry* entry = rsuArpCache->Add(Ipv4Address("192.168.10.1"));
+    //
+    //     // 2단계: 생성된 엔트리에 MAC 주소 설정
+    //     entry->SetMacAddress(hardcodedMac);
+    //
+    //     // 3단계: 엔트리를 영구(PERMANENT) 상태로 변경
+    //     entry->MarkPermanent();
+    // }
+
+    // pgw 라우팅
+    Ptr<Ipv4StaticRouting> pgwStaticRouting = Ipv4RoutingHelper.GetStaticRouting(pgw->GetObject<Ipv4>());
+    pgwStaticRouting->SetDefaultRoute(routerPgwIp, pgwRouterItf);
+
+    // server 라우팅
+    Ptr<Ipv4StaticRouting> serverStaticRouting = Ipv4RoutingHelper.GetStaticRouting(server->GetObject<Ipv4>());
+    serverStaticRouting->SetDefaultRoute(routerServerIp, serverRouterItf);
+    // serverStaticRouting->AddNetworkRouteTo(
+    //     Ipv4Address("7.0.0.0"),
+    //     Ipv4Mask("255.0.0.0"),
+    //     routerServerIp,
+    //     serverRouterItf
+    // );
+
+    // router 라우팅
+    Ptr<Ipv4StaticRouting> routerStaticRouting = Ipv4RoutingHelper.GetStaticRouting(router->GetObject<Ipv4>());
+
+    routerStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
+                                           Ipv4Mask("255.0.0.0"), // EPC망의 서브넷 마스크
+                                           pgwRouterIp,
+                                           /* 라우터의 PGW 방향 인터페이스 */routerPgwItf);
+
+    // -> UE의 Sidelink망으로 가는 길은 RSU를 통한다.
+    routerStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
+                                           Ipv4Mask("255.255.255.0"),
+                                           rsuRouterIp,
+                                           /* 라우터의 RSU 방향 인터페이스 */routerRsuItf);
+
+    // -> 멀티캐스트 트래픽은 서버 쪽으로 포워딩한다.
+    //    (정적 멀티캐스트 라우팅 설정)
+    routerStaticRouting->AddMulticastRoute(Ipv4Address("0.0.0.0"), // 모든 소스
+                                         groupAddress4,         // 멀티캐스트 그룹
+                                         /* 라우터의 RSU 방향 인터페이스 (입력) */routerRsuItf,
+                                         /* 라우터의 서버 방향 인터페이스 목록 (출력) */std::vector<uint32_t> {routerServerItf});
+
+    //포워딩
+    Ptr<Ipv4> rsuIpv4 = rsu->GetObject<Ipv4>();
+    rsuIpv4->SetAttribute("IpForward", BooleanValue(true));
+    for (uint32_t i =0; i < rsuIpv4->GetNInterfaces(); i++)
+    {
+        rsuIpv4->SetForwarding(i,true);
+    }
+
+
+    Ptr<Ipv4> routerIpv4 = router->GetObject<Ipv4>();
+    routerIpv4->SetAttribute("IpForward", BooleanValue(true));
+    for (uint32_t i =0; i < routerIpv4->GetNInterfaces(); i++)
+    {
+        routerIpv4->SetForwarding(i,true);
+    }
+
+    StackHelper stackHelper;
+    stackHelper.PrintRoutingTable(router);
+    stackHelper.PrintRoutingTable(rsu);
+    stackHelper.PrintRoutingTable(pgw);
+
+    // sidelink 무선 베어러 설정=====================================================================
     Ptr<LteSlTft> tft;
     uint32_t dstL2Id = 255;
     Time delayBudget = Seconds(0);
@@ -779,33 +876,38 @@ main(void)
     slInfo.m_dstL2Id = dstL2Id;
     slInfo.m_rri = MilliSeconds(100);
     slInfo.m_pdb = delayBudget;
-    slInfo.m_dynamic=false;
+    slInfo.m_dynamic = false;
     slInfo.m_harqEnabled = true;
-    Ipv6Address groupAddress6("ff0e::1");
 
-    tft = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, groupAddress6, slInfo);
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), SlNetDev, tft);
+    tft = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, groupAddress4, slInfo);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft);
 
-    // // Uu PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
-    Ptr<NrUeNetDevice> ueUuDev = DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0));
-    // Get the first PHY (BWP) from the Uu NetDevice
-    Ptr<NrUePhy> ueUuPhy = ueUuDev->GetPhy(0);
-   ueUuPhy->TraceConnectWithoutContext("ReportRsrp", MakeCallback(&UeMeasCallback));
+    // sidelink 무선 베어러 설정=====================================================================
+    Ptr<LteSlTft> tft1;
 
-    // Uu PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
-    Ptr<NrUeNetDevice> rsutemp = DynamicCast<NrUeNetDevice>(rsuNetDev.Get(0));
-    // Get the first PHY (BWP) from the Uu NetDevice
-    Ptr<NrUePhy> rsutemp2 = rsutemp->GetPhy(0);
-    rsutemp2->TraceConnectWithoutContext("ReportSlRsrp", MakeCallback(&UeSlMeasCallback));
+    SidelinkInfo slInfo1;
+    slInfo1.m_castType = SidelinkInfo::CastType::Unicast;
+    slInfo1.m_dstL2Id = dstL2Id;
+    slInfo1.m_rri = MilliSeconds(100);
+    slInfo1.m_pdb = delayBudget;
+    slInfo1.m_dynamic = false;
+    slInfo1.m_harqEnabled = true;
 
-    for (uint32_t i = 0; i < SlNetDev.GetN (); ++i)
+    tft1 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft1);
+
+
+
+
+    // sidelink 무선 베어러 설정 끝=====================================================================
+
+
+    for (uint32_t i = 0; i < SlNetDev.GetN(); ++i)
     {
-        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice> (SlNetDev.Get (i));
-        Ptr<NrUePhy>       phy   = ueDev->GetPhy (0);
-        phy->GetNrSlUeCphySapProvider ()->EnableUeSlRsrpMeasurements ();
+        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(SlNetDev.Get(i));
+        Ptr<NrUePhy> phy = ueDev->GetPhy(0);
+        phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
     }
-
-
 
     //  todo: 앱설치 =============================================================
     ApplicationContainer ueAppContainer;
@@ -813,151 +915,126 @@ main(void)
     ApplicationContainer rsuAppContainer;
 
     u_int16_t serverPort = 5000;
-    u_int16_t rsuSlPort = 6000;
+    // u_int16_t rsuSlPort = 6000;
 
     // u_int16_t clientPort = 4000;
-    // AdaptiveUdpClientk adaptiveUdpClientk(rsuIpv6,serverIpv6, serverPort);
+    // AdaptiveUdpClientk adaptiveUdpClientk(rsuIpv4,serverIpv4, serverPort);
     // adaptiveUdpClientk.SetAttribute("Interval",TimeValue(Seconds(3)));
 
     Ptr<QuicKohServer> serverApp = CreateObject<QuicKohServer>();
     server->AddApplication(serverApp);
     serverApp->SetAttribute("Port", UintegerValue(serverPort));
-    serverApp->SetStartTime(Seconds(1.0));
+    serverApp->SetStartTime(Seconds(1.5));
     serverApp->SetStopTime(simTime);
 
     Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
     clientApp->SetAttribute("MaxPackets", UintegerValue(45));
-    clientApp->SetAttribute("Interval", TimeValue(Seconds(2.0)));
+    clientApp->SetAttribute("Interval", TimeValue(Seconds(1.0)));
     clientApp->SetAttribute("PacketSize", UintegerValue(100));
-    clientApp->SetAttribute("slServerAddress",AddressValue(groupAddress6));
-    clientApp->SetAttribute("slServerPort",UintegerValue(rsuSlPort));
-    clientApp->SetAttribute("uuServerAddress",AddressValue(gnbServerIpv6));
-    clientApp->SetAttribute("uuServerPort",UintegerValue(serverPort));
-
-
+    clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
+    clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
+    clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
+    clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
 
     ue->AddApplication(clientApp);
-    clientApp->SetStartTime(Seconds(40.0));
+    clientApp->SetStartTime(Seconds(2.0));
     clientApp->SetStopTime(simTime);
+
+    // rsu 애플리케이션
+    // Ptr<OnOffApplication> rsuApp = CreateObject<OnOffApplication>();
+    //
+    // rsuApp->SetAttribute("PacketSize", UintegerValue(1));
+    // rsuApp->SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=0.01]"));
+    // rsuApp->SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0.09]"));
+    // rsuApp->SetAttribute("Protocol", TypeIdValue(UdpSocketFactory::GetTypeId()));
+    // Address remoteAddress(InetSocketAddress(ueSlIp, 8734));
+    // Address localAddress(InetSocketAddress(rsuRouterIp, 8734));
+    // rsuApp->SetAttribute("Remote", AddressValue(remoteAddress));
+    // rsuApp->SetAttribute("Local",AddressValue(localAddress));
+    //
+    //
+    // rsu->AddApplication(rsuApp);
+    // rsuApp->SetStartTime(Seconds(0.0));
+    // rsuApp->SetStopTime(simTime);
+
+
+
     // todo:여기다가포트랑 주소 넣어야함
-    // clientApp->setAddressSlUu(gnbServerIpv6, serverPort, groupAddress6, rsuSlPort);
+    // clientApp->setAddressSlUu(gnbServerIpv4, serverPort, groupAddress6, rsuSlPort);
 
-    // rsu앱 설정
-    Ptr<UdpRelay> relayApp = CreateObject<UdpRelay>();
-    rsu->AddApplication(relayApp);
-    relayApp->SetAttribute("InPort", UintegerValue(rsuSlPort));          // 수신 포트 설정
-    relayApp->SetAttribute("OutAddress", AddressValue(rsuServerIpv6)); // 최종 서버 주소 설정
-    relayApp->SetAttribute("OutPort", UintegerValue(serverPort));      // 최종 서버 포트 설정
-    relayApp->SetStartTime(Seconds(1.0));
-    relayApp->SetStopTime(simTime);
-
-    //그룹 캐스트 설정 (애플리케이션단)
-    rsuAppContainer.Add(relayApp);
-    rsuAppContainer.Get(0)->GetNode()->GetObject<Ipv6L3Protocol>()->AddMulticastAddress(groupAddress6);
-
-    // ue pgw 라우팅
-    Ipv6StaticRoutingHelper ipv6RoutingHelper;
-    Ptr<Ipv6StaticRouting> ueUuStaticRouting =
-        ipv6RoutingHelper.GetStaticRouting(ue->GetObject<Ipv6>());
-    ueUuStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress6(), 1);
-
-    // fucking라우팅
-    //  Ipv6StaticRoutingHelper ipv6RoutingHelperRsu;
-    Ptr<Ipv6> ipv6 = clientApp->GetNode()->GetObject<Ipv6>();
-    // Ptr<Ipv6StaticRouting> staticRouting = ipv6RoutingHelperRsu.GetStaticRouting(ipv6);
-    // uint32_t slInterfaceIndex = ipv6->GetInterfaceForDevice(ueSlNetDev.Get(0));
-    // staticRouting->AddNetworkRouteTo(Ipv6Address::ConvertFrom(rsuServerIpv6),
-    //                                  Ipv6Prefix(128),
-    //                                  Ipv6Address::ConvertFrom(temp),
-    //                                  slInterfaceIndex);
-
-    // ue pgw 라우팅 설정 이후에 다음 코드를 추가합니다.
-    Ptr<Ipv6StaticRouting> ueStaticRouting = ipv6RoutingHelper.GetStaticRouting(ue->GetObject<Ipv6>());
-
-    // Sidelink NetDevice의 인터페이스 인덱스를 가져옵니다.
-    uint32_t slInterfaceIndex = ue->GetObject<Ipv6>()->GetInterfaceForDevice(ueSlNetDev.Get(0));
-
-    // Groupcast 주소(ff0e::1)로 향하는 모든 트래픽은 Sidelink 인터페이스로 보내도록 명시적인 경로를 추가합니다.
-    ueStaticRouting->AddNetworkRouteTo(groupAddress6, Ipv6Prefix(128), slInterfaceIndex);
-
-    std::cout << "Added static route for Groupcast address via Sidelink interface " << slInterfaceIndex << std::endl;
 
     // 인터페이스 바꾸는거 그냥 예시
     clientApp->setInterface(ueUuNetDev.Get(0), ueSlNetDev.Get(0));
-    Simulator::Schedule(Seconds(50.0), &QuicKohClient::changeInterface, clientApp);
+    Simulator::Schedule(Seconds(5.0), &QuicKohClient::changeInterface, clientApp);
 
-    // Ptr<Ipv6> ipv6 = ue->GetObject<Ipv6>();
-    for (uint32_t ifIndex = 0; ifIndex < ipv6->GetNInterfaces(); ++ifIndex)
+    Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
+    for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)
     {
-        for (uint32_t addrIndex = 0; addrIndex < ipv6->GetNAddresses(ifIndex); ++addrIndex)
+        for (uint32_t addrIndex = 0; addrIndex < ipv4->GetNAddresses(ifIndex); ++addrIndex)
         {
-            auto ifAddr = ipv6->GetAddress(ifIndex, addrIndex);
+            auto ifAddr = ipv4->GetAddress(ifIndex, addrIndex);
             std::cout << "Iface " << ifIndex << ", Addr " << addrIndex << ": "
-                      << ifAddr.GetAddress() << "/" << ifAddr.GetPrefix() << std::endl;
+                      << ifAddr.GetAddress() << "/"  << std::endl;
         }
     }
-    std::cout << "rsutoserver server ip : " << rsuServerIpv6 << std::endl;
-    std::cout << "uetorsu rsu ip" << temp << std::endl;
     // main 함수 내부, 인터넷 스택 설치 이후
 
-    // RSU 노드의 IPv6 L3 프로토콜의 "Rx" Trace Source에 콜백 함수를 연결합니다.
+    // RSU 노드의 Ipv4 L3 프로토콜의 "Rx" Trace Source에 콜백 함수를 연결합니다.
     // "Rx"는 IP 계층에서 패킷을 수신하는 이벤트입니다.
     Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsu->GetId()) +
-                                      "/$ns3::Ipv6L3Protocol/Rx",
-                                  MakeCallback(&Ipv6PacketTraceAtRsu));
+                                      "/$ns3::Ipv4L3Protocol/Rx",
+                                  MakeCallback(&Ipv4PacketTraceAtRsu));
     Config::ConnectWithoutContext("/NodeList/" + std::to_string(pgw->GetId()) +
-                                      "/$ns3::Ipv6L3Protocol/Rx",
-                                  MakeCallback(&Ipv6PacketTraceAtPgw));
-    //   Config::ConnectWithoutContext (
-    // "/NodeList/*/DeviceList/*/"
-    // "$ns3::NrUeNetDevice/ComponentCarrierMapUe/*/"
-    // "NrUePhy/SpectrumPhy/RxDataTrace",
-    // MakeCallback(&RxDataCallback)); // 이건 전송 받을 때만 해서 안됨
+                                      "/$ns3::Ipv4L3Protocol/Rx",
+                                  MakeCallback(&Ipv4PacketTraceAtPgw));
+    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(router->GetId()) +
+    //                               "/$ns3::Ipv4L3Protocol/Rx",
+    //                           MakeCallback(&Ipv4PacketTraceAtRouter));
+    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(server->GetId()) +
+    //                           "/$ns3::Ipv4L3Protocol/Rx",
+    //                       MakeCallback(&Ipv4PacketTraceAtServer));
+    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(ue->GetId()) +
+    //                           "/$ns3::Ipv4L3Protocol/Rx",
+    //                       MakeCallback(&Ipv4PacketTraceAtUe));
 
-    // Config::ConnectWithoutContext(
-    //     "/NodeList/*/DeviceList/*/$ns3::NrNetDevice/"
-    //     "$ns3::NrUeNetDevice/ComponentCarrierMapUe/*/NrUePhy/ReportPowerSpectralDensity",
-    //     MakeCallback(&psdCallback));
+    // // Uu PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
+    Ptr<NrUeNetDevice> ueUuDev = DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0));
+    // Get the first PHY (BWP) from the Uu NetDevice
+    Ptr<NrUePhy> ueUuPhy = ueUuDev->GetPhy(0);
+    ueUuPhy->TraceConnectWithoutContext("ReportRsrp", MakeCallback(&UeMeasCallback));
 
-    // UU방향 RSSI측정
+    // sl PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
+    Ptr<NrUeNetDevice> rsutemp = DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0));
+    // Get the first PHY (BWP) from the Uu NetDevice
+    Ptr<NrUePhy> rsutemp2 = rsutemp->GetPhy(0);
+    rsutemp2->TraceConnectWithoutContext("ReportSlRsrp", MakeCallback(&UeSlMeasCallback));
+
     Simulator::Schedule(Seconds(0.0), &PrintUeInfo, ueNodeContainer.Get(0));
-    // Ptr<NetDevice> dev = ueUuNetDev.Get (0);
-    // Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice> (dev);
-    // Ptr<NrSpectrumPhy> spectrumPhy = ueDev->GetPhy (0)->GetSpectrumPhy ();
-    // Ptr<NrInterference> interference = spectrumPhy->GetNrInterferenceCtrl();
-    // interference->TraceConnectWithoutContext(
-    //     "RssiPerProcessedChunk",
-    //     MakeBoundCallback(&UeRssiPerProcessedChunk, spectrumPhy));
 
-    // SlNetDev 컨테이너의 모든 NetDevice에 대해 반복합니다.
-    // for (uint32_t i =0 ; i<SlNetDev.GetN();i++)
-    // {
-    //     // NetDevice를 NrUeNetDevice로 변환합니다.
-    //     Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(dev);
-    //     if (ueDev)
-    //     {
-    //         // 첫 번째 BWP(Bandwidth Part)의 PHY 객체를 가져옵니다.
-    //         Ptr<NrSpectrumPhy> spectrumPhy = ueDev->GetPhy(0)->GetSpectrumPhy();
+    // LogComponentEnable("UdpSocketImpl", LOG_LEVEL_INFO);
+    // LogComponentEnable("UdpSocketImpl", LOG_LEVEL_FUNCTION);
     //
-    //         // Sidelink Interference 객체를 가져옵니다.
-    //         Ptr<NrSlInterference> interference = spectrumPhy->GetSlInterference();
-    //
-    //         // 현재 어떤 노드의 어떤 객체에 연결하는지 로그를 출력합니다. (get()으로 주소 확인)
-    //         NS_LOG_UNCOND("Node " << dev->GetNode()->GetId()
-    //                               << ": Connecting trace to Interference object at address "
-    //                               << &(*interference));
-    //
-    //         // "SlRssiPerProcessedChunk" 트레이스 소스에 콜백 함수를 연결합니다.
-    //         interference->TraceConnectWithoutContext(
-    //             "SlRssiPerProcessedChunk",
-    //             MakeBoundCallback(&UeSlRssiPerProcessedChunk, spectrumPhy));
-    //     }
-    // }
+    // LogComponentEnable("QuicSocketBase", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicSocketBase", LOG_LEVEL_FUNCTION);
+    // LogComponentEnable("QuicSocketBase", LOG_LEVEL_LOGIC);
+    // LogComponentEnable("QuicL4Protocol", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicL4Protocol", LOG_LEVEL_FUNCTION);
+    // LogComponentEnable("QuicL4Protocol", LOG_LEVEL_LOGIC);
+    // LogComponentEnable("QuicL5Protocol", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicL5Protocol", LOG_LEVEL_FUNCTION);
+    // LogComponentEnable("QuicL5Protocol", LOG_LEVEL_LOGIC);
+    // LogComponentEnable("QuicSubheader", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicSubheader", LOG_LEVEL_FUNCTION);
+    // LogComponentEnable("QuicSocketTxBuffer", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicSocketTxBuffer", LOG_LEVEL_FUNCTION);
+    // LogComponentEnable("QuicHeader", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicHeader", LOG_LEVEL_FUNCTION);
+    //   LogComponentEnable("QuicStreamBase", LOG_LEVEL_INFO);
+    // LogComponentEnable("QuicStreamBase", LOG_LEVEL_FUNCTION);
+
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);
     Simulator::Run();
     Simulator::Destroy();
 }
-
-

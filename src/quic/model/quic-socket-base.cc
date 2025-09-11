@@ -93,7 +93,7 @@ QuicSocketBase::GetTypeId (void)
     .AddConstructor<QuicSocketBase> ()
     .AddAttribute ("InitialVersion",
                    "Quic Version. The default value starts a version negotiation procedure",
-                   UintegerValue (QUIC_VERSION_NEGOTIATION),
+                   UintegerValue (QUIC_VERSION),
                    MakeUintegerAccessor (&QuicSocketBase::m_vers),
                    MakeUintegerChecker<uint32_t> ())
     .AddAttribute ("IdleTimeout",
@@ -922,7 +922,7 @@ QuicSocketBase::Send (Ptr<Packet> p, uint32_t flags)
 int
 QuicSocketBase::Send (Ptr<Packet> p)
 {
-    NS_LOG_UNCOND("QuicSocketBase::Send");
+    // NS_LOG_UNCOND("QuicSocketBase::Send");
   NS_LOG_FUNCTION (this);
 
   if (m_drainingPeriodEvent.IsRunning ())
@@ -1295,7 +1295,7 @@ uint32_t
 QuicSocketBase::SendDataPacket (SequenceNumber32 packetNumber,
                                 uint32_t maxSize, bool withAck)
 {
-    NS_LOG_UNCOND("QuicSocketBase::SendDataPacket");
+    // NS_LOG_UNCOND("QuicSocketBase::SendDataPacket");
   NS_LOG_FUNCTION (this << packetNumber << maxSize << withAck);
 
   if (!m_drainingPeriodEvent.IsRunning ())
@@ -2630,7 +2630,7 @@ void
 QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
                               Address &address)
 {
-    NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
+    // NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
   NS_LOG_FUNCTION (this);
 
   m_rxTrace (p, quicHeader, this);

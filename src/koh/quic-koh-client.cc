@@ -30,6 +30,7 @@
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
 #include "ns3/socket-factory.h"
+#include "ns3/quic-socket-factory.h"
 #include "ns3/socket.h"
 #include "ns3/uinteger.h"
 
@@ -106,7 +107,7 @@ QuicKohClient::QuicKohClient()
     m_totalTx = 0;
     m_uuSocket = nullptr;
     m_slSocket = nullptr;
-    m_socket = nullptr;
+    m_sendSocket = nullptr;
     m_sendEvent = EventId();
     m_lastUsedStream = 1;
 }
@@ -121,54 +122,49 @@ QuicKohClient::StartApplication()
 {
     NS_LOG_FUNCTION(this);
 
-    TypeId tid = TypeId::LookupByName("ns3::QuicSocketFactory");
+    TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
+    //  소켓 설정 rsrp
+    m_rsrpSocket = Socket::CreateSocket(GetNode(), tid);
+    m_rsrpSocket->BindToNetDevice(m_devSl);
+
+
+    // listening 소켓 설정
+    m_recvSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
+    if (m_recvSocket->Bind() == -1)
+    {
+        NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
+    }
 
     // Uu 소켓 설정
-    m_uuSocket = Socket::CreateSocket(GetNode(), tid);
-
-    if (Ipv4Address::IsMatchingType(m_uuServerAddress))
+    m_uuSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
+    m_uuSocket->Bind();
+    m_uuSocket->BindToNetDevice(m_devUu); // Connect 전에 Bind
+    if (Ipv6Address::IsMatchingType(m_uuServerAddress))
     {
-        if (m_uuSocket->Bind()==-1) {
-            NS_FATAL_ERROR ("Failed to bind uusocket");
-        }
-        NS_LOG_UNCOND("uu socket connection started");
-        m_uuSocket->BindToNetDevice(m_devUu); // Connect 전에 Bind
+        NS_LOG_UNCOND("uu ipv6 socket connection started");
+        m_uuSocket->Connect(
+            Inet6SocketAddress(Ipv6Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
+    }else
+    {
+        NS_LOG_UNCOND("uu ipv4 socket connection started");
         m_uuSocket->Connect(
             InetSocketAddress(Ipv4Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
     }
-    else if (Ipv6Address::IsMatchingType(m_uuServerAddress))
-    {
-        if (m_uuSocket->Bind()==-1) {
-            NS_FATAL_ERROR ("Failed to bind uusocket");
-        }
-        NS_LOG_UNCOND("uu socket connection started");
-        m_uuSocket->BindToNetDevice(m_devUu); // Connect 전에 Bind
-        m_uuSocket->Connect(
-            Inet6SocketAddress(Ipv6Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
-    }
 
     // Sl 소켓 설정
-    m_slSocket = Socket::CreateSocket(GetNode(), tid);
-
-    if (Ipv4Address::IsMatchingType(m_slServerAddress))
+    m_slSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
+    m_slSocket->Bind();
+    m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
+    if (Ipv6Address::IsMatchingType(m_slServerAddress))
     {
-                if (m_uuSocket->Bind()==-1) {
-            NS_FATAL_ERROR ("Failed to bind slsocket");
-        }
         NS_LOG_UNCOND("sl socket connection started");
-        m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
-        m_slSocket->Connect(
-            InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
-    }
-    else if (Ipv6Address::IsMatchingType(m_slServerAddress))
-    {
-        if (m_slSocket->Bind()==-1) {
-            NS_FATAL_ERROR ("Failed to bind slsocket");
-        }
-        NS_LOG_UNCOND("sl socket connection started");
-        m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
         m_slSocket->Connect(
             Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+    }else
+    {
+        NS_LOG_UNCOND("sl ipv4 socket connection started");
+        m_slSocket->Connect(
+            InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
     }
 
     // 수신 콜백 설정 (양방향 통신 시 필요)
@@ -176,7 +172,7 @@ QuicKohClient::StartApplication()
     m_slSocket->SetRecvCallback(MakeCallback(&QuicKohClient::HandleRecv, this));
 
     // 초기 인터페이스는 Uu로 설정
-    m_socket = m_uuSocket;
+    m_sendSocket = m_uuSocket;
     NS_LOG_UNCOND("Client starts with uu interface.");
 
     m_sendEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::Send, this);
@@ -214,10 +210,10 @@ QuicKohClient::StopApplication()
 {
     NS_LOG_FUNCTION(this);
     Simulator::Cancel(m_sendEvent);
-    if (m_socket)
+    if (m_sendSocket)
     {
-        m_socket->Close ();
-        m_socket = nullptr;
+        m_sendSocket->Close ();
+        m_sendSocket = nullptr;
     }
     if (m_uuSocket)
     {
@@ -239,8 +235,8 @@ QuicKohClient::Send()
     NS_LOG_UNCOND("QuicKohClient::Send()");
     Address from;
     Address to;
-    m_socket->GetSockName(from);
-    m_socket->GetPeerName(to);
+    m_sendSocket->GetSockName(from);
+    m_sendSocket->GetPeerName(to);
     SeqTsHeader seqTs;
     seqTs.SetSeq(m_sent);
     NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
@@ -251,7 +247,7 @@ QuicKohClient::Send()
     m_txTraceWithAddresses(p, from, to);
 
     p->AddHeader(seqTs);
-    if ((m_socket->Send(p)) >= 0)
+    if ((m_sendSocket->Send(p)) >= 0)
     {
         ++m_sent;
         m_totalTx += p->GetSize();
@@ -283,7 +279,7 @@ void
 QuicKohClient::SelectInterface(Ptr<Socket> socket)
 {
     // 여기에 rsu가 좋은지 gnb가 좋은지 고르는 함수 추가
-    m_socket = socket;
+    m_sendSocket = socket;
 }
 
 // [핵심 수정] changeInterface() 함수
@@ -294,7 +290,7 @@ QuicKohClient::changeInterface()
     // Ptr<Ipv6> ipv6 = GetNode()->GetObject<Ipv6>();
     // Ptr<Ipv6StaticRouting> staticRouting = ipv6RoutingHelper.GetStaticRouting(ipv6);
 
-    if (m_socket == m_uuSocket)
+    if (m_sendSocket == m_uuSocket)
     {
         NS_LOG_UNCOND(Simulator::Now().GetSeconds()
                       << "s: ---> Switching client interface to SL socket <---");
@@ -307,7 +303,7 @@ QuicKohClient::changeInterface()
         // NS_LOG_UNCOND("Route ADDED: Dst=" << m_slServerAddress << " via " << m_slNextHopIp);
 
         // 2. 전송 소켓을 SL 소켓으로 변경
-        m_socket = m_slSocket;
+        m_sendSocket = m_slSocket;
     }
     else
     {
@@ -340,7 +336,7 @@ QuicKohClient::changeInterface()
         // }
 
         // 2. 전송 소켓을 Uu 소켓으로 다시 변경 (Default Route를 따름)
-        m_socket = m_uuSocket;
+        m_sendSocket = m_uuSocket;
     }
 }
 

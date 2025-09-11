@@ -1400,7 +1400,7 @@ void
 NrUePhy::ReportUeMeasurements()
 {
     NS_LOG_FUNCTION(this);
-
+    // NS_LOG_UNCOND("NrUePhy::ReportUeMeasurements");
     // LteUeCphySapUser::UeMeasurementsParameters ret;
 
     std::map<uint16_t, UeMeasurementsElement>::iterator it;
@@ -2355,6 +2355,7 @@ NrUePhy::ReportUeSlRsrpMeasurements()
         for (auto it = m_ueSlRsrpMeasurementsMap.begin(); it != m_ueSlRsrpMeasurementsMap.end();
              it++)
         {
+            // NS_LOG_UNCOND("NrUePhy::ReportUeSlRsrpMeasurements");
             // L1 filtering: linear average
             double avgRsrpW = it->second.rsrpSum / static_cast<double>(it->second.rsrpNum);
             // The stored values are in W, the report to the MAC/RRC should be in dBm

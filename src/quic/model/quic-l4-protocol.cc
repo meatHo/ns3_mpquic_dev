@@ -305,7 +305,7 @@ QuicL4Protocol::UdpConnect (const Address & address, Ptr<QuicSocketBase> socket)
 int
 QuicL4Protocol::UdpSend (Ptr<Socket> udpSocket, Ptr<Packet> p, uint32_t flags) const
 {
-    NS_LOG_UNCOND("QuicL4Protocol::UdpSend");
+    // NS_LOG_UNCOND("QuicL4Protocol::UdpSend");
   NS_LOG_FUNCTION (this << udpSocket);
 
   return udpSocket->Send (p, flags);
@@ -445,7 +445,7 @@ QuicL4Protocol::GetAuthAddresses () const
 void
 QuicL4Protocol::ForwardUp (Ptr<Socket> sock)
 {
-    NS_LOG_UNCOND("QuicL4Protocol::ForwardUp");
+    // NS_LOG_UNCOND("QuicL4Protocol::ForwardUp");
   NS_LOG_FUNCTION (this);
 
   Address from;
@@ -508,6 +508,22 @@ QuicL4Protocol::ForwardUp (Ptr<Socket> sock)
       NS_LOG_INFO ("Retry " << header.IsRetry ());
       NS_LOG_INFO ("0Rtt " << header.IsORTT ());*/
 
+      // // ======================= DEBUG LOGGING START =======================
+      // NS_LOG_UNCOND("--------------------------------------------------");
+      // NS_LOG_UNCOND("ForwardUp Debug Info for Connection ID: " << connectionId);
+      // NS_LOG_UNCOND("Is Server? " << m_isServer);
+      // NS_LOG_UNCOND("Socket found in list? " << (socket ? "Yes" : "No"));
+      // if(socket) {
+      //     NS_LOG_UNCOND("Socket Ptr: " << socket);
+      // }
+      //
+      // NS_LOG_UNCOND("Packet Type - Initial: " << header.IsInitial ());
+      // NS_LOG_UNCOND("Packet Type - Handshake: " << header.IsHandshake ());
+      // NS_LOG_UNCOND("Packet Type - Short: " << header.IsShort ());
+      // NS_LOG_UNCOND("Packet Type - 0RTT: " << header.IsORTT ());
+      // NS_LOG_UNCOND("--------------------------------------------------");
+      // // ======================== DEBUG LOGGING END ========================
+
       if (header.IsInitial () and m_isServer and !socket)
         {
           NS_LOG_LOGIC (this << " Cloning listening socket " << m_quicUdpBindingList.front ()->m_quicSocket);
@@ -519,13 +535,13 @@ QuicL4Protocol::ForwardUp (Ptr<Socket> sock)
         }
       else if (header.IsHandshake () and m_isServer and socket)
         {
-          NS_LOG_LOGIC ("CONNECTION AUTHENTICATED - Server authenticated Client " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
+          NS_LOG_UNCOND ("CONNECTION AUTHENTICATED - Server authenticated Client " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                         InetSocketAddress::ConvertFrom (from).GetPort () << "");
           m_authAddresses.push_back (InetSocketAddress::ConvertFrom (from).GetIpv4 ()); //add to the list of authenticated sockets
         }
       else if (header.IsHandshake () and !m_isServer and socket)
         {
-          NS_LOG_LOGIC ("CONNECTION AUTHENTICATED - Client authenticated Server " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
+          NS_LOG_UNCOND ("CONNECTION AUTHENTICATED - Client authenticated Server " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                         InetSocketAddress::ConvertFrom (from).GetPort () << "");
           m_authAddresses.push_back (InetSocketAddress::ConvertFrom (from).GetIpv4 ()); //add to the list of authenticated sockets
         }
@@ -544,9 +560,9 @@ QuicL4Protocol::ForwardUp (Ptr<Socket> sock)
               continue;
             }
 
-          NS_LOG_LOGIC ("CONNECTION AUTHENTICATED - Server authenticated Client " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
+          NS_LOG_UNCOND ("CONNECTION AUTHENTICATED - Server authenticated Client " << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port " <<
                         InetSocketAddress::ConvertFrom (from).GetPort () << "");
-          NS_LOG_LOGIC ( this << " Cloning listening socket " << m_quicUdpBindingList.front ()->m_quicSocket);
+          NS_LOG_UNCOND ( this << " Cloning listening socket " << m_quicUdpBindingList.front ()->m_quicSocket);
           socket = CloneSocket (m_quicUdpBindingList.front ()->m_quicSocket);
           socket->SetConnectionId (connectionId);
           socket->Connect (from);
@@ -792,7 +808,7 @@ QuicL4Protocol::Receive (Ptr<Packet> packet,
 void
 QuicL4Protocol::SendPacket (Ptr<QuicSocketBase> socket, Ptr<Packet> pkt, const QuicHeader &outgoing) const
 {
-    NS_LOG_UNCOND("QuicL4Protocol::SendPacket");
+    // NS_LOG_UNCOND("QuicL4Protocol::SendPacket");
   NS_LOG_FUNCTION (this << socket);
   NS_LOG_LOGIC (this
                 << " sending seq " << outgoing.GetPacketNumber ()

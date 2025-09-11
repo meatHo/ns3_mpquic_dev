@@ -271,21 +271,22 @@ UdpKohClient::SelectInterface(Ptr<Socket> socket)
 void
 UdpKohClient::changeInterface()
 {
-    // Ipv6StaticRoutingHelper ipv6RoutingHelper;
-    // Ptr<Ipv6> ipv6 = GetNode()->GetObject<Ipv6>();
-    // Ptr<Ipv6StaticRouting> staticRouting = ipv6RoutingHelper.GetStaticRouting(ipv6);
+    // Ipv4StaticRoutingHelper ipv4RoutingHelper;
+    // Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
+    // Ptr<Ipv4StaticRouting> staticRouting = ipv4RoutingHelper.GetStaticRouting(ipv4);
 
     if (m_sendSocket == m_uuSocket)
     {
         NS_LOG_UNCOND(Simulator::Now().GetSeconds()
                       << "s: ---> Switching client interface to SL socket <---");
 
-        // // 1. 라우팅 규칙 추가: SL 서버 주소로 가려면 RSU를 거쳐가도록 설정
-        // uint32_t slInterfaceIndex = ipv6->GetInterfaceForDevice(m_devSl);
-        // staticRouting->AddHostRouteTo(Ipv6Address::ConvertFrom(m_slServerAddress),
-        //                               Ipv6Address::ConvertFrom(m_slNextHopIp),
+        // staticRouting->RemoveRoute();
+        // 1. 라우팅 규칙 추가: SL 서버 주소로 가려면 RSU를 거쳐가도록 설정
+        // uint32_t slInterfaceIndex = ipv4->GetInterfaceForDevice(m_devSl);
+        // staticRouting->AddHostRouteTo(Ipv4Address::ConvertFrom(m_slServerAddress),
+        //                               ("192.168.10.2"),
         //                               slInterfaceIndex);
-        // NS_LOG_UNCOND("Route ADDED: Dst=" << m_slServerAddress << " via " << m_slNextHopIp);
+        // NS_LOG_UNCOND("Route ADDED: slInterfaceIndex=" << slInterfaceIndex << " via " << slInterfaceIndex);
 
         // 2. 전송 소켓을 SL 소켓으로 변경
         m_sendSocket = m_slSocket;

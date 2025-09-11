@@ -20,14 +20,7 @@
 #include <ns3/traced-callback.h>
 
 namespace ns3 {
-    struct clientInfo {
-        Address address;
-        uint32_t lastSequenceNum;
-        Time connectionTime;
-        uint32_t RTT;
-        float_t packetLossRate;
-        uint64_t totalBytesReceived;
-    };
+
 
     class QuicKohServer : public Application {
     public:
@@ -52,16 +45,16 @@ namespace ns3 {
 
         void SetPacketWindowSize(uint16_t size);
 
+
         uint16_t GetPacketWindowSize() const;
 
     private:
-        std::map<uint16_t, clientInfo> clients;
 
         void StartApplication() override;
 
         void StopApplication() override;
 
-        void SendPacket(uint16_t clientId, std::string message);
+        void SendPacket(Ptr<Socket> socket, Address from, const std::string &message);
 
         void HandleRead(Ptr<Socket> socket);
 
@@ -80,5 +73,6 @@ namespace ns3 {
 
         /// Callbacks for tracing the packet Rx events, includes source and destination addresses
         TracedCallback<Ptr<const Packet>, const Address &, const Address &> m_rxTraceWithAddresses;
+
     };
 } // namespace ns3

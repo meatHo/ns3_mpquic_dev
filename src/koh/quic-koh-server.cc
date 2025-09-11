@@ -29,6 +29,7 @@
 #include "ns3/nstime.h"
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
+#include "ns3/quic-socket-factory.h"
 #include "ns3/socket-factory.h"
 #include "ns3/socket.h"
 #include "ns3/uinteger.h"
@@ -83,34 +84,38 @@ namespace ns3 {
 
     void
     QuicKohServer::StartApplication() {
-        TypeId tid = TypeId::LookupByName ("ns3::QuicSocketFactory");
         // 소켓 만들어서 대입
         std::cout << "quic koh server StartApplication" << std::endl;
 
-        // if (!m_socket) {
-        //     m_socket = Socket::CreateSocket(GetNode(), tid);
-        //     InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), m_port);
+
+        // m_socket6 = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
+        // Inet6SocketAddress local = Inet6SocketAddress(Ipv6Address::GetAny(), m_port);
         //
-        //     if (m_socket->Bind(local) == -1) {
-        //         NS_FATAL_ERROR("Failed to bind socket");
-        //     }
-        //     m_socket->Listen();
-        //     m_socket->SetRecvCallback(MakeCallback(&QuicKohServer::HandleRead, this));
+        // if (m_socket6->Bind(local) == -1)
+        // {
+        //     NS_FATAL_ERROR("Failed to bind socket");
         // }
+        // m_socket6->Listen();
+        // m_socket6->SetRecvCallback (MakeCallback (&QuicKohServer::HandleRead, this));
 
-        if (!m_socket6) {
-            m_socket6 = Socket::CreateSocket(GetNode(), tid);
-            Inet6SocketAddress local = Inet6SocketAddress(Ipv6Address::GetAny(), m_port);
+        // 서버 초기화
+        m_socket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
+        InetSocketAddress local_ipv4 = InetSocketAddress(Ipv4Address::GetAny(), m_port);
 
-            if (m_socket6->Bind(local) == -1) {
-                NS_FATAL_ERROR("Failed to bind socket");
-            }
-            m_socket6->Listen();
-            m_socket6->SetRecvCallback(MakeCallback(&QuicKohServer::HandleRead, this));
+        if (m_socket->Bind(local_ipv4) == -1)
+        {
+            NS_FATAL_ERROR("Failed to bind socket");
         }
-        NS_LOG_UNCOND("server started");
+
+        m_socket->Listen();
+
+        // 새로운 연결이 들어오면 HandleAccept 호출
+        m_socket->SetRecvCallback (MakeCallback (&QuicKohServer::HandleRead, this));
+
+        NS_LOG_UNCOND("QUIC server started on port " << m_port);
 
     }
+
 
     void
     QuicKohServer::StopApplication() {
@@ -148,95 +153,56 @@ QuicKohServer::GetReceived (void) const
 
 
     void
-    QuicKohServer::HandleRead(Ptr<Socket> socket) {
-        Ptr<Packet> packet;
+QuicKohServer::HandleRead(Ptr<Socket> socket)
+{
+    // NS_LOG_UNCOND("QuicKohServer::HandleRead");
+
+
+    Ptr<Packet> packet;
         Address from;
-        Address localAddress;
-        while ((packet = socket->RecvFrom(from))) {
-            bool clientFound = false;
-            uint16_t clientId;
-            for (const auto &pair: clients) {
-                if (pair.second.address == from) {
-                    clientFound = true;
-                    clientId = pair.first;
-                    from = clients[clientId].address;
 
-                    break;
-                }
-            }
-            // 새 클라이언트 저장
-            if (!clientFound) {
-                std::cout << "new client detected" << std::endl;
-                uint16_t newId = m_nextClientId++;
-                clientInfo newClient;
-                newClient.address = from;
-                newClient.lastSequenceNum = 0;
-                newClient.connectionTime = Simulator::Now();
-                newClient.packetLossRate = 0;
-                newClient.RTT = 0;
-                newClient.totalBytesReceived = 0;
-                clients[newId] = newClient;
-                clientId = newId;
-            }
 
-            // 수신
-            socket->GetSockName(localAddress);
-            m_rxTrace(packet);
-            m_rxTraceWithAddresses(packet, from, localAddress);
-            if (packet->GetSize() > 0) {
-                uint32_t receivedSize = packet->GetSize();
-                SeqTsHeader seqTs;
-                packet->RemoveHeader(seqTs);
-                uint32_t currentSequenceNumber = seqTs.GetSeq();
-                if (InetSocketAddress::IsMatchingType(from)) {
-                    std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
-                            << InetSocketAddress::ConvertFrom(from).GetIpv4()
-                            << "port: " << InetSocketAddress::ConvertFrom(from).GetPort()
-                            << " Sequence Number: " << currentSequenceNumber
-                            << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
-                            << " RXtime: " << Simulator::Now()
-                            << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
-                } else if (Inet6SocketAddress::IsMatchingType(from)) {
-                    std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
-                            << Inet6SocketAddress::ConvertFrom(from).GetIpv6()
-                            << " port: " << Inet6SocketAddress::ConvertFrom(from).GetPort()
-                            << " Sequence Number: " << currentSequenceNumber
-                            << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
-                            << " RXtime: " << Simulator::Now()
-                            << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
-                }
+    while ((packet = socket->RecvFrom(from))) {
+        // 연결 종료 (0 바이트)
+        if (packet->GetSize() == 0) {
+            NS_LOG_UNCOND("👋 Server: Client disconnected.");
+            // 소켓 닫고 클라이언트 정보 제거
+            socket->Close();
+            break;
+        }
+        uint32_t receivedSize = packet->GetSize();
+        packet->RemoveAllPacketTags ();
+        packet->RemoveAllByteTags ();
 
-                m_lossCounter.NotifyReceived(currentSequenceNumber);
-                m_received++;
 
-                SendPacket(clientId, "good");
-                std::cout << "sent to client - clientId : " << clientId << std::endl;
-            }
+
+
+            SeqTsHeader seqTs;
+            uint32_t currentSequenceNumber = seqTs.GetSeq();
+
+                std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
+                          << InetSocketAddress::ConvertFrom(from).GetIpv4()
+                          << " port: " << InetSocketAddress::ConvertFrom(from).GetPort()
+                          << " Sequence Number: " << currentSequenceNumber
+                          << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
+                          << " RXtime: " << Simulator::Now()
+                          << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
+
+
+
+            m_received++;
+
+            SendPacket(socket, from, std::string("good"));
+            std::cout << "sent to client - socket ptr: " << socket << std::endl;
         }
     }
 
-    void
-    QuicKohServer::SendPacket(uint16_t clientId, std::string message) {
-        auto it = clients.find(clientId);
 
-        if (it == clients.end()) {
-            std::cout << "SendPacket failed: Client with ID " << clientId << " not found." << std::endl;
-            return;
-        }
-
-        Address destAddress = it->second.address;
-        Ptr<Packet> packet = Create<Packet>((uint8_t *) message.c_str(), message.length());
-
-        // if (InetSocketAddress::IsMatchingType(destAddress))
-        // {
-        //     // IPv4 주소일 경우 m_socket 사용
-        //     m_socket->SendTo(packet, 0, destAddress);
-        //     NS_LOG_INFO("Sent an IPv4 packet to client ID " << clientId);
-        // }
-        if (Inet6SocketAddress::IsMatchingType(destAddress)) {
-            // IPv6 주소일 경우 m_socket6 사용
-            m_socket6->SendTo(packet, 0, destAddress);
-            std::cout << "Sent an IPv6 packet to client ID " << clientId << std::endl;;
-        }
+void QuicKohServer::SendPacket(Ptr<Socket> socket, Address from, const std::string &message)
+    {
+        Ptr<Packet> packet = Create<Packet>((uint8_t*) message.c_str(), message.length());
+        socket->SendTo(packet,0,from);
     }
-} // Namespace ns3
+
+}
+ // Namespace ns3
