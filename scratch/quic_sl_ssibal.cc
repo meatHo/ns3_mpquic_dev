@@ -377,6 +377,7 @@ int main(void)
 
     NodeContainer rsuNodeContainer;
     rsuNodeContainer.Create(1);
+
     NodeContainer serverNodeContainer;
     serverNodeContainer.Create(1);
     NodeContainer ueNodeContainer;
@@ -384,6 +385,7 @@ int main(void)
     NodeContainer routerNodeContainer;
     routerNodeContainer.Create(1);
 
+    Ptr<Node> pgw = epcHelper->GetPgwNode(); // ipv4, Ipv4 둘다 설치되어 있음. 듀얼스택
     Ptr<Node> server = serverNodeContainer.Get(0);
     Ptr<Node> rsu = rsuNodeContainer.Get(0);
 
@@ -392,8 +394,10 @@ int main(void)
 
     MobilityHelper mobility;
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+
     mobility.Install(rsuNodeContainer);
     rsuNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4350.0, 70.0));
+
     mobility.Install(serverNodeContainer);
     serverNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(1900.0, 3800.0, 60.0));
@@ -413,22 +417,6 @@ int main(void)
     //     ueMobility->AddWaypoint(waypoint);
     // }
 
-
-
-    // Ptr<OhBuildingsPropagationLossModel> bldgLoss =
-    // CreateObject<OhBuildingsPropagationLossModel>();
-    //
-    // bldgLoss->SetAttribute("ShadowSigmaOutdoor", DoubleValue(6.0));
-    // bldgLoss->SetAttribute("ShadowSigmaIndoor", DoubleValue(7.0));
-    // bldgLoss->SetAttribute("ShadowSigmaExtWalls", DoubleValue(5.0));
-    // bldgLoss->SetAttribute("InternalWallLoss", DoubleValue(5.0));
-    //
-    // // NRHelper에 적용
-    // nrHelper->SetPathlossAttribute("PathlossModel", PointerValue(bldgLoss));
-
-
-
-    double ueTxPower = 23.0;
 
 
     // RSU, SL 기본 설정=======================================================
@@ -488,12 +476,14 @@ int main(void)
     NetDeviceContainer rsuNetDev =
         nrHelper->InstallUeDevice(rsuNodeContainer, RsuBwp, macSlFactory);
 
+
     // 설정 적용
     for (auto it = rsuNetDev.Begin(); it != rsuNetDev.End(); ++it)
     {
         DynamicCast<NrUeNetDevice>(*it)->UpdateConfig();
         // Update the RRC config.Must be called only once.
     }
+
 
     // ue안테나 설정
     NetDeviceContainer ueSlNetDev =
@@ -503,10 +493,11 @@ int main(void)
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
     nrHelper->SetUeAntennaAttribute("AntennaElement",
                                     PointerValue(CreateObject<IsotropicAntennaModel>()));
-    nrHelper->GetUePhy(ueSlNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
+    nrHelper->GetUePhy(ueSlNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(23));
 
     DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0))->UpdateConfig(); // todo: obu sl
 
+    //sidelink 설정
     NetDeviceContainer SlNetDev;
     SlNetDev.Add(ueSlNetDev);
     SlNetDev.Add(rsuNetDev);
@@ -615,12 +606,13 @@ int main(void)
     // ===============================================================================
 
     NodeContainer nodes(server);
-    NodeContainer routers(rsu, router);
+    NodeContainer routers(pgw, rsu, router);
 
     // 여기서 p2p를 쓸지 csma를 쓸지 결정해야할듯
     PointToPointHelper p2ph;
     p2ph.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
     p2ph.SetChannelAttribute("Delay", StringValue("10ms"));
+    NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
     NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
     NetDeviceContainer routerToServerNetDev = p2ph.Install(router,server);
 
@@ -631,6 +623,7 @@ int main(void)
     internet.Install(ueNodeContainer);
     internet.Install(nodes);
     internet.Install(routers);
+
 
     QuicHelper quic;
     quic.InstallQuic(ueNodeContainer);
@@ -647,6 +640,13 @@ int main(void)
     std::cout<<"rsuRouterIp : "<<rsuRouterIp<<std::endl;
     std::cout<<"routerRsuIp : "<<routerRsuIp<<std::endl;
 
+    // pgw router
+    Ipv4h.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer iic2 = Ipv4h.Assign(pgwToRouterNetDev); //10.1.1.2
+    Ipv4Address pgwRouterIp= iic2.GetAddress(0);
+    Ipv4Address routerPgwIp= iic2.GetAddress(1);
+    std::cout<<"pgwRouterIp : "<<pgwRouterIp<<std::endl;
+    std::cout<<"routerPgwIp : "<<routerPgwIp<<std::endl;
 
 
     // router server
@@ -657,7 +657,7 @@ int main(void)
     std::cout<<"serverRouterIp : "<<serverRouterIp<<std::endl;
     std::cout<<"routerServerIp : "<<routerServerIp<<std::endl;
 
-    // ue uu
+
 
     // ue sl
     // Ipv4InterfaceContainer ueSlIface = epcHelper->AssignUeIpv4Address(SlNetDev);
@@ -665,16 +665,19 @@ int main(void)
     Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
     Ipv4Address ueSlIp = ueSlIface.GetAddress(0);
     Ipv4Address rsuSlIp = ueSlIface.GetAddress(1);
+
     std::cout<<"ueSlIp : "<<ueSlIp<<std::endl;
     std::cout<<"rsuSlIp : "<<rsuSlIp<<std::endl;
+
 
 
     // 라우팅======================================================
     // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
-    //인터페이스 확인하는 코드=============================================================================
-    // Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
-    // Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
+
+    // //인터페이스 확인하는 코드=============================================================================
+    // Ptr<Ipv4> pgwIpv4 = ue->GetObject<Ipv4>();
+    // Ptr<NetDevice> deviceOnPgw = ueSlRsrpNetDev.Get(0);
     // uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
     // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
@@ -682,9 +685,11 @@ int main(void)
     uint32_t ueSlItf = 1;
     uint32_t rsuSlItf = 2;
     uint32_t rsuRouterItf = 1;
-    uint32_t routerServerItf = 2;
+    uint32_t routerServerItf = 3;
     uint32_t serverRouterItf = 1;
+    uint32_t routerPgwItf = 2;
     uint32_t routerRsuItf = 1;
+    uint32_t pgwRouterItf = 3;
 
 
 
@@ -710,7 +715,11 @@ int main(void)
     rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
 
 
+    Ptr<Ipv4StaticRouting> rsuRsrpStaticRouting =
+        Ipv4RoutingHelper.GetStaticRouting(rsuRsrp->GetObject<Ipv4>());
 
+    // 멀티캐스트 트래픽은 SL 인터페이스(rsuSlItf)로
+    rsuRsrpStaticRouting->SetDefaultMulticastRoute(0);
 
     // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
     // Ptr<Node> rsuNode = rsu;
@@ -736,7 +745,8 @@ int main(void)
     // }
 
     // pgw 라우팅
-
+    Ptr<Ipv4StaticRouting> pgwStaticRouting = Ipv4RoutingHelper.GetStaticRouting(pgw->GetObject<Ipv4>());
+    pgwStaticRouting->SetDefaultRoute(routerPgwIp, pgwRouterItf);
 
     // server 라우팅
     Ptr<Ipv4StaticRouting> serverStaticRouting = Ipv4RoutingHelper.GetStaticRouting(server->GetObject<Ipv4>());
@@ -751,7 +761,10 @@ int main(void)
     // router 라우팅
     Ptr<Ipv4StaticRouting> routerStaticRouting = Ipv4RoutingHelper.GetStaticRouting(router->GetObject<Ipv4>());
 
-
+    routerStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
+                                           Ipv4Mask("255.0.0.0"), // EPC망의 서브넷 마스크
+                                           pgwRouterIp,
+                                           /* 라우터의 PGW 방향 인터페이스 */routerPgwItf);
 
     // -> UE의 Sidelink망으로 가는 길은 RSU를 통한다.
     routerStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
@@ -785,15 +798,35 @@ int main(void)
     StackHelper stackHelper;
     stackHelper.PrintRoutingTable(router);
     stackHelper.PrintRoutingTable(rsu);
+    stackHelper.PrintRoutingTable(pgw);
+
+
+
+
+    // ueSlNetDev에서 첫 번째 디바이스(UE의 Sidelink 디바이스)를 가져옵니다.
+    Ptr<NrUeNetDevice> ueSlDevice = DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0));
+    // 해당 디바이스의 Sidelink RRC(Radio Resource Control) 객체에서 실제 L2ID를 조회합니다.
+    uint32_t actualUeL2Id = ueSlDevice->GetRrc()->GetSourceL2Id();
+
+    NS_LOG_UNCOND("UE's actual Sidelink L2ID is: " << actualUeL2Id);
+
+// sidelink 무선 베어러 설정 =====================================================================
+    // 기존의 복잡했던 tft 관련 코드를 모두 삭제하고 아래 코드로 대체하십시오.
+
+    // 1. 각 Sidelink 노드에 대한 고유 L2ID를 정의합니다. (동적 발견을 시뮬레이션)
+    // 255는 브로드캐스트/그룹캐스트를 위한 예약된 ID입니다.
+
+    // const uint32_t rsuL2Id = 2; // 참고용으로 정의 (현재 시나리오에서는 사용되지 않음)
+    // const uint32_t rsuRsrpL2Id = 3; // 참고용으로 정의 (현재 시나리오에서는 사용되지 않음)
 
     // sidelink 무선 베어러 설정=====================================================================
     Ptr<LteSlTft> tft;
-    uint32_t dstL2Id = 255;
+    uint32_t broadcastL2Id = 255;
     Time delayBudget = Seconds(0);
 
     SidelinkInfo slInfo;
     slInfo.m_castType = SidelinkInfo::CastType::Groupcast;
-    slInfo.m_dstL2Id = dstL2Id;
+    slInfo.m_dstL2Id = broadcastL2Id;
     slInfo.m_rri = MilliSeconds(100);
     slInfo.m_pdb = delayBudget;
     slInfo.m_dynamic = false;
@@ -803,21 +836,22 @@ int main(void)
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft);
 
     // sidelink 무선 베어러 설정=====================================================================
-    Ptr<LteSlTft> tft1;
 
     SidelinkInfo slInfo1;
     slInfo1.m_castType = SidelinkInfo::CastType::Unicast;
-    slInfo1.m_dstL2Id = dstL2Id;
+    slInfo1.m_dstL2Id = 255;
     slInfo1.m_rri = MilliSeconds(100);
     slInfo1.m_pdb = delayBudget;
     slInfo1.m_dynamic = false;
     slInfo1.m_harqEnabled = true;
 
+    Ptr<LteSlTft> tft1;
     tft1 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft1);
 
-
-
+    Ptr<LteSlTft> tft2;
+    tft2 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuRsrpNetDev, tft2);
 
     // sidelink 무선 베어러 설정 끝=====================================================================
 
@@ -828,6 +862,8 @@ int main(void)
         Ptr<NrUePhy> phy = ueDev->GetPhy(0);
         phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
     }
+
+
 
     //  todo: 앱설치 =============================================================
     ApplicationContainer ueAppContainer;
@@ -844,7 +880,7 @@ int main(void)
     Ptr<QuicKohServer> serverApp = CreateObject<QuicKohServer>();
     server->AddApplication(serverApp);
     serverApp->SetAttribute("Port", UintegerValue(serverPort));
-    serverApp->SetStartTime(Seconds(1.5));
+    serverApp->SetStartTime(Seconds(1.0));
     serverApp->SetStopTime(simTime);
 
     Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
@@ -857,11 +893,24 @@ int main(void)
     clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
 
     ue->AddApplication(clientApp);
-    clientApp->SetStartTime(Seconds(2.0));
+    clientApp->SetStartTime(Seconds(1.5));
     clientApp->SetStopTime(simTime);
 
+    // rsu 애플리케이션
+    Ptr<OnOffApplication> rsuApp = CreateObject<OnOffApplication>();
 
+    rsuApp->SetAttribute("PacketSize", UintegerValue(1));
+    rsuApp->SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=0.01]"));
+    rsuApp->SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0.09]"));
+    rsuApp->SetAttribute("Protocol", TypeIdValue(UdpSocketFactory::GetTypeId()));
+    Address remoteAddress(InetSocketAddress(ueSlIp, 8734));
+    rsuApp->SetAttribute("Remote", AddressValue(remoteAddress));
+    Address local(InetSocketAddress(rsuRsrpSlIp, 8734));
+    rsuApp->SetAttribute("Local", AddressValue(local));
 
+    rsuRsrp->AddApplication(rsuApp);
+    rsuApp->SetStartTime(Seconds(1.5));
+    rsuApp->SetStopTime(simTime);
 
 
 
@@ -870,8 +919,8 @@ int main(void)
 
 
     // 인터페이스 바꾸는거 그냥 예시
-    clientApp->setInterface(ueSlNetDev.Get(0), ueSlNetDev.Get(0));
-    // Simulator::Schedule(Seconds(5.0), &QuicKohClient::changeInterface, clientApp);
+    clientApp->setInterface(ueUuNetDev.Get(0), ueSlNetDev.Get(0));
+    Simulator::Schedule(Seconds(5.0), &QuicKohClient::changeInterface, clientApp);
 
     Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
     for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)
@@ -903,17 +952,17 @@ int main(void)
     //                           "/$ns3::Ipv4L3Protocol/Rx",
     //                       MakeCallback(&Ipv4PacketTraceAtUe));
 
-    // // // Uu PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
-    // Ptr<NrUeNetDevice> ueUuDev = DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0));
-    // // Get the first PHY (BWP) from the Uu NetDevice
-    // Ptr<NrUePhy> ueUuPhy = ueUuDev->GetPhy(0);
-    // ueUuPhy->TraceConnectWithoutContext("ReportRsrp", MakeCallback(&UeMeasCallback));
-    //
     // // Uu PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
-    // Ptr<NrUeNetDevice> rsutemp = DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0));
-    // // Get the first PHY (BWP) from the Uu NetDevice
-    // Ptr<NrUePhy> rsutemp2 = rsutemp->GetPhy(0);
-    // rsutemp2->TraceConnectWithoutContext("ReportSlRsrp", MakeCallback(&UeSlMeasCallback));
+    Ptr<NrUeNetDevice> ueUuDev = DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0));
+    // Get the first PHY (BWP) from the Uu NetDevice
+    Ptr<NrUePhy> ueUuPhy = ueUuDev->GetPhy(0);
+    ueUuPhy->TraceConnectWithoutContext("ReportRsrp", MakeCallback(&UeMeasCallback));
+
+    // sl PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
+    Ptr<NrUeNetDevice> rsutemp = DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0));
+    // Get the first PHY (BWP) from the Uu NetDevice
+    Ptr<NrUePhy> rsutemp2 = rsutemp->GetPhy(0);
+    rsutemp2->TraceConnectWithoutContext("ReportSlRsrp", MakeCallback(&UeSlMeasCallback));
 
     Simulator::Schedule(Seconds(0.0), &PrintUeInfo, ueNodeContainer.Get(0));
 
@@ -937,7 +986,6 @@ int main(void)
     // LogComponentEnable("QuicHeader", LOG_LEVEL_FUNCTION);
     //   LogComponentEnable("QuicStreamBase", LOG_LEVEL_INFO);
     // LogComponentEnable("QuicStreamBase", LOG_LEVEL_FUNCTION);
-
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);

@@ -110,6 +110,7 @@ QuicKohClient::QuicKohClient()
     m_sendSocket = nullptr;
     m_sendEvent = EventId();
     m_lastUsedStream = 1;
+    m_slSocketConnected=false;
 }
 
 QuicKohClient::~QuicKohClient()
@@ -122,18 +123,18 @@ QuicKohClient::StartApplication()
 {
     NS_LOG_FUNCTION(this);
 
-    TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
-    //  소켓 설정 rsrp
-    m_rsrpSocket = Socket::CreateSocket(GetNode(), tid);
-    m_rsrpSocket->BindToNetDevice(m_devSl);
+    // TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
+    // //  소켓 설정 rsrp
+    // m_rsrpSocket = Socket::CreateSocket(GetNode(), tid);
+    // m_rsrpSocket->BindToNetDevice(m_devSl);
 
 
-    // listening 소켓 설정
-    m_recvSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
-    if (m_recvSocket->Bind() == -1)
-    {
-        NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
-    }
+    // // listening 소켓 설정
+    // m_recvSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
+    // if (m_recvSocket->Bind() == -1)
+    // {
+    //     NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
+    // }
 
     // Uu 소켓 설정
     m_uuSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
@@ -153,19 +154,19 @@ QuicKohClient::StartApplication()
 
     // Sl 소켓 설정
     m_slSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
-    m_slSocket->Bind();
-    m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
-    if (Ipv6Address::IsMatchingType(m_slServerAddress))
-    {
-        NS_LOG_UNCOND("sl socket connection started");
-        m_slSocket->Connect(
-            Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
-    }else
-    {
-        NS_LOG_UNCOND("sl ipv4 socket connection started");
-        m_slSocket->Connect(
-            InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
-    }
+    // m_slSocket->Bind();
+    // m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
+    // if (Ipv6Address::IsMatchingType(m_slServerAddress))
+    // {
+    //     NS_LOG_UNCOND("sl socket connection started");
+    //     m_slSocket->Connect(
+    //         Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+    // }else
+    // {
+    //     NS_LOG_UNCOND("sl ipv4 socket connection started");
+    //     m_slSocket->Connect(
+    //         InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+    // }
 
     // 수신 콜백 설정 (양방향 통신 시 필요)
     m_uuSocket->SetRecvCallback(MakeCallback(&QuicKohClient::HandleRecv, this));
@@ -303,6 +304,24 @@ QuicKohClient::changeInterface()
         // NS_LOG_UNCOND("Route ADDED: Dst=" << m_slServerAddress << " via " << m_slNextHopIp);
 
         // 2. 전송 소켓을 SL 소켓으로 변경
+
+        if (!m_slSocketConnected)
+        {
+            NS_LOG_UNCOND("First time using SL socket. Binding and Connecting...");
+            m_slSocket->Bind();
+            m_slSocket->BindToNetDevice(m_devSl);
+            if (Ipv6Address::IsMatchingType(m_slServerAddress))
+            {
+                m_slSocket->Connect(
+                    Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+            }
+            else
+            {
+                m_slSocket->Connect(
+                    InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+            }
+            m_slSocketConnected = true; // 연결되었음을 표시
+        }
         m_sendSocket = m_slSocket;
     }
     else
@@ -337,6 +356,10 @@ QuicKohClient::changeInterface()
 
         // 2. 전송 소켓을 Uu 소켓으로 다시 변경 (Default Route를 따름)
         m_sendSocket = m_uuSocket;
+
+        // NS_LOG_UNCOND("sl ipv4 socket connection started");
+        // m_uuSocket->Connect(
+        //     InetSocketAddress(Ipv4Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
     }
 }
 

@@ -384,6 +384,8 @@ int main(void)
     serverNodeContainer.Create(1);
     NodeContainer ueNodeContainer;
     ueNodeContainer.Create(1);
+    NodeContainer ueRsrpNodeContainer;
+    ueRsrpNodeContainer.Create(1);
     NodeContainer routerNodeContainer;
     routerNodeContainer.Create(1);
 
@@ -393,6 +395,7 @@ int main(void)
     Ptr<Node> rsuRsrp = rsuRsrpNodeContainer.Get(0);
     Ptr<Node> gnb = gnbNodeContainer.Get(0);
     Ptr<Node> ue = ueNodeContainer.Get(0);
+    Ptr<Node> ueRsrp = ueRsrpNodeContainer.Get(0);
     Ptr<Node> router = routerNodeContainer.Get(0);
 
     MobilityHelper mobility;
@@ -412,6 +415,8 @@ int main(void)
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(ueNodeContainer);
     ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
+    mobility.Install(ueRsrpNodeContainer);
+    ueRsrpNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
     // Ptr<WaypointMobilityModel> ueMobility =
     //     ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
     //
@@ -572,24 +577,33 @@ int main(void)
     NetDeviceContainer ueSlNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, RsuBwp, macSlFactory);
 
+    NetDeviceContainer ueRsrpSlNetDev =
+        nrHelper->InstallUeDevice(ueRsrpNodeContainer, RsuBwp, macSlFactory);
+
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
     nrHelper->SetUeAntennaAttribute("AntennaElement",
                                     PointerValue(CreateObject<IsotropicAntennaModel>()));
     nrHelper->GetUePhy(ueSlNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
+    nrHelper->GetUePhy(ueRsrpSlNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
 
     DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0))->UpdateConfig(); // todo: obu sl
+    DynamicCast<NrUeNetDevice>(ueRsrpSlNetDev.Get(0))->UpdateConfig(); // todo: obu sl
 
     //sidelink 설정
     NetDeviceContainer SlNetDev;
     SlNetDev.Add(ueSlNetDev);
     SlNetDev.Add(rsuNetDev);
-    SlNetDev.Add(rsuRsrpNetDev);
+
+    NetDeviceContainer SlRsrpNetDev;
+    SlRsrpNetDev.Add(ueRsrpSlNetDev);
+    SlRsrpNetDev.Add(rsuRsrpNetDev);
 
     nrSlHelper->SetNrSlSchedulerTypeId(NrSlUeMacSchedulerFixedMcs::GetTypeId());
     nrSlHelper->SetUeSlSchedulerAttribute("Mcs", UintegerValue(14));
 
     nrSlHelper->PrepareUeForSidelink(SlNetDev, bwpIdContainer);
+    nrSlHelper->PrepareUeForSidelink(SlRsrpNetDev, bwpIdContainer);
 
     LteRrcSap::SlResourcePoolNr slResourcePoolNr;
     // get it from pool factory
@@ -685,6 +699,7 @@ int main(void)
     slPreConfigNr.slPreconfigFreqInfoList[0] = slFreConfigCommonNr;
 
     nrSlHelper->InstallNrSlPreConfiguration(SlNetDev, slPreConfigNr);
+    nrSlHelper->InstallNrSlPreConfiguration(SlRsrpNetDev, slPreConfigNr);
 
     // 진짜 시작todo:
     // ===============================================================================
@@ -705,6 +720,8 @@ int main(void)
     // 인터넷 설정
     InternetStackHelper internet;
     internet.Install(ueNodeContainer);
+    internet.Install(ueRsrpNodeContainer);
+
     internet.Install(nodes);
     internet.Install(routers);
     internet.Install(rsuRsrp);
@@ -748,13 +765,18 @@ int main(void)
     // ue sl
     // Ipv4InterfaceContainer ueSlIface = epcHelper->AssignUeIpv4Address(SlNetDev);
     Ipv4h.SetBase("192.168.10.0", "255.255.255.0");
-    Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
-    Ipv4Address ueSlIp = ueSlIface.GetAddress(0);
-    Ipv4Address rsuSlIp = ueSlIface.GetAddress(1);
-    Ipv4Address rsuRsrpSlIp = ueSlIface.GetAddress(2);
+    Ipv4InterfaceContainer SlIface = Ipv4h.Assign(SlNetDev);
+    Ipv4Address ueSlIp = SlIface.GetAddress(0);
+    Ipv4Address rsuSlIp = SlIface.GetAddress(1);
     std::cout<<"ueSlIp : "<<ueSlIp<<std::endl;
     std::cout<<"rsuSlIp : "<<rsuSlIp<<std::endl;
-    std::cout<<"rsuRsrpSlIp : "<<rsuRsrpSlIp<<std::endl;
+
+    Ipv4h.SetBase("100.128.10.0", "255.255.255.0");
+    Ipv4InterfaceContainer rsrpSlIface = Ipv4h.Assign(SlRsrpNetDev);
+    Ipv4Address ueRsrpSlIp = rsrpSlIface.GetAddress(0);
+    Ipv4Address rsuRsrpSlIp = rsrpSlIface.GetAddress(1);
+    std::cout<<"ueRsrpSlIp : "<<ueSlIp<<std::endl;
+    std::cout<<"rsuRsrpSlIp : "<<rsuSlIp<<std::endl;
 
 
     // 라우팅======================================================
@@ -803,11 +825,10 @@ int main(void)
     rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
 
 
+    //rsu rsrp라우팅
     Ptr<Ipv4StaticRouting> rsuRsrpStaticRouting =
         Ipv4RoutingHelper.GetStaticRouting(rsuRsrp->GetObject<Ipv4>());
-
-    // 멀티캐스트 트래픽은 SL 인터페이스(rsuSlItf)로
-    rsuRsrpStaticRouting->SetDefaultMulticastRoute(0);
+    rsuRsrpStaticRouting->SetDefaultRoute(ueRsrpSlIp,0);
 
     // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
     // Ptr<Node> rsuNode = rsu;
@@ -938,7 +959,7 @@ int main(void)
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft1);
 
     Ptr<LteSlTft> tft2;
-    tft2 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
+    tft2 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueRsrpSlIp, slInfo1);
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuRsrpNetDev, tft2);
 
     // sidelink 무선 베어러 설정 끝=====================================================================
@@ -947,6 +968,13 @@ int main(void)
     for (uint32_t i = 0; i < SlNetDev.GetN(); ++i)
     {
         Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(SlNetDev.Get(i));
+        Ptr<NrUePhy> phy = ueDev->GetPhy(0);
+        phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
+    }
+
+    for (uint32_t i = 0; i < SlRsrpNetDev.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(SlRsrpNetDev.Get(i));
         Ptr<NrUePhy> phy = ueDev->GetPhy(0);
         phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
     }
@@ -991,7 +1019,7 @@ int main(void)
     rsuApp->SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=0.01]"));
     rsuApp->SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0.09]"));
     rsuApp->SetAttribute("Protocol", TypeIdValue(UdpSocketFactory::GetTypeId()));
-    Address remoteAddress(InetSocketAddress(ueSlIp, 8734));
+    Address remoteAddress(InetSocketAddress(ueRsrpSlIp, 8734));
     rsuApp->SetAttribute("Remote", AddressValue(remoteAddress));
     Address local(InetSocketAddress(rsuRsrpSlIp, 8734));
     rsuApp->SetAttribute("Local", AddressValue(local));

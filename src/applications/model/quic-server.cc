@@ -175,6 +175,7 @@ QuicServer::HandleRead (Ptr<Socket> socket)
       if (packet->GetSize () > 0)
         {
           m_received++;
+          NS_LOG_UNCOND("serverㅔ서 받음");
         }
     }
 }

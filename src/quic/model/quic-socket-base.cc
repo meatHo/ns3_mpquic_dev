@@ -2630,7 +2630,7 @@ void
 QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
                               Address &address)
 {
-    // NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
+    NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
   NS_LOG_FUNCTION (this);
 
   m_rxTrace (p, quicHeader, this);
@@ -2683,7 +2683,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
     }
   else if (quicHeader.IsInitial () and m_socketState == CONNECTING_SVR)
     {
-      NS_LOG_INFO ("Server receives INITIAL");
+      NS_LOG_UNCOND ("Server receives INITIAL");
       if (m_serverBusy)
         {
           AbortConnection (QuicSubheader::TransportErrorCodes_t::SERVER_BUSY,
@@ -2721,7 +2721,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
     }
   else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_CLT)   // Undefined compiler behaviour if i try to receive transport parameters
     {
-      NS_LOG_INFO ("Client receives HANDSHAKE");
+      NS_LOG_UNCOND ("Client receives HANDSHAKE");
 
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
       m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
@@ -2737,7 +2737,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
     }
   else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_SVR)
     {
-      NS_LOG_INFO ("Server receives HANDSHAKE");
+      NS_LOG_UNCOND ("Server receives HANDSHAKE");
 
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
       m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
@@ -2752,7 +2752,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
   else if (quicHeader.IsVersionNegotiation ()
            and m_socketState == CONNECTING_CLT)
     {
-      NS_LOG_INFO ("Client receives VERSION_NEGOTIATION");
+      NS_LOG_UNCOND ("Client receives VERSION_NEGOTIATION");
 
       uint8_t *buffer = new uint8_t[p->GetSize ()];
       p->CopyData (buffer, p->GetSize ());

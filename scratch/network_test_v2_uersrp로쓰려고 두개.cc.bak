@@ -572,24 +572,33 @@ int main(void)
     NetDeviceContainer ueSlNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, RsuBwp, macSlFactory);
 
+    NetDeviceContainer ueSlRsrpNetDev =
+    nrHelper->InstallUeDevice(ueNodeContainer, RsuBwp, macSlFactory);
+
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
     nrHelper->SetUeAntennaAttribute("AntennaElement",
                                     PointerValue(CreateObject<IsotropicAntennaModel>()));
     nrHelper->GetUePhy(ueSlNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
+    nrHelper->GetUePhy(ueSlRsrpNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
 
     DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0))->UpdateConfig(); // todo: obu sl
+    DynamicCast<NrUeNetDevice>(ueSlRsrpNetDev.Get(0))->UpdateConfig(); // todo: obu sl
 
     //sidelink 설정
     NetDeviceContainer SlNetDev;
     SlNetDev.Add(ueSlNetDev);
     SlNetDev.Add(rsuNetDev);
-    SlNetDev.Add(rsuRsrpNetDev);
+
+    NetDeviceContainer rsrpSlNetDev;
+    rsrpSlNetDev.Add(rsuRsrpNetDev);
+    rsrpSlNetDev.Add(ueSlRsrpNetDev);
 
     nrSlHelper->SetNrSlSchedulerTypeId(NrSlUeMacSchedulerFixedMcs::GetTypeId());
     nrSlHelper->SetUeSlSchedulerAttribute("Mcs", UintegerValue(14));
 
     nrSlHelper->PrepareUeForSidelink(SlNetDev, bwpIdContainer);
+    nrSlHelper->PrepareUeForSidelink(rsrpSlNetDev, bwpIdContainer);
 
     LteRrcSap::SlResourcePoolNr slResourcePoolNr;
     // get it from pool factory
@@ -685,6 +694,7 @@ int main(void)
     slPreConfigNr.slPreconfigFreqInfoList[0] = slFreConfigCommonNr;
 
     nrSlHelper->InstallNrSlPreConfiguration(SlNetDev, slPreConfigNr);
+    nrSlHelper->InstallNrSlPreConfiguration(rsrpSlNetDev, slPreConfigNr);
 
     // 진짜 시작todo:
     // ===============================================================================
@@ -751,21 +761,27 @@ int main(void)
     Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
     Ipv4Address ueSlIp = ueSlIface.GetAddress(0);
     Ipv4Address rsuSlIp = ueSlIface.GetAddress(1);
-    Ipv4Address rsuRsrpSlIp = ueSlIface.GetAddress(2);
     std::cout<<"ueSlIp : "<<ueSlIp<<std::endl;
     std::cout<<"rsuSlIp : "<<rsuSlIp<<std::endl;
+
+    Ipv4h.SetBase("11.128.10.0", "255.255.255.0");
+    Ipv4InterfaceContainer ueRsrpSlIface = Ipv4h.Assign(rsrpSlNetDev);
+    Ipv4Address rsuRsrpSlIp = ueRsrpSlIface.GetAddress(0);
+    Ipv4Address ueSlRsrpIp = ueRsrpSlIface.GetAddress(1);
+
     std::cout<<"rsuRsrpSlIp : "<<rsuRsrpSlIp<<std::endl;
+    std::cout<<"ueSlRsrpIp : "<<ueSlRsrpIp<<std::endl;
 
 
     // 라우팅======================================================
     // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
-    // //인터페이스 확인하는 코드=============================================================================
-    // Ptr<Ipv4> pgwIpv4 = ue->GetObject<Ipv4>();
-    // Ptr<NetDevice> deviceOnPgw = ueSlRsrpNetDev.Get(0);
-    // uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
-    // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
+    //인터페이스 확인하는 코드=============================================================================
+    Ptr<Ipv4> pgwIpv4 = ue->GetObject<Ipv4>();
+    Ptr<NetDevice> deviceOnPgw = ueSlRsrpNetDev.Get(0);
+    uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
+    std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
     uint32_t ueUuItf = 1;
@@ -803,11 +819,7 @@ int main(void)
     rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
 
 
-    Ptr<Ipv4StaticRouting> rsuRsrpStaticRouting =
-        Ipv4RoutingHelper.GetStaticRouting(rsuRsrp->GetObject<Ipv4>());
 
-    // 멀티캐스트 트래픽은 SL 인터페이스(rsuSlItf)로
-    rsuRsrpStaticRouting->SetDefaultMulticastRoute(0);
 
     // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
     // Ptr<Node> rsuNode = rsu;
@@ -938,9 +950,12 @@ int main(void)
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft1);
 
     Ptr<LteSlTft> tft2;
-    tft2 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
+    tft2 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlRsrpIp, slInfo1);
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuRsrpNetDev, tft2);
 
+    Ptr<LteSlTft> tft3;
+    tft3 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, rsuRsrpSlIp, slInfo1);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlRsrpNetDev, tft3);
     // sidelink 무선 베어러 설정 끝=====================================================================
 
 
@@ -951,7 +966,12 @@ int main(void)
         phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
     }
 
-
+    for (uint32_t i = 0; i < rsrpSlNetDev.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(rsrpSlNetDev.Get(i));
+        Ptr<NrUePhy> phy = ueDev->GetPhy(0);
+        phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
+    }
 
     //  todo: 앱설치 =============================================================
     ApplicationContainer ueAppContainer;
@@ -991,12 +1011,12 @@ int main(void)
     rsuApp->SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=0.01]"));
     rsuApp->SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0.09]"));
     rsuApp->SetAttribute("Protocol", TypeIdValue(UdpSocketFactory::GetTypeId()));
-    Address remoteAddress(InetSocketAddress(ueSlIp, 8734));
+    Address remoteAddress(InetSocketAddress(ueSlRsrpIp, 8734));
     rsuApp->SetAttribute("Remote", AddressValue(remoteAddress));
     Address local(InetSocketAddress(rsuRsrpSlIp, 8734));
     rsuApp->SetAttribute("Local", AddressValue(local));
 
-    rsuRsrp->AddApplication(rsuApp);
+    // rsuRsrp->AddApplication(rsuApp);
     rsuApp->SetStartTime(Seconds(1.5));
     rsuApp->SetStopTime(simTime);
 
@@ -1024,7 +1044,7 @@ int main(void)
 
     // RSU 노드의 Ipv4 L3 프로토콜의 "Rx" Trace Source에 콜백 함수를 연결합니다.
     // "Rx"는 IP 계층에서 패킷을 수신하는 이벤트입니다.
-    Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsu->GetId()) +
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsuRsrp->GetId()) +
                                       "/$ns3::Ipv4L3Protocol/Rx",
                                   MakeCallback(&Ipv4PacketTraceAtRsu));
     // Config::ConnectWithoutContext("/NodeList/" + std::to_string(pgw->GetId()) +
@@ -1047,7 +1067,7 @@ int main(void)
     ueUuPhy->TraceConnectWithoutContext("ReportRsrp", MakeCallback(&UeMeasCallback));
 
     // sl PHY에서 RSRP 측정 콜백 연결 (gNb와의 Uu 통신)
-    Ptr<NrUeNetDevice> rsutemp = DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(0));
+    Ptr<NrUeNetDevice> rsutemp = DynamicCast<NrUeNetDevice>(ueSlRsrpNetDev.Get(0));
     // Get the first PHY (BWP) from the Uu NetDevice
     Ptr<NrUePhy> rsutemp2 = rsutemp->GetPhy(0);
     rsutemp2->TraceConnectWithoutContext("ReportSlRsrp", MakeCallback(&UeSlMeasCallback));
@@ -1074,6 +1094,7 @@ int main(void)
     // LogComponentEnable("QuicHeader", LOG_LEVEL_FUNCTION);
     //   LogComponentEnable("QuicStreamBase", LOG_LEVEL_INFO);
     // LogComponentEnable("QuicStreamBase", LOG_LEVEL_FUNCTION);
+
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);

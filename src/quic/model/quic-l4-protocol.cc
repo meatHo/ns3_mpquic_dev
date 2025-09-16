@@ -445,7 +445,7 @@ QuicL4Protocol::GetAuthAddresses () const
 void
 QuicL4Protocol::ForwardUp (Ptr<Socket> sock)
 {
-    // NS_LOG_UNCOND("QuicL4Protocol::ForwardUp");
+    NS_LOG_UNCOND("QuicL4Protocol::ForwardUp");
   NS_LOG_FUNCTION (this);
 
   Address from;
@@ -526,10 +526,11 @@ QuicL4Protocol::ForwardUp (Ptr<Socket> sock)
 
       if (header.IsInitial () and m_isServer and !socket)
         {
-          NS_LOG_LOGIC (this << " Cloning listening socket " << m_quicUdpBindingList.front ()->m_quicSocket);
+          NS_LOG_UNCOND (this << " Cloning listening socket " << m_quicUdpBindingList.front ()->m_quicSocket);
           socket = CloneSocket (m_quicUdpBindingList.front ()->m_quicSocket);
           socket->SetConnectionId (connectionId);
-          socket->Connect (from);
+          int retval = socket->Connect (from);
+          NS_LOG_UNCOND(InetSocketAddress::ConvertFrom(from).GetIpv4()<<"  retval : "<<retval);
           socket->SetupCallback ();
 
         }

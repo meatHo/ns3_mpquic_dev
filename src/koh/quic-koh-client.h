@@ -66,7 +66,7 @@ namespace ns3
         uint16_t m_uuServerPort;
         Ptr<NetDevice> m_devUu, m_devSl;
 
-
+        bool m_slSocketConnected;
         // uint8_t m_tos;
         EventId m_sendEvent;
         uint32_t m_numStreams;

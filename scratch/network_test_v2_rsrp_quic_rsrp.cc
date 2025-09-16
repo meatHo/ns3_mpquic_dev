@@ -368,7 +368,7 @@ int main(void)
     NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV.");
 
     // ns3 세팅 시작
-    Time simTime = Seconds(10);
+    Time simTime = Seconds(93);
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
@@ -378,8 +378,6 @@ int main(void)
     gnbNodeContainer.Create(1);
     NodeContainer rsuNodeContainer;
     rsuNodeContainer.Create(1);
-    NodeContainer rsuRsrpNodeContainer;
-    rsuRsrpNodeContainer.Create(1);
     NodeContainer serverNodeContainer;
     serverNodeContainer.Create(1);
     NodeContainer ueNodeContainer;
@@ -390,7 +388,6 @@ int main(void)
     Ptr<Node> pgw = epcHelper->GetPgwNode(); // ipv4, Ipv4 둘다 설치되어 있음. 듀얼스택
     Ptr<Node> server = serverNodeContainer.Get(0);
     Ptr<Node> rsu = rsuNodeContainer.Get(0);
-    Ptr<Node> rsuRsrp = rsuRsrpNodeContainer.Get(0);
     Ptr<Node> gnb = gnbNodeContainer.Get(0);
     Ptr<Node> ue = ueNodeContainer.Get(0);
     Ptr<Node> router = routerNodeContainer.Get(0);
@@ -401,26 +398,24 @@ int main(void)
     gnbNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900, 4288, 80.0));
     mobility.Install(rsuNodeContainer);
     rsuNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4350.0, 70.0));
-    mobility.Install(rsuRsrpNodeContainer);
-    rsuRsrpNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4350.0, 70.0));
     mobility.Install(serverNodeContainer);
     serverNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(1900.0, 3800.0, 60.0));
     mobility.Install(routerNodeContainer);
     routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,70.0));
 
-    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    mobility.SetMobilityModel("ns3::WaypointMobilityModel");
     mobility.Install(ueNodeContainer);
     ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
-    // Ptr<WaypointMobilityModel> ueMobility =
-    //     ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
-    //
-    // // 읽어온 CSV 데이터를 Waypoint로 추가
-    // for (const auto& data : waypoints)
-    // {
-    //     Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
-    //     ueMobility->AddWaypoint(waypoint);
-    // }
+    Ptr<WaypointMobilityModel> ueMobility =
+        ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
+
+    // 읽어온 CSV 데이터를 Waypoint로 추가
+    for (const auto& data : waypoints)
+    {
+        Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
+        ueMobility->AddWaypoint(waypoint);
+    }
 
     // gnb bwp 설정
 
@@ -552,8 +547,7 @@ int main(void)
 
     NetDeviceContainer rsuNetDev =
         nrHelper->InstallUeDevice(rsuNodeContainer, RsuBwp, macSlFactory);
-    NetDeviceContainer rsuRsrpNetDev =
-    nrHelper->InstallUeDevice(rsuRsrpNodeContainer, RsuBwp, macSlFactory);
+
 
     // 설정 적용
     for (auto it = rsuNetDev.Begin(); it != rsuNetDev.End(); ++it)
@@ -561,16 +555,12 @@ int main(void)
         DynamicCast<NrUeNetDevice>(*it)->UpdateConfig();
         // Update the RRC config.Must be called only once.
     }
-    // 설정 적용
-    for (auto it = rsuRsrpNetDev.Begin(); it != rsuRsrpNetDev.End(); ++it)
-    {
-        DynamicCast<NrUeNetDevice>(*it)->UpdateConfig();
-        // Update the RRC config.Must be called only once.
-    }
+
 
     // ue안테나 설정
     NetDeviceContainer ueSlNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, RsuBwp, macSlFactory);
+
 
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
@@ -584,7 +574,7 @@ int main(void)
     NetDeviceContainer SlNetDev;
     SlNetDev.Add(ueSlNetDev);
     SlNetDev.Add(rsuNetDev);
-    SlNetDev.Add(rsuRsrpNetDev);
+
 
     nrSlHelper->SetNrSlSchedulerTypeId(NrSlUeMacSchedulerFixedMcs::GetTypeId());
     nrSlHelper->SetUeSlSchedulerAttribute("Mcs", UintegerValue(14));
@@ -707,7 +697,6 @@ int main(void)
     internet.Install(ueNodeContainer);
     internet.Install(nodes);
     internet.Install(routers);
-    internet.Install(rsuRsrp);
 
     QuicHelper quic;
     quic.InstallQuic(ueNodeContainer);
@@ -751,21 +740,21 @@ int main(void)
     Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
     Ipv4Address ueSlIp = ueSlIface.GetAddress(0);
     Ipv4Address rsuSlIp = ueSlIface.GetAddress(1);
-    Ipv4Address rsuRsrpSlIp = ueSlIface.GetAddress(2);
     std::cout<<"ueSlIp : "<<ueSlIp<<std::endl;
     std::cout<<"rsuSlIp : "<<rsuSlIp<<std::endl;
-    std::cout<<"rsuRsrpSlIp : "<<rsuRsrpSlIp<<std::endl;
+
+
 
 
     // 라우팅======================================================
     // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
-    // //인터페이스 확인하는 코드=============================================================================
-    // Ptr<Ipv4> pgwIpv4 = ue->GetObject<Ipv4>();
-    // Ptr<NetDevice> deviceOnPgw = ueSlRsrpNetDev.Get(0);
-    // uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
-    // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
+    //인터페이스 확인하는 코드=============================================================================
+    Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
+    Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
+    uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
+    std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
     uint32_t ueUuItf = 1;
@@ -803,11 +792,7 @@ int main(void)
     rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
 
 
-    Ptr<Ipv4StaticRouting> rsuRsrpStaticRouting =
-        Ipv4RoutingHelper.GetStaticRouting(rsuRsrp->GetObject<Ipv4>());
 
-    // 멀티캐스트 트래픽은 SL 인터페이스(rsuSlItf)로
-    rsuRsrpStaticRouting->SetDefaultMulticastRoute(0);
 
     // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
     // Ptr<Node> rsuNode = rsu;
@@ -937,9 +922,6 @@ int main(void)
     tft1 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft1);
 
-    Ptr<LteSlTft> tft2;
-    tft2 = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, ueSlIp, slInfo1);
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuRsrpNetDev, tft2);
 
     // sidelink 무선 베어러 설정 끝=====================================================================
 
@@ -950,8 +932,6 @@ int main(void)
         Ptr<NrUePhy> phy = ueDev->GetPhy(0);
         phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
     }
-
-
 
     //  todo: 앱설치 =============================================================
     ApplicationContainer ueAppContainer;
@@ -993,10 +973,8 @@ int main(void)
     rsuApp->SetAttribute("Protocol", TypeIdValue(UdpSocketFactory::GetTypeId()));
     Address remoteAddress(InetSocketAddress(ueSlIp, 8734));
     rsuApp->SetAttribute("Remote", AddressValue(remoteAddress));
-    Address local(InetSocketAddress(rsuRsrpSlIp, 8734));
-    rsuApp->SetAttribute("Local", AddressValue(local));
 
-    rsuRsrp->AddApplication(rsuApp);
+    rsu->AddApplication(rsuApp);
     rsuApp->SetStartTime(Seconds(1.5));
     rsuApp->SetStopTime(simTime);
 
@@ -1008,7 +986,7 @@ int main(void)
 
     // 인터페이스 바꾸는거 그냥 예시
     clientApp->setInterface(ueUuNetDev.Get(0), ueSlNetDev.Get(0));
-    Simulator::Schedule(Seconds(5.0), &QuicKohClient::changeInterface, clientApp);
+    Simulator::Schedule(Seconds(30.0), &QuicKohClient::changeInterface, clientApp);
 
     Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
     for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)
@@ -1024,9 +1002,9 @@ int main(void)
 
     // RSU 노드의 Ipv4 L3 프로토콜의 "Rx" Trace Source에 콜백 함수를 연결합니다.
     // "Rx"는 IP 계층에서 패킷을 수신하는 이벤트입니다.
-    Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsu->GetId()) +
-                                      "/$ns3::Ipv4L3Protocol/Rx",
-                                  MakeCallback(&Ipv4PacketTraceAtRsu));
+    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsu->GetId()) +
+    //                                   "/$ns3::Ipv4L3Protocol/Rx",
+    //                               MakeCallback(&Ipv4PacketTraceAtRsu));
     // Config::ConnectWithoutContext("/NodeList/" + std::to_string(pgw->GetId()) +
     //                                   "/$ns3::Ipv4L3Protocol/Rx",
     //                               MakeCallback(&Ipv4PacketTraceAtPgw));
@@ -1074,6 +1052,7 @@ int main(void)
     // LogComponentEnable("QuicHeader", LOG_LEVEL_FUNCTION);
     //   LogComponentEnable("QuicStreamBase", LOG_LEVEL_INFO);
     // LogComponentEnable("QuicStreamBase", LOG_LEVEL_FUNCTION);
+
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);

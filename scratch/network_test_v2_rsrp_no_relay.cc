@@ -103,83 +103,83 @@ void UeSlMeasCallback(uint16_t RNTI, uint32_t L2ID, double RSRP)
 #include "ns3/net-device.h"
 #include "ns3/node.h"
 
-void UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
-{
-    static uint8_t cnt = 0;
-    static double sum = 0.0;
-    static double totalsum = 0.0;
-    static uint16_t totalcnt = 0;
-    cnt++;
-    sum += rssidBm;
+// void UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
+// {
+//     static uint8_t cnt = 0;
+//     static double sum = 0.0;
+//     static double totalsum = 0.0;
+//     static uint16_t totalcnt = 0;
+//     cnt++;
+//     sum += rssidBm;
+//
+//     if (cnt == 50)
+//     {
+//         double avg = sum / cnt;
+//
+//         Ptr<NrSpectrumPhy> nrPhy = DynamicCast<NrSpectrumPhy>(phy);
+//         Ptr<NetDevice> dev = nrPhy->GetDevice();
+//         Ptr<Node> node = dev->GetNode();
+//
+//         uint32_t nodeId = node->GetId();
+//         uint32_t devIdx = dev->GetIfIndex();
+//
+//         uint16_t cellId = nrPhy->GetCellId();
+//         // uint16_t rnti    = nrPhy->GetRnti();
+//         uint16_t bwpId = nrPhy->GetBwpId();
+//
+//         std::cout << "[Uu Node " << nodeId
+//                   << " | Dev " << devIdx
+//                   << " | Cell " << cellId
+//                   //<< " | RNTI "  << rnti
+//                   << " | BWP " << bwpId
+//                   << "] 10‑Chunk Avg RSSI = "
+//                   << avg << " dBm"
+//                   << std::endl;
+//         totalsum += sum;
+//         totalcnt += cnt;
+//         cnt = 0;
+//         sum = 0.0;
+//     }
+// }
 
-    if (cnt == 50)
-    {
-        double avg = sum / cnt;
-
-        Ptr<NrSpectrumPhy> nrPhy = DynamicCast<NrSpectrumPhy>(phy);
-        Ptr<NetDevice> dev = nrPhy->GetDevice();
-        Ptr<Node> node = dev->GetNode();
-
-        uint32_t nodeId = node->GetId();
-        uint32_t devIdx = dev->GetIfIndex();
-
-        uint16_t cellId = nrPhy->GetCellId();
-        // uint16_t rnti    = nrPhy->GetRnti();
-        uint16_t bwpId = nrPhy->GetBwpId();
-
-        std::cout << "[Uu Node " << nodeId
-                  << " | Dev " << devIdx
-                  << " | Cell " << cellId
-                  //<< " | RNTI "  << rnti
-                  << " | BWP " << bwpId
-                  << "] 10‑Chunk Avg RSSI = "
-                  << avg << " dBm"
-                  << std::endl;
-        totalsum += sum;
-        totalcnt += cnt;
-        cnt = 0;
-        sum = 0.0;
-    }
-}
-
-void UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
-{
-    static uint8_t cnt = 0;
-    static double sum = 0.0;
-    static double totalsum = 0.0;
-    static uint16_t totalcnt = 0;
-    cnt++;
-    sum += rssidBm;
-
-    if (cnt == 50)
-    {
-        double avg = sum / cnt;
-
-        Ptr<NrSpectrumPhy> nrPhy = DynamicCast<NrSpectrumPhy>(phy);
-        Ptr<NetDevice> dev = nrPhy->GetDevice();
-        Ptr<Node> node = dev->GetNode();
-
-        uint32_t nodeId = node->GetId();
-        uint32_t devIdx = dev->GetIfIndex();
-
-        uint16_t cellId = nrPhy->GetCellId();
-        // uint16_t rnti    = nrPhy->GetRnti();
-        uint16_t bwpId = nrPhy->GetBwpId();
-
-        std::cout << "[SideLink Node " << nodeId
-                  << " | Dev " << devIdx
-                  << " | Cell " << cellId
-                  //<< " | RNTI "  << rnti
-                  << " | BWP " << bwpId
-                  << "] 10‑Chunk Avg RSSI = "
-                  << avg << " dBm"
-                  << std::endl;
-        totalsum += sum;
-        totalcnt += cnt;
-        cnt = 0;
-        sum = 0.0;
-    }
-}
+// void UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
+// {
+//     static uint8_t cnt = 0;
+//     static double sum = 0.0;
+//     static double totalsum = 0.0;
+//     static uint16_t totalcnt = 0;
+//     cnt++;
+//     sum += rssidBm;
+//
+//     if (cnt == 50)
+//     {
+//         double avg = sum / cnt;
+//
+//         Ptr<NrSpectrumPhy> nrPhy = DynamicCast<NrSpectrumPhy>(phy);
+//         Ptr<NetDevice> dev = nrPhy->GetDevice();
+//         Ptr<Node> node = dev->GetNode();
+//
+//         uint32_t nodeId = node->GetId();
+//         uint32_t devIdx = dev->GetIfIndex();
+//
+//         uint16_t cellId = nrPhy->GetCellId();
+//         // uint16_t rnti    = nrPhy->GetRnti();
+//         uint16_t bwpId = nrPhy->GetBwpId();
+//
+//         std::cout << "[SideLink Node " << nodeId
+//                   << " | Dev " << devIdx
+//                   << " | Cell " << cellId
+//                   //<< " | RNTI "  << rnti
+//                   << " | BWP " << bwpId
+//                   << "] 10‑Chunk Avg RSSI = "
+//                   << avg << " dBm"
+//                   << std::endl;
+//         totalsum += sum;
+//         totalcnt += cnt;
+//         cnt = 0;
+//         sum = 0.0;
+//     }
+// }
 
 void printRssi(Ptr<const SpectrumValue> psd)
 {
@@ -367,7 +367,7 @@ int main(void)
     NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV.");
 
     // ns3 세팅 시작
-    Time simTime = Seconds(10);
+    Time simTime = Seconds(93);
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
@@ -403,18 +403,18 @@ int main(void)
     mobility.Install(routerNodeContainer);
     routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,70.0));
 
-    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    mobility.SetMobilityModel("ns3::WaypointMobilityModel");
     mobility.Install(ueNodeContainer);
     ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
-    // Ptr<WaypointMobilityModel> ueMobility =
-    //     ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
-    //
-    // // 읽어온 CSV 데이터를 Waypoint로 추가
-    // for (const auto& data : waypoints)
-    // {
-    //     Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
-    //     ueMobility->AddWaypoint(waypoint);
-    // }
+    Ptr<WaypointMobilityModel> ueMobility =
+        ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
+
+    // 읽어온 CSV 데이터를 Waypoint로 추가
+    for (const auto& data : waypoints)
+    {
+        Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
+        ueMobility->AddWaypoint(waypoint);
+    }
 
     // gnb bwp 설정
 
@@ -432,7 +432,7 @@ int main(void)
     CcBwpCreator::SimpleOperationBandConf gNbBandConf(gNbFrequencyBand,
                                                       gNbBandwidthBand,
                                                       gNbnumContiguousCc,
-                                                      BandwidthPartInfo::UMi_StreetCanyon_nLoS); //
+                                                      BandwidthPartInfo::RMa_LoS); //
     gNbBandConf.m_numBwp = 1;                                                                    // 1 BWP per CC
     gNbBand = gNbCcBwpCreators.CreateOperationBandContiguousCc(gNbBandConf);
 
@@ -461,7 +461,7 @@ int main(void)
     nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(4));
     nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(8));
     nrHelper->SetGnbAntennaAttribute("AntennaElement",
-                                     PointerValue(CreateObject<IsotropicAntennaModel>()));
+                                     PointerValue(CreateObject<ThreeGppAntennaModel>()));
     nrHelper->SetGnbBwpManagerAlgorithmAttribute("NGBR_VIDEO_TCP_PREMIUM",
                                                  UintegerValue(0)); // bwp하나만 한거
 
@@ -487,6 +487,10 @@ int main(void)
     nrHelper->SetUeAntennaAttribute("AntennaElement",
                                     PointerValue(CreateObject<IsotropicAntennaModel>()));
     nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
+
+
+    //노이즈 설정 부분
+    // nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetNoiseFigure
 
     DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0))->UpdateConfig();
 
@@ -934,7 +938,7 @@ int main(void)
     serverApp->SetStopTime(simTime);
 
     Ptr<UdpKohClient> clientApp = CreateObject<UdpKohClient>();
-    clientApp->SetAttribute("MaxPackets", UintegerValue(45));
+    clientApp->SetAttribute("MaxPackets", UintegerValue(100));
     clientApp->SetAttribute("Interval", TimeValue(Seconds(1.0)));
     clientApp->SetAttribute("PacketSize", UintegerValue(100));
     clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
@@ -968,7 +972,8 @@ int main(void)
 
     // 인터페이스 바꾸는거 그냥 예시
     clientApp->setInterface(ueUuNetDev.Get(0), ueSlNetDev.Get(0));
-    Simulator::Schedule(Seconds(5.0), &UdpKohClient::changeInterface, clientApp);
+    Simulator::Schedule(Seconds(10.0), &UdpKohClient::changeInterface, clientApp);
+    Simulator::Schedule(Seconds(60.0), &UdpKohClient::changeInterface, clientApp);
 
     Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
     for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)
