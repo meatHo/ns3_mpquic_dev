@@ -103,166 +103,44 @@ void UeSlMeasCallback(uint16_t RNTI, uint32_t L2ID, double RSRP)
 #include "ns3/net-device.h"
 #include "ns3/node.h"
 
-// void UeRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
-// {
-//     static uint8_t cnt = 0;
-//     static double sum = 0.0;
-//     static double totalsum = 0.0;
-//     static uint16_t totalcnt = 0;
-//     cnt++;
-//     sum += rssidBm;
-//
-//     if (cnt == 50)
-//     {
-//         double avg = sum / cnt;
-//
-//         Ptr<NrSpectrumPhy> nrPhy = DynamicCast<NrSpectrumPhy>(phy);
-//         Ptr<NetDevice> dev = nrPhy->GetDevice();
-//         Ptr<Node> node = dev->GetNode();
-//
-//         uint32_t nodeId = node->GetId();
-//         uint32_t devIdx = dev->GetIfIndex();
-//
-//         uint16_t cellId = nrPhy->GetCellId();
-//         // uint16_t rnti    = nrPhy->GetRnti();
-//         uint16_t bwpId = nrPhy->GetBwpId();
-//
-//         std::cout << "[Uu Node " << nodeId
-//                   << " | Dev " << devIdx
-//                   << " | Cell " << cellId
-//                   //<< " | RNTI "  << rnti
-//                   << " | BWP " << bwpId
-//                   << "] 10‑Chunk Avg RSSI = "
-//                   << avg << " dBm"
-//                   << std::endl;
-//         totalsum += sum;
-//         totalcnt += cnt;
-//         cnt = 0;
-//         sum = 0.0;
-//     }
-// }
 
-// void UeSlRssiPerProcessedChunk(Ptr<SpectrumPhy> phy, double rssidBm)
-// {
-//     static uint8_t cnt = 0;
-//     static double sum = 0.0;
-//     static double totalsum = 0.0;
-//     static uint16_t totalcnt = 0;
-//     cnt++;
-//     sum += rssidBm;
-//
-//     if (cnt == 50)
-//     {
-//         double avg = sum / cnt;
-//
-//         Ptr<NrSpectrumPhy> nrPhy = DynamicCast<NrSpectrumPhy>(phy);
-//         Ptr<NetDevice> dev = nrPhy->GetDevice();
-//         Ptr<Node> node = dev->GetNode();
-//
-//         uint32_t nodeId = node->GetId();
-//         uint32_t devIdx = dev->GetIfIndex();
-//
-//         uint16_t cellId = nrPhy->GetCellId();
-//         // uint16_t rnti    = nrPhy->GetRnti();
-//         uint16_t bwpId = nrPhy->GetBwpId();
-//
-//         std::cout << "[SideLink Node " << nodeId
-//                   << " | Dev " << devIdx
-//                   << " | Cell " << cellId
-//                   //<< " | RNTI "  << rnti
-//                   << " | BWP " << bwpId
-//                   << "] 10‑Chunk Avg RSSI = "
-//                   << avg << " dBm"
-//                   << std::endl;
-//         totalsum += sum;
-//         totalcnt += cnt;
-//         cnt = 0;
-//         sum = 0.0;
-//     }
-// }
-
-void printRssi(Ptr<const SpectrumValue> psd)
-{
-    // 스펙트럼 모델을 통해 sub‑carrier 간격(Hz)을 구함
-    Ptr<const SpectrumModel> sm = psd->GetSpectrumModel();
-    double binWidth = sm->Begin()->fh - sm->Begin()->fl;
-
-    // PSD[W/Hz] × binWidth → 각 bin 전력[W], 모두 합산
-    double powerW = Sum(*psd * binWidth);
-
-    // W → dBm 변환
-    double rssiDbm = 10.0 * std::log10(powerW * 1e3);
-
-    std::cout << "[printRssi] RSSI = " << rssiDbm << " dBm" << std::endl
-              << std::endl;
-}
-
-void psdCallback(const SfnSf &sfnSf,
-                 Ptr<const SpectrumValue> v,
-                 const Time &phyTime,
-                 uint16_t rnti,
-                 uint64_t imsi,
-                 uint16_t bwpId,
-                 uint16_t cellId)
-{
-    // 1) 시뮬레이션 현재 시각(Time)과 SFN/Subframe
-    std::cout << "[PSD Callback] SimTime="
-              << Simulator::Now().GetSeconds()
-              //<< "s, SFN=" << sfnSf.m_sfn << ", SF=" << sfnSf.m_sf
-              << ", PhyTime=" << phyTime.GetSeconds() << "s" << std::endl;
-
-    // 2) 식별자 정보
-    std::cout << "  RNTI=" << rnti << ", IMSI=" << imsi << ", BWP=" << bwpId
-              << ", CellId=" << cellId << std::endl;
-
-    // 3) PSD 벡터 값 출력 (Hz당 W 단위)
-    std::cout << "  PSD values (W/Hz):";
-    uint32_t idx = 0;
-    for (auto it = v->ConstValuesBegin(); it != v->ConstValuesEnd(); ++it, ++idx)
-    {
-        // 8개 단위로 줄 바꿈
-        if (idx % 8 == 0)
-            std::cout << std::endl
-                      << "   ";
-        std::cout << *it;
-        if (it + 1 != v->ConstValuesEnd())
-            std::cout << "\t";
-    }
-    printRssi(v);
-}
-
-void RxDataCallback(const SfnSf &sfnSf,
-                    Ptr<const SpectrumValue> rxPsd,
-                    const Time &duration,
-                    uint16_t bwpId,
-                    uint16_t cellId)
-{
-    // 1) 스펙트럼 모델에서 주파수 분할폭(Hz) 가져오기
-    Ptr<const SpectrumModel> sm = rxPsd->GetSpectrumModel();
-    double binWidth = sm->Begin()->fh - sm->Begin()->fl; // 예: subcarrier 간격
-
-    // 2) PSD 벡터 × binWidth → 각 bin별 W 단위 전력 → 모두 합산
-    double powerW = Sum(*rxPsd * binWidth);
-
-    // 3) W → dBm 변환: 10·log10(powerW·1000)
-    double rssiDbm = 10.0 * std::log10(powerW * 1e3);
-
-    std::cout << "RSSI = " << rssiDbm << " dBm (BWP " << bwpId << ", Cell " << cellId << ")\n";
-
-    // 여기서 강화학습 환경으로 넘기시면 됩니다.
-}
 
 // UE의 위치와 속도를 출력하는 함수
-void PrintUeInfo(Ptr<Node> ueNode)
-{
-    Ptr<MobilityModel> mob = ueNode->GetObject<MobilityModel>();
-    Vector pos = mob->GetPosition();
-    Vector vel = mob->GetVelocity();
+// void PrintUeInfo(Ptr<Node> ueNode1, Ptr<Node> ueNode2)
+// {
+//     Ptr<MobilityModel> mob1 = ueNode1->GetObject<MobilityModel>();
+//     Vector pos1 = mob1->GetPosition();
+//     Vector vel1 = mob1->GetVelocity();
+//
+//     Ptr<MobilityModel> mob2 = ueNode2->GetObject<MobilityModel>();
+//     Vector pos2 = mob2->GetPosition();
+//     Vector vel2 = mob2->GetVelocity();
+//
+//     NS_LOG_UNCOND("Time: " << Simulator::Now().GetSeconds() << "s");
+//     NS_LOG_UNCOND("Vehicle 1");
+//     NS_LOG_UNCOND("UE Position: x=" << pos1.x << ", y=" << pos1.y << ", z=" << pos1.z);
+//     NS_LOG_UNCOND("UE Velocity: x=" << vel1.x << ", y=" << vel1.y << ", z=" << vel1.z << " (m/s)");
+//     NS_LOG_UNCOND("Vehicle 2");
+//     NS_LOG_UNCOND("UE Position: x=" << pos2.x << ", y=" << pos2.y << ", z=" << pos2.z);
+//     NS_LOG_UNCOND("UE Velocity: x=" << vel2.x << ", y=" << vel2.y << ", z=" << vel2.z << " (m/s)");
+//     Simulator::Schedule(Seconds(1.0), &PrintUeInfo, ueNode1, ueNode2);
+// }
 
+void PrintUeInfo(NodeContainer ueNodes)
+{
+    uint8_t i=0;
     NS_LOG_UNCOND("Time: " << Simulator::Now().GetSeconds() << "s");
-    NS_LOG_UNCOND("UE Position: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z);
-    NS_LOG_UNCOND("UE Velocity: x=" << vel.x << ", y=" << vel.y << ", z=" << vel.z << " (m/s)");
-    Simulator::Schedule(Seconds(1.0), &PrintUeInfo, ueNode);
+    for (auto it= ueNodes.Begin(); it!=ueNodes.End();++it)
+    {
+        Ptr<Node> ueNode = *it;
+        Ptr<MobilityModel> mob = ueNode->GetObject<MobilityModel>();
+        Vector pos = mob->GetPosition();
+        Vector vel = mob->GetVelocity();
+        NS_LOG_UNCOND("Vehicle "<<++i);
+        NS_LOG_UNCOND("UE Position: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z);
+        NS_LOG_UNCOND("UE Velocity: x=" << vel.x << ", y=" << vel.y << ", z=" << vel.z << " (m/s)");
+    }
+    Simulator::Schedule(Seconds(1.0), &PrintUeInfo, ueNodes);
 }
 
 // 패킷 정보를 출력할 콜백 함수
@@ -319,55 +197,9 @@ void Ipv4PacketTraceAtUe(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t inte
 int main(void)
 {
     Ipv4Address groupAddress4("224.1.1.1");
-    // 1. CSV 파일 읽기
-    // ==========================================================
-    std::vector<WaypointData> waypoints;
-    std::string csvFileName = "/home/kiho/ns-3-quic/scratch/final_3d_trace.csv";
-    std::ifstream file(csvFileName);
-
-    if (!file.is_open())
-    {
-        std::cout << "Could not open CSV file: " << csvFileName << std::endl;
-        return 2;
-    }
-
-    std::string line;
-    // 헤더 라인 무시
-    std::getline(file, line);
-
-    double maxTime = 0.0;
-    while (std::getline(file, line))
-    {
-        std::stringstream ss(line);
-        std::string value;
-        WaypointData data;
-
-        // 각 열 파싱
-        std::getline(ss, value, ','); // time
-        data.time = std::stod(value);
-        std::getline(ss, value, ','); // vehicle_id (skip)
-        std::getline(ss, value, ','); // x
-        data.x = std::stod(value);
-        std::getline(ss, value, ','); // y
-        data.y = std::stod(value);
-        std::getline(ss, value, ','); // z
-        data.z = std::stod(value);
-        std::getline(ss, value, ','); // speed
-        data.speed = std::stod(value);
-        std::getline(ss, value, ','); // lon (skip)
-        std::getline(ss, value, ','); // lat (skip)
-
-        waypoints.push_back(data);
-        if (data.time > maxTime)
-        {
-            maxTime = data.time;
-        }
-    }
-    file.close();
-    NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV.");
-
-    // ns3 세팅 시작
+    uint16_t ueNum = 2;
     Time simTime = Seconds(93);
+    std::string csvFileName = "/home/kiho/ns-3-quic/scratch/final_3d_trace";
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
@@ -380,7 +212,7 @@ int main(void)
     NodeContainer serverNodeContainer;
     serverNodeContainer.Create(1);
     NodeContainer ueNodeContainer;
-    ueNodeContainer.Create(1);
+    ueNodeContainer.Create(ueNum);
     NodeContainer routerNodeContainer;
     routerNodeContainer.Create(1);
 
@@ -388,33 +220,93 @@ int main(void)
     Ptr<Node> server = serverNodeContainer.Get(0);
     Ptr<Node> rsu = rsuNodeContainer.Get(0);
     Ptr<Node> gnb = gnbNodeContainer.Get(0);
-    Ptr<Node> ue = ueNodeContainer.Get(0);
     Ptr<Node> router = routerNodeContainer.Get(0);
+    Ptr<Node> ue1 = ueNodeContainer.Get(0);
+    Ptr<Node> ue2 = ueNodeContainer.Get(1);
 
     MobilityHelper mobility;
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(gnbNodeContainer);
-    gnbNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900, 4288, 80.0));
+    gnbNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900, 4288, 100.0));
     mobility.Install(rsuNodeContainer);
     rsuNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4350.0, 70.0));
     mobility.Install(serverNodeContainer);
     serverNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(1900.0, 3800.0, 60.0));
     mobility.Install(routerNodeContainer);
-    routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,70.0));
+    routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,80.0));
 
+    //UE위치 할당
     mobility.SetMobilityModel("ns3::WaypointMobilityModel");
     mobility.Install(ueNodeContainer);
-    ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
-    Ptr<WaypointMobilityModel> ueMobility =
-        ueNodeContainer.Get(0)->GetObject<WaypointMobilityModel>();
-
-    // 읽어온 CSV 데이터를 Waypoint로 추가
-    for (const auto& data : waypoints)
+    for (uint32_t i = 0; i < ueNum; i++)
     {
-        Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
-        ueMobility->AddWaypoint(waypoint);
+        std::vector<WaypointData> waypoints;
+        std::string finalFileName;
+        if (i==0)
+        {
+            finalFileName = csvFileName+".csv";
+        }else
+        {
+            finalFileName = csvFileName+"_"+std::to_string(i)+".csv";
+        }
+
+        ueNodeContainer.Get(i)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
+        Ptr<WaypointMobilityModel> ueMobility = ueNodeContainer.Get(i)->GetObject<WaypointMobilityModel>();
+
+
+        std::ifstream file(finalFileName);
+
+        if (!file.is_open())
+        {
+            std::cout << "Could not open CSV file: " << finalFileName << std::endl;
+            return 2;
+        }
+
+        std::string line;
+        // 헤더 라인 무시
+        std::getline(file, line);
+
+        double maxTime = 0.0;
+        while (std::getline(file, line))
+        {
+            std::stringstream ss(line);
+            std::string value;
+            WaypointData data;
+
+            // 각 열 파싱
+            std::getline(ss, value, ','); // time
+            data.time = std::stod(value);
+            std::getline(ss, value, ','); // vehicle_id (skip)
+            std::getline(ss, value, ','); // x
+            data.x = std::stod(value);
+            std::getline(ss, value, ','); // y
+            data.y = std::stod(value);
+            std::getline(ss, value, ','); // z
+            data.z = std::stod(value);
+            std::getline(ss, value, ','); // speed
+            data.speed = std::stod(value);
+            std::getline(ss, value, ','); // lon (skip)
+            std::getline(ss, value, ','); // lat (skip)
+
+            waypoints.push_back(data);
+            if (data.time > maxTime)
+            {
+                maxTime = data.time;
+            }
+        }
+        file.close();
+        NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV.");
+
+        // 읽어온 CSV 데이터를 Waypoint로 추가
+        for (const auto& data : waypoints)
+        {
+            Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
+            ueMobility->AddWaypoint(waypoint);
+        }
     }
+
+
 
     // gnb bwp 설정
 
@@ -457,6 +349,8 @@ int main(void)
     // // NRHelper에 적용
     // nrHelper->SetPathlossAttribute("PathlossModel", PointerValue(bldgLoss));
 
+    nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(true));
+
     // 안테나 설정
     nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(4));
     nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(8));
@@ -470,6 +364,7 @@ int main(void)
         ->SetAttribute("Numerology", UintegerValue(gNbNumerology));
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(gNbTxPower));
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetAttribute("Pattern", StringValue(pattern));
+    nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetNoiseFigure(5.0);
 
     // 설정 적용
     for (auto it = gnbNetDev.Begin(); it != gnbNetDev.End(); ++it)
@@ -481,6 +376,9 @@ int main(void)
     NetDeviceContainer ueUuNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, gNbBwp, macUuFactory);
 
+    //노이즈 설정 부분
+    nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetNoiseFigure(7.0);
+
     double ueTxPower = 23.0;
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
@@ -489,15 +387,15 @@ int main(void)
     nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
 
 
-    //노이즈 설정 부분
-    nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetNoiseFigure(10.0);
-
     DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0))->UpdateConfig();
 
     // RSU, SL 기본 설정=======================================================
     double RsuFrequencyBand = 5.89e9;
-    uint16_t RsuBandwidthBand = 400;
-    uint8_t RsunumContiguousCc = 1;
+    double   RsuBandwidthHz   = 20e6;
+    // uint16_t RsuBandwidthBand = 400;
+    // uint16_t RsuBandwidthPrb  = 106;
+
+    uint16_t RsunumContiguousCc = 1;
     uint16_t RsuNumerology = 1;
     double RsuTxPower = 23.0; // 단위dBm
     // double Rsux = pow(10, RsuTxPower / 10); // to mW
@@ -508,7 +406,7 @@ int main(void)
     // RSU band 설정
     CcBwpCreator RsuCcBwpCreator;
     CcBwpCreator::SimpleOperationBandConf RsuBandConf(RsuFrequencyBand,
-                                                      RsuBandwidthBand,
+                                                      RsuBandwidthHz,
                                                       RsunumContiguousCc,
                                                       BandwidthPartInfo::V2V_Highway);
     OperationBandInfo RsuBand = RsuCcBwpCreator.CreateOperationBandContiguousCc(RsuBandConf);
@@ -551,6 +449,7 @@ int main(void)
     NetDeviceContainer rsuNetDev =
         nrHelper->InstallUeDevice(rsuNodeContainer, RsuBwp, macSlFactory);
 
+    nrHelper->GetUePhy(rsuNetDev.Get(0), 0)->SetNoiseFigure(7.0);
     // 설정 적용
     for (auto it = rsuNetDev.Begin(); it != rsuNetDev.End(); ++it)
     {
@@ -562,6 +461,7 @@ int main(void)
     NetDeviceContainer ueSlNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, RsuBwp, macSlFactory);
 
+    nrHelper->GetUePhy(ueSlNetDev.Get(0), 0)->SetNoiseFigure(7.0);
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
     nrHelper->SetUeAntennaAttribute("AntennaElement",
@@ -618,7 +518,7 @@ int main(void)
     bwp.numerology = RsuNumerology;
     bwp.symbolsPerSlots = 14; // ofdm symbol
     bwp.rbPerRbg = 1;         // Resource block per resource block group
-    bwp.bandwidth = RsuBandwidthBand;
+    bwp.bandwidth = RsuBandwidthHz;
 
     // Configure the SlBwpGeneric IE
     LteRrcSap::SlBwpGeneric slBwpGeneric;
@@ -682,8 +582,8 @@ int main(void)
 
     // 여기서 p2p를 쓸지 csma를 쓸지 결정해야할듯
     PointToPointHelper p2ph;
-    p2ph.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
-    p2ph.SetChannelAttribute("Delay", StringValue("10ms"));
+    p2ph.SetDeviceAttribute("DataRate", StringValue("1Gbps"));
+    p2ph.SetChannelAttribute("Delay", StringValue("5ms"));
     NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
     NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
     NetDeviceContainer routerToServerNetDev = p2ph.Install(router,server);

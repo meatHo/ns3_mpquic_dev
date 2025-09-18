@@ -394,14 +394,14 @@ int main(void)
     MobilityHelper mobility;
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(gnbNodeContainer);
-    gnbNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900, 4288, 80.0));
+    gnbNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900, 4288, 100.0));
     mobility.Install(rsuNodeContainer);
     rsuNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4350.0, 70.0));
     mobility.Install(serverNodeContainer);
     serverNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(1900.0, 3800.0, 60.0));
     mobility.Install(routerNodeContainer);
-    routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,70.0));
+    routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,80.0));
 
     mobility.SetMobilityModel("ns3::WaypointMobilityModel");
     mobility.Install(ueNodeContainer);
@@ -457,6 +457,8 @@ int main(void)
     // // NRHelper에 적용
     // nrHelper->SetPathlossAttribute("PathlossModel", PointerValue(bldgLoss));
 
+    nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(true));
+
     // 안테나 설정
     nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(4));
     nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(8));
@@ -470,6 +472,7 @@ int main(void)
         ->SetAttribute("Numerology", UintegerValue(gNbNumerology));
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(gNbTxPower));
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetAttribute("Pattern", StringValue(pattern));
+    nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetNoiseFigure(5.0);
 
     // 설정 적용
     for (auto it = gnbNetDev.Begin(); it != gnbNetDev.End(); ++it)
@@ -481,6 +484,9 @@ int main(void)
     NetDeviceContainer ueUuNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, gNbBwp, macUuFactory);
 
+    //노이즈 설정 부분
+    nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetNoiseFigure(7.0);
+
     double ueTxPower = 23.0;
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
@@ -489,15 +495,15 @@ int main(void)
     nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
 
 
-    //노이즈 설정 부분
-    nrHelper->GetUePhy(ueUuNetDev.Get(0), 0)->SetNoiseFigure(10.0);
-
     DynamicCast<NrUeNetDevice>(ueUuNetDev.Get(0))->UpdateConfig();
 
     // RSU, SL 기본 설정=======================================================
     double RsuFrequencyBand = 5.89e9;
-    uint16_t RsuBandwidthBand = 400;
-    uint8_t RsunumContiguousCc = 1;
+    double   RsuBandwidthHz   = 20e6;
+    // uint16_t RsuBandwidthBand = 400;
+    // uint16_t RsuBandwidthPrb  = 106;
+
+    uint16_t RsunumContiguousCc = 1;
     uint16_t RsuNumerology = 1;
     double RsuTxPower = 23.0; // 단위dBm
     // double Rsux = pow(10, RsuTxPower / 10); // to mW
@@ -508,7 +514,7 @@ int main(void)
     // RSU band 설정
     CcBwpCreator RsuCcBwpCreator;
     CcBwpCreator::SimpleOperationBandConf RsuBandConf(RsuFrequencyBand,
-                                                      RsuBandwidthBand,
+                                                      RsuBandwidthHz,
                                                       RsunumContiguousCc,
                                                       BandwidthPartInfo::V2V_Highway);
     OperationBandInfo RsuBand = RsuCcBwpCreator.CreateOperationBandContiguousCc(RsuBandConf);
@@ -551,6 +557,7 @@ int main(void)
     NetDeviceContainer rsuNetDev =
         nrHelper->InstallUeDevice(rsuNodeContainer, RsuBwp, macSlFactory);
 
+    nrHelper->GetUePhy(rsuNetDev.Get(0), 0)->SetNoiseFigure(7.0);
     // 설정 적용
     for (auto it = rsuNetDev.Begin(); it != rsuNetDev.End(); ++it)
     {
@@ -562,6 +569,7 @@ int main(void)
     NetDeviceContainer ueSlNetDev =
         nrHelper->InstallUeDevice(ueNodeContainer, RsuBwp, macSlFactory);
 
+    nrHelper->GetUePhy(ueSlNetDev.Get(0), 0)->SetNoiseFigure(7.0);
     nrHelper->SetUeAntennaAttribute("NumRows", UintegerValue(1));
     nrHelper->SetUeAntennaAttribute("NumColumns", UintegerValue(2));
     nrHelper->SetUeAntennaAttribute("AntennaElement",
@@ -618,7 +626,7 @@ int main(void)
     bwp.numerology = RsuNumerology;
     bwp.symbolsPerSlots = 14; // ofdm symbol
     bwp.rbPerRbg = 1;         // Resource block per resource block group
-    bwp.bandwidth = RsuBandwidthBand;
+    bwp.bandwidth = RsuBandwidthHz;
 
     // Configure the SlBwpGeneric IE
     LteRrcSap::SlBwpGeneric slBwpGeneric;
@@ -682,8 +690,8 @@ int main(void)
 
     // 여기서 p2p를 쓸지 csma를 쓸지 결정해야할듯
     PointToPointHelper p2ph;
-    p2ph.SetDeviceAttribute("DataRate", StringValue("100Mbps"));
-    p2ph.SetChannelAttribute("Delay", StringValue("10ms"));
+    p2ph.SetDeviceAttribute("DataRate", StringValue("1Gbps"));
+    p2ph.SetChannelAttribute("Delay", StringValue("5ms"));
     NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
     NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
     NetDeviceContainer routerToServerNetDev = p2ph.Install(router,server);
