@@ -45,6 +45,9 @@ namespace ns3
   void SetPacketWindowSize(uint16_t size);
   uint16_t GetPacketWindowSize() const;
 
+     uint32_t GetRecvCount(uint16_t ueId);
+     double GetLatency(uint16_t ueId);
+
  private:
   std::map<uint16_t, clientInfos> clients;
   void StartApplication() override;
@@ -60,6 +63,8 @@ namespace ns3
   uint16_t m_nextClientId;
   /// Callbacks for tracing the packet Rx events
   TracedCallback<Ptr<const Packet>> m_rxTrace;
+     std::map<uint16_t, uint32_t> m_recvPerUe;
+     std::map<uint16_t, double> m_latencyPerUe;
 
   /// Callbacks for tracing the packet Rx events, includes source and destination addresses
   TracedCallback<Ptr<const Packet>, const Address&, const Address&> m_rxTraceWithAddresses;

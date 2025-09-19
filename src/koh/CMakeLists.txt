@@ -10,5 +10,6 @@ build_lib(
         udp-koh-server.h
         quic-koh-client.h
         quic-koh-server.h
+        kohTag.h
         LIBRARIES_TO_LINK ${libinternet}
 )

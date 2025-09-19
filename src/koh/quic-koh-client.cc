@@ -118,6 +118,7 @@ QuicKohClient::~QuicKohClient()
     NS_LOG_FUNCTION(this);
 }
 
+
 void
 QuicKohClient::StartApplication()
 {

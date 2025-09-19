@@ -19,8 +19,8 @@
  */
 #include "udp-koh-server.h"
 
-
 #include "./../applications/model/seq-ts-header.h"
+#include "kohTag.h"
 
 #include "ns3/inet-socket-address.h"
 #include "ns3/inet6-socket-address.h"
@@ -84,6 +84,8 @@ UdpKohServer::UdpKohServer()
       m_lossCounter(0)
 {
     m_nextClientId = 0;
+    m_recvPerUe.clear();
+    m_latencyPerUe.clear();
 }
 
 void
@@ -133,13 +135,37 @@ UdpKohServer::SetPacketWindowSize(uint16_t size)
     m_lossCounter.SetBitMapSize(size);
 }
 
+
+
+uint32_t
+UdpKohServer::GetRecvCount(uint16_t ueId)
+{
+    auto it = m_recvPerUe.find(ueId);
+    if (it != m_recvPerUe.end())
+        return it->second;
+    return 0;
+}
+
+double
+UdpKohServer::GetLatency(uint16_t ueId)
+{
+    auto it = m_latencyPerUe.find(ueId);
+    if (it != m_latencyPerUe.end())
+        return it->second;
+    return 0;
+}
+
+
 void
 UdpKohServer::HandleRead(Ptr<Socket> socket)
 {
-    NS_LOG_UNCOND("UdpKohServer::HandleRead");
+    // NS_LOG_UNCOND("UdpKohServer::HandleRead");
     Ptr<Packet> packet;
     Address from;
     Address localAddress;
+    double latency;
+    uint16_t ueId;
+
     while ((packet = socket->RecvFrom(from)))
     {
         bool clientFound = false;
@@ -176,6 +202,19 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
         socket->GetSockName(localAddress);
         m_rxTrace(packet);
         m_rxTraceWithAddresses(packet, from, localAddress);
+
+        KohTag tag;
+        if (packet->PeekPacketTag(tag))
+        {
+            Time tx = tag.txTime;
+            ueId = tag.ueId;
+            m_recvPerUe[ueId]++;
+
+            latency = (Simulator::Now() - tx).GetSeconds();
+            // NS_LOG_UNCOND("UE=" << ueId << " delay=" << latency << " s");
+            m_latencyPerUe[ueId] = latency;
+        }
+
         if (packet->GetSize() > 0)
         {
             uint32_t receivedSize = packet->GetSize();

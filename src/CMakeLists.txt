@@ -104,6 +104,7 @@ if(${NS3_MONOLIB})
     ${lib-ns3-monolib} SHARED ${PROJECT_SOURCE_DIR}/build-support/empty.cc
                               "${lib-ns3-static-objs}"
           koh/udp-koh-client.h
+          koh/kohTag.h
   )
   set_target_properties(
     ${lib-ns3-monolib}

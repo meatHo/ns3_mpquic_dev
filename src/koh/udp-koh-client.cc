@@ -124,6 +124,19 @@ UdpKohClient::~UdpKohClient()
     NS_LOG_FUNCTION(this);
 }
 
+uint16_t
+UdpKohClient::GetUeId()
+{
+    return tag.ueId;
+}
+
+uint32_t
+UdpKohClient::GetSentCount()
+{
+    return m_sent;
+}
+
+
 void
 UdpKohClient::StartApplication()
 {
@@ -132,7 +145,7 @@ UdpKohClient::StartApplication()
     TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
     // listening 소켓 설정
     m_recvSocket = Socket::CreateSocket(GetNode(), tid);
-    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 49154);
+    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 5555);
     if (m_recvSocket->Bind(local) == -1)
     {
         NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
@@ -232,6 +245,10 @@ UdpKohClient::Send()
     m_txTraceWithAddresses(p, from, to);
 
     p->AddHeader(seqTs);
+
+    tag.txTime = Simulator::Now();
+    p->AddPacketTag(tag);
+
     if ((m_sendSocket->Send(p)) >= 0)
     {
         ++m_sent;
@@ -261,11 +278,26 @@ UdpKohClient::GetTotalTx() const
 }
 
 void
-UdpKohClient::SelectInterface(Ptr<Socket> socket)
+UdpKohClient::SelectInterface(uint32_t i)
 {
-    // 여기에 rsu가 좋은지 gnb가 좋은지 고르는 함수 추가
-    m_sendSocket = socket;
+    if (i==0)
+    {
+        m_sendSocket = m_uuSocket;
+    }else if (i==1)
+    {
+        m_sendSocket = m_slSocket;
+    }else
+    {
+        NS_LOG_UNCOND("selectinterface error");
+    }
 }
+
+void
+UdpKohClient::SetTag(KohTag temp)
+{
+    tag=temp;
+}
+
 
 // [핵심 수정] changeInterface() 함수
 void

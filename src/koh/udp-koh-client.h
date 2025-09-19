@@ -4,6 +4,7 @@
 
 #ifndef UDP_KOH_CLIENT_H
 #define UDP_KOH_CLIENT_H
+#include "kohTag.h"
 
 #endif //UDP_KOH_CLIENT_H
 /*
@@ -38,12 +39,15 @@ namespace ns3
         void changeInterface();
         void setInterface(Ptr<NetDevice> uu, Ptr<NetDevice> sl);
         // [수정] RSU의 Sidelink IP 주소(Next Hop)를 받기 위한 파라미터 추가
-
+        void SetTag(KohTag temp);
+        void SelectInterface(uint32_t i);
+        uint16_t GetUeId();
+        uint32_t GetSentCount();
     private:
         void StartApplication() override;
         void StopApplication() override;
         void Send();
-        void SelectInterface(Ptr<Socket> socket);
+
         void HandleRecv(Ptr<Socket> socket);
 
         TracedCallback<Ptr<const Packet>> m_txTrace;
@@ -66,7 +70,7 @@ namespace ns3
         uint16_t m_uuServerPort;
         Ptr<NetDevice> m_devUu, m_devSl;
 
-
+        KohTag tag;
         uint8_t m_tos;
         EventId m_sendEvent;
 
