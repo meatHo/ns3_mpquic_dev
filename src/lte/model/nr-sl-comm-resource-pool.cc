@@ -293,8 +293,11 @@ NrSlCommResourcePool::GetNrSlCommOpportunities(uint64_t absIndexCurrentSlot,
     // t2_min as a function of numerology. Discussed in 3GPP meeting R1-2003807
     // also in TS 38.331 in SL-UE-SelectedConfigRP field descriptions
     uint16_t t2min = LteRrcSap::GetSlSelWindowValue(pool.slUeSelectedConfigRp.slSelectionWindow);
+    // std::cout<<"t2min "<<t2min<<std::endl;
     auto multiplier = static_cast<uint16_t>(std::pow(2, numerology));
     t2min = t2min * multiplier;
+    // std::cout<<"t2min "<<t2min<<std::endl;
+    // std::cout<<"multiplier "<<multiplier<<std::endl;
     NS_ABORT_MSG_IF(t2min > t2,
                     "T2min(" << t2min << ")"
                              << " should be less than or equal to T2(" << t2
@@ -552,6 +555,8 @@ NrSlCommResourcePool::IsRsvpMultipOfPoolLen(uint8_t bwpId,
                     "Resource reservation period in slots "
                         << rsvpInSlots << " should be multiple of physical sidelink pool length of "
                         << phyPool.size());
+    // NS_LOG_UNCOND(rsvpInSlots);
+    // NS_LOG_UNCOND(phyPool.size());
 }
 
 } // namespace ns3

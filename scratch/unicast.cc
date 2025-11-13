@@ -759,7 +759,11 @@ int main(void)
 
     // ue 라우팅
     Ptr<Ipv4StaticRouting> ueStaticRouting = Ipv4RoutingHelper.GetStaticRouting(ue->GetObject<Ipv4>());
-    ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), ueUuItf);
+    ueStaticRouting->AddNetworkRouteTo(Ipv4Address("10.1.3.0"),
+                                        Ipv4Mask("255.255.255.0"), // EPC망의 서브넷 마스크
+                                        rsuSlIp,
+                                        /* 라우터의 PGW 방향 인터페이스 */routerPgwItf);
+    // ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), ueUuItf);
     // ueStaticRouting->SetDefaultMulticastRoute(ueSlItf);
 
     // Ptr<NetDevice> ueSlNetDevice = ue->GetDevice(ueSlItf);

@@ -6,6 +6,14 @@
 
 namespace ns3 {
 
+struct KStats
+{
+    uint16_t ueId;
+    uint32_t recvCount;
+    uint32_t sentCount;
+    double avgLatency;
+} __attribute__((packed));
+
 class KohTag : public Tag {
 public:
     KohTag() : ueId(0), txTime(Seconds(0)) {}

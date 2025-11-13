@@ -1639,6 +1639,7 @@ NrSlUeMacSchedulerFixedMcs::DoNrSlAllocation(
         selectedTxOpps = SelectResourcesWithConstraint(candResources, allocationInfo.m_harqEnabled);
     }
     NS_ASSERT_MSG(selectedTxOpps.size() > 0, "Scheduler should select at least 1 slot from txOpps");
+    // NS_LOG_UNCOND(selectedTxOpps.size());
     allocated = true;
     auto itTxOpps = selectedTxOpps.cbegin();
     for (; itTxOpps != selectedTxOpps.cend(); ++itTxOpps)
@@ -1706,6 +1707,9 @@ NrSlUeMacSchedulerFixedMcs::SelectResourcesForBlindRetransmissions(std::list<SlR
 
     uint8_t totalTx = GetSlMaxTxTransNumPssch();
     std::list<SlResourceInfo> newTxOpps;
+
+    // NS_LOG_UNCOND("NrSlUeMacSchedulerFixedMcs::SelectResources : "<<txOpps.size());
+    // NS_LOG_UNCOND(totalTx);
 
     if (txOpps.size() > totalTx)
     {

@@ -18,7 +18,7 @@
  */
 
 #include "udp-l4-protocol.h"
-
+#include "ns3/simulator.h"
 #include "ipv4-end-point-demux.h"
 #include "ipv4-end-point.h"
 #include "ipv4-route.h"
@@ -334,7 +334,13 @@ UdpL4Protocol::ReceiveIcmp(Ipv6Address icmpSource,
 IpL4Protocol::RxStatus
 UdpL4Protocol::Receive(Ptr<Packet> packet, const Ipv4Header& header, Ptr<Ipv4Interface> interface)
 {
-    // NS_LOG_UNCOND("UdpL4Protocol::Receive");
+    // NS_LOG_UNCOND("UdpL4Protocol::Receive"<<packet->GetSize());
+    // NS_LOG_UNCOND("UdpL4Protocol::Receive"<<packet->GetUid());
+    // NS_LOG_UNCOND(Simulator::Now());
+    Ptr<Node> node = GetObject<Node>();
+    // NS_LOG_UNCOND("Node ID: " << node->GetId());
+
+
     NS_LOG_FUNCTION(this << packet << header);
     UdpHeader udpHeader;
     if (Node::ChecksumEnabled())

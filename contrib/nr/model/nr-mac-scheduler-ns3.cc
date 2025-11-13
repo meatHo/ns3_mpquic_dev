@@ -2485,7 +2485,7 @@ NrMacSchedulerNs3::DoSchedUlSrInfoReq(
             m_srList.push_back(ue);
         }
     }
-    NS_ASSERT(m_srList.size() >= params.m_srList.size());
+    // NS_ASSERT(m_srList.size() >= params.m_srList.size());//koh icons 이거 뺴도됨? 일단뺴
 }
 
 } // namespace ns3

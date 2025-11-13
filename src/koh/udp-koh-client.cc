@@ -117,6 +117,8 @@ UdpKohClient::UdpKohClient()
     m_uuSocket = nullptr;
     m_slSocket = nullptr;
     m_sendEvent = EventId();
+    m_totalSent = 0;
+    m_burstPacketCount = 10;
 }
 
 UdpKohClient::~UdpKohClient()
@@ -130,12 +132,27 @@ UdpKohClient::GetUeId()
     return tag.ueId;
 }
 
+void
+UdpKohClient::clearCount()
+{
+    m_sent = 0;
+}
+
+void
+UdpKohClient::SyncSent()
+{
+    m_sentSync = m_sent;
+    m_sent = 0;
+    Simulator::Schedule(Seconds(1.0), &UdpKohClient::SyncSent, this);
+}
+
 uint32_t
 UdpKohClient::GetSentCount()
 {
-    return m_sent;
+    uint32_t temp = m_sent;
+    m_sent = 0;
+    return temp;
 }
-
 
 void
 UdpKohClient::StartApplication()
@@ -145,11 +162,9 @@ UdpKohClient::StartApplication()
     TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
     // listening 소켓 설정
     m_recvSocket = Socket::CreateSocket(GetNode(), tid);
-    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 5555);
-    if (m_recvSocket->Bind(local) == -1)
-    {
-        NS_FATAL_ERROR("UdpRelay: Failed to bind In-Socket");
-    }
+    InetSocketAddress local = InetSocketAddress(Ipv4Address::GetAny(), 6666);
+    m_recvSocket->Bind(local);
+    m_recvSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
 
     // Uu 소켓 설정
     m_uuSocket = Socket::CreateSocket(GetNode(), tid);
@@ -159,7 +174,8 @@ UdpKohClient::StartApplication()
         NS_LOG_UNCOND("uu ipv6 socket connection started");
         m_uuSocket->Connect(
             Inet6SocketAddress(Ipv6Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
-    }else
+    }
+    else
     {
         NS_LOG_UNCOND("uu ipv4 socket connection started");
         m_uuSocket->Connect(
@@ -174,7 +190,8 @@ UdpKohClient::StartApplication()
         NS_LOG_UNCOND("sl socket connection started");
         m_slSocket->Connect(
             Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
-    }else
+    }
+    else
     {
         NS_LOG_UNCOND("sl ipv4 socket connection started");
         m_slSocket->Connect(
@@ -190,6 +207,7 @@ UdpKohClient::StartApplication()
     NS_LOG_UNCOND("Client starts with uu interface.");
 
     m_sendEvent = Simulator::Schedule(Seconds(0.0), &UdpKohClient::Send, this);
+    Simulator::Schedule(Seconds(0.0), &UdpKohClient::SyncSent, this);
 }
 
 void
@@ -204,9 +222,19 @@ UdpKohClient::HandleRecv(Ptr<Socket> socket)
 
     if (InetSocketAddress::IsMatchingType(from))
     {
-        NS_LOG_UNCOND("Received a " << packet->GetSize() << " bytes packet from "
-                                    << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
-                                    << buffer);
+        // NS_LOG_UNCOND("Received a "<<tag.ueId<<" ue " << packet->GetSize() << " bytes packet from
+        // "
+        //                             << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
+        //                             << buffer);
+
+        KStats stats;
+        packet->CopyData((uint8_t*)&stats, sizeof(KStats));
+        stats.sentCount = m_sentSync;
+        // NS_LOG_UNCOND("UE " << stats.ueId
+        //   << " RecvCount=" << stats.recvCount
+        //   << " PRR=" << stats.recvCount/m_sentSync
+        //   << " Latency=" << stats.avgLatency << " ms");
+        m_KCallback(stats);
     }
     else if (Inet6SocketAddress::IsMatchingType(from))
     {
@@ -230,21 +258,20 @@ UdpKohClient::Send()
 {
     NS_LOG_FUNCTION(this);
     NS_ASSERT(m_sendEvent.IsExpired());
-    NS_LOG_UNCOND("UdpKohClient::Send()");
+    // NS_LOG_UNCOND("UdpKohClient::Send()");
     Address from;
     Address to;
     m_sendSocket->GetSockName(from);
     m_sendSocket->GetPeerName(to);
-    SeqTsHeader seqTs;
-    seqTs.SetSeq(m_sent);
-    NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
-    Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
+    // SeqTsHeader seqTs;
+    // seqTs.SetSeq(m_sent);//이거 쓸거면 m_sent 재정의 필요
+    // NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
+    Ptr<Packet> p = Create<Packet>(m_size);
+    // Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
 
     // Trace before adding header, for consistency with PacketSink
     m_txTrace(p);
     m_txTraceWithAddresses(p, from, to);
-
-    p->AddHeader(seqTs);
 
     tag.txTime = Simulator::Now();
     p->AddPacketTag(tag);
@@ -252,6 +279,7 @@ UdpKohClient::Send()
     if ((m_sendSocket->Send(p)) >= 0)
     {
         ++m_sent;
+        ++m_totalSent;
         m_totalTx += p->GetSize();
 #ifdef NS3_LOG_ENABLE
         NS_LOG_INFO("TraceDelay TX " << m_size << " bytes to " << m_peerAddressString << " Uid: "
@@ -271,22 +299,74 @@ UdpKohClient::Send()
     }
 }
 
+void
+UdpKohClient::SendBurst()
+{
+    // Burst의 첫 번째 패킷 전송을 스케줄링
+    ScheduleNextPacketInBurst(0);
+
+    // 다음 Burst를 10ms 뒤에 스케줄링
+    Simulator::Schedule(m_burstInterval, &UdpKohClient::SendBurst, this);
+}
+
+void
+UdpKohClient::ScheduleNextPacketInBurst(uint32_t count)
+{
+    if (count < m_burstPacketCount)
+    {
+        // 패킷 1개 생성 및 전송
+        SeqTsHeader seqTs;
+        seqTs.SetSeq(m_sent);
+        NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
+        Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
+
+        p->AddHeader(seqTs);
+
+        tag.txTime = Simulator::Now();
+        p->AddPacketTag(tag);
+        m_sendSocket->Send(p);
+        m_sent++;
+
+        // 아주 작은 지연 후 다음 패킷 전송을 스케줄링 (0초 지연도 가능)
+        Simulator::Schedule(MicroSeconds(0),
+                            &UdpKohClient::ScheduleNextPacketInBurst,
+                            this,
+                            count + 1);
+    }
+}
+
 uint64_t
 UdpKohClient::GetTotalTx() const
 {
     return m_totalTx;
 }
 
+uint64_t
+UdpKohClient::GetTotalSent()
+{
+    return m_totalSent;
+}
+
 void
 UdpKohClient::SelectInterface(uint32_t i)
 {
-    if (i==0)
+    if (i == 0)
     {
+        NS_LOG_UNCOND("UdpKohClient change to UU socket");
+        // m_interval = Seconds(1);
+        m_interval = Seconds(0.001);
+        m_size = 1000;
         m_sendSocket = m_uuSocket;
-    }else if (i==1)
+    }
+    else if (i == 1)
     {
+        NS_LOG_UNCOND("UdpKohClient change to PC5 socket");
+        // m_interval = Seconds(1);
+        m_interval = Seconds(0.001);
+        m_size = 1000;
         m_sendSocket = m_slSocket;
-    }else
+    }
+    else
     {
         NS_LOG_UNCOND("selectinterface error");
     }
@@ -295,9 +375,8 @@ UdpKohClient::SelectInterface(uint32_t i)
 void
 UdpKohClient::SetTag(KohTag temp)
 {
-    tag=temp;
+    tag = temp;
 }
-
 
 // [핵심 수정] changeInterface() 함수
 void
@@ -318,9 +397,12 @@ UdpKohClient::changeInterface()
         // staticRouting->AddHostRouteTo(Ipv4Address::ConvertFrom(m_slServerAddress),
         //                               ("192.168.10.2"),
         //                               slInterfaceIndex);
-        // NS_LOG_UNCOND("Route ADDED: slInterfaceIndex=" << slInterfaceIndex << " via " << slInterfaceIndex);
+        // NS_LOG_UNCOND("Route ADDED: slInterfaceIndex=" << slInterfaceIndex << " via " <<
+        // slInterfaceIndex);
 
         // 2. 전송 소켓을 SL 소켓으로 변경
+        m_interval = Seconds(0.001);
+        m_size = 1000;
         m_sendSocket = m_slSocket;
     }
     else
@@ -352,7 +434,8 @@ UdpKohClient::changeInterface()
         // {
         //     NS_LOG_WARN("Could not find route to remove for " << m_slServerAddress);
         // }
-
+        m_interval = Seconds(0.001);
+        m_size = 1000;
         // 2. 전송 소켓을 Uu 소켓으로 다시 변경 (Default Route를 따름)
         m_sendSocket = m_uuSocket;
     }

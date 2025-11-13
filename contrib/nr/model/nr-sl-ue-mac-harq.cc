@@ -213,6 +213,8 @@ NrSlUeMacHarq::AddPacket(uint32_t dstL2Id, uint8_t lcId, uint8_t harqId, Ptr<Pac
     // Each LC have one MAC PDU in a TB. Packet burst here, imitates a TB, therefore,
     // the number of LCs inside lcidList and the packets inside the packet burst
     // must be equal.
+    // NS_LOG_UNCOND(m_pktBuffer.at(harqId).lcidList.size());
+    // NS_LOG_UNCOND(m_pktBuffer.at(harqId).pktBurst->GetNPackets());
     NS_ABORT_MSG_IF(m_pktBuffer.at(harqId).lcidList.size() !=
                         m_pktBuffer.at(harqId).pktBurst->GetNPackets(),
                     "Mismatch in number of LCIDs and the number of packets for SL HARQ ID "

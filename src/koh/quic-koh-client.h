@@ -39,6 +39,14 @@ namespace ns3
         void changeInterface();
         void setInterface(Ptr<NetDevice> uu, Ptr<NetDevice> sl);
         // [수정] RSU의 Sidelink IP 주소(Next Hop)를 받기 위한 파라미터 추가
+        void SetTag(KohTag temp);
+        void SelectInterface(uint32_t i);
+        uint16_t GetUeId();
+        uint32_t GetSentCount();
+        void clearCount();
+        uint64_t GetTotalSent();
+        Callback<void, KStats> m_KCallback;
+
     private:
         void StartApplication() override;
         void StopApplication() override;
@@ -54,6 +62,9 @@ namespace ns3
         uint32_t m_size;
 
         uint32_t m_sent;
+        uint32_t m_sentSync;
+        uint32_t m_totalSent;
+
         uint64_t m_totalTx;
         Ptr<Socket> m_uuSocket;
         Ptr<Socket> m_slSocket;
@@ -72,6 +83,14 @@ namespace ns3
         EventId m_sendEvent;
         uint32_t m_numStreams;
         uint32_t m_lastUsedStream;
+
+        void SendBurst();
+        void ScheduleNextPacketInBurst(uint32_t count);
+        void SyncSent();
+
+        uint32_t m_burstPacketCount;
+        Time     m_burstInterval;
+        KohTag tag;
 
 #ifdef NS3_LOG_ENABLE
         std::string m_peerAddressString;

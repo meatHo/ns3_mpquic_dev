@@ -111,11 +111,41 @@ QuicKohClient::QuicKohClient()
     m_sendEvent = EventId();
     m_lastUsedStream = 1;
     m_slSocketConnected=false;
+
+    m_totalSent = 0;
 }
 
 QuicKohClient::~QuicKohClient()
 {
     NS_LOG_FUNCTION(this);
+}
+
+uint16_t
+QuicKohClient::GetUeId()
+{
+    return tag.ueId;
+}
+
+void
+QuicKohClient::clearCount()
+{
+    m_sent = 0;
+}
+
+void
+QuicKohClient::SyncSent()
+{
+    m_sentSync = m_sent;
+    m_sent = 0;
+    Simulator::Schedule(Seconds(1.0), &QuicKohClient::SyncSent, this);
+}
+
+uint32_t
+QuicKohClient::GetSentCount()
+{
+    uint32_t temp = m_sent;
+    m_sent = 0;
+    return temp;
 }
 
 
@@ -183,8 +213,8 @@ QuicKohClient::StartApplication()
 void
 QuicKohClient::HandleRecv(Ptr<Socket> socket)
 {
+    NS_LOG_UNCOND("QuicKohClient::HandleRecv");
     NS_LOG_FUNCTION(this << socket);
-
     Address from;
     Ptr<Packet> packet = socket->RecvFrom(from);
     uint8_t* buffer = new uint8_t[packet->GetSize() + 1];
@@ -193,9 +223,19 @@ QuicKohClient::HandleRecv(Ptr<Socket> socket)
 
     if (InetSocketAddress::IsMatchingType(from))
     {
-        NS_LOG_UNCOND("Received a " << packet->GetSize() << " bytes packet from "
-                                    << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
-                                    << buffer);
+        // NS_LOG_UNCOND("Received a "<<tag.ueId<<" ue " << packet->GetSize() << " bytes packet from
+        // "
+        //                             << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
+        //                             << buffer);
+
+        KStats stats;
+        packet->CopyData((uint8_t*)&stats, sizeof(KStats));
+        stats.sentCount = m_sentSync;
+        // NS_LOG_UNCOND("UE " << stats.ueId
+        //   << " RecvCount=" << stats.recvCount
+        //   << " PRR=" << stats.recvCount/m_sentSync
+        //   << " Latency=" << stats.avgLatency << " ms");
+        m_KCallback(stats);
     }
     else if (Inet6SocketAddress::IsMatchingType(from))
     {
@@ -232,26 +272,32 @@ QuicKohClient::StopApplication()
 void
 QuicKohClient::Send()
 {
+    NS_LOG_UNCOND("QuicKohClient::Send");
     NS_LOG_FUNCTION(this);
     NS_ASSERT(m_sendEvent.IsExpired());
-    NS_LOG_UNCOND("QuicKohClient::Send()");
+    // NS_LOG_UNCOND("UdpKohClient::Send()");
     Address from;
     Address to;
     m_sendSocket->GetSockName(from);
     m_sendSocket->GetPeerName(to);
     SeqTsHeader seqTs;
-    seqTs.SetSeq(m_sent);
+    seqTs.SetSeq(m_totalSent);//이거 쓸거면 m_sent 재정의 필요
     NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
+    // Ptr<Packet> p = Create<Packet>(m_size);
     Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
+    p->AddHeader(seqTs);
 
     // Trace before adding header, for consistency with PacketSink
     m_txTrace(p);
     m_txTraceWithAddresses(p, from, to);
 
-    p->AddHeader(seqTs);
+    tag.txTime = Simulator::Now();
+    p->AddPacketTag(tag);
+
     if ((m_sendSocket->Send(p)) >= 0)
     {
         ++m_sent;
+        ++m_totalSent;
         m_totalTx += p->GetSize();
 #ifdef NS3_LOG_ENABLE
         NS_LOG_INFO("TraceDelay TX " << m_size << " bytes to " << m_peerAddressString << " Uid: "
@@ -264,6 +310,7 @@ QuicKohClient::Send()
         NS_LOG_INFO("Error while sending " << m_size << " bytes to " << m_peerAddressString);
     }
 #endif // NS3_LOG_ENABLE
+    NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
 
     if (m_sent < m_count || m_count == 0)
     {
@@ -277,11 +324,41 @@ QuicKohClient::GetTotalTx() const
     return m_totalTx;
 }
 
-void
-QuicKohClient::SelectInterface(Ptr<Socket> socket)
+uint64_t
+QuicKohClient::GetTotalSent()
 {
-    // 여기에 rsu가 좋은지 gnb가 좋은지 고르는 함수 추가
-    m_sendSocket = socket;
+    return m_totalSent;
+}
+
+void
+QuicKohClient::SelectInterface(uint32_t i)
+{
+    if (i == 0)
+    {
+        NS_LOG_UNCOND("UdpKohClient change to UU socket");
+        // m_interval = Seconds(1);
+        m_interval = Seconds(0.001);
+        m_size = 1000;
+        m_sendSocket = m_uuSocket;
+    }
+    else if (i == 1)
+    {
+        NS_LOG_UNCOND("UdpKohClient change to PC5 socket");
+        // m_interval = Seconds(1);
+        m_interval = Seconds(0.001);
+        m_size = 1000;
+        m_sendSocket = m_slSocket;
+    }
+    else
+    {
+        NS_LOG_UNCOND("selectinterface error");
+    }
+}
+
+void
+QuicKohClient::SetTag(KohTag temp)
+{
+    tag = temp;
 }
 
 // [핵심 수정] changeInterface() 함수

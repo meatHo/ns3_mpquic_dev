@@ -42,6 +42,7 @@ static std::map<uint16_t, Ptr<UdpKohClient>> g_clientApps;
 
 static std::map<uint16_t, double> g_latencyMap;
 static std::map<uint16_t, double> g_prrMap;
+// static std::map<uint16_t, double> g_totalPrrMap;
 static std::map<uint16_t, double> g_uuAvgMap;
 static std::map<uint16_t, double> g_slAvgMap;
 static std::map<uint16_t, Vector> g_velMap;
@@ -125,7 +126,7 @@ std::map<uint16_t, uint32_t> g_ueSlRsrpCount;
 std::map<uint16_t, uint16_t> g_ueIdToImsi;  // ueId -> IMSI
 std::map<uint16_t, uint32_t> g_ueIdToRNTI;  // ueId -> RNTI
 
-static Ptr<OpenGymInterface> openGym = CreateObject<OpenGymInterface> (5555);
+// static Ptr<OpenGymInterface> openGym = CreateObject<OpenGymInterface> (5555);
 
 void
 TotalParameter(Ptr<UdpKohClient> client, Ptr<UdpKohServer> server, Ptr<Node>& node)
@@ -133,9 +134,11 @@ TotalParameter(Ptr<UdpKohClient> client, Ptr<UdpKohServer> server, Ptr<Node>& no
     uint16_t ueId = client->GetUeId();
     uint32_t sent = client->GetSentCount();
     uint32_t recv = server->GetRecvCount(ueId);
+    NS_LOG_UNCOND("sent : "<<sent<<"  recv : "<<recv);
+
     double latency = server->GetLatency(ueId);
     double prr = (sent > 0) ? (double)recv / sent : 0.0;
-
+    prr = std::min(prr, 1.0);
     Ptr<MobilityModel> mob = node->GetObject<MobilityModel>();
     Vector pos = mob->GetPosition();
     Vector vel = mob->GetVelocity();
@@ -177,7 +180,7 @@ TotalParameter(Ptr<UdpKohClient> client, Ptr<UdpKohServer> server, Ptr<Node>& no
     Simulator::Schedule(Seconds(1), &TotalParameter, client, server, node);
     if (ueId==g_targetUeId)
     {
-        openGym->NotifyCurrentState(); // ★ 이것이 관측/액션 루프를 돌리는 트리거
+        // openGym->NotifyCurrentState(); // ★ 이것이 관측/액션 루프를 돌리는 트리거
     }
 }
 
@@ -198,15 +201,15 @@ TotalParameter(Ptr<UdpKohClient> client, Ptr<UdpKohServer> server, Ptr<Node>& no
 
 void UeMeasCallback(uint16_t cellId, uint16_t IMSI, uint16_t RNTI, double RSRP, uint8_t BWPId)
 {
-    std::cout << "📶 Uu [Meas] cellId=" << cellId << " IMSI=" << IMSI << " BWPId=" << BWPId
-    << "  RNTI=" << RNTI << " RSRP=" << RSRP << " dB\n";
+    // std::cout << "📶 Uu [Meas] cellId=" << cellId << " IMSI=" << IMSI << " BWPId=" << BWPId
+    // << "  RNTI=" << RNTI << " RSRP=" << RSRP << " dB\n";
     g_ueUuRsrpSum[IMSI] += RSRP;
     g_ueUuRsrpCount[IMSI] += 1;
 }
 
 void UeSlMeasCallback(uint16_t RNTI, uint32_t L2ID, double RSRP)
 {
-    std::cout << "📶 Sl [Meas] RNTI=" << RNTI << " L2ID=" << L2ID << " RSRP=" << RSRP << " dB\n";
+    // std::cout << "📶 Sl [Meas] RNTI=" << RNTI << " L2ID=" << L2ID << " RSRP=" << RSRP << " dB\n";
     g_ueSlRsrpSum[RNTI] += RSRP;
     g_ueSlRsrpCount[RNTI] += 1;
 }
@@ -272,6 +275,14 @@ void PrintUeInfo(NodeContainer ueNodes)
 // 패킷 정보를 출력할 콜백 함수
 void Ipv4PacketTraceAtRsu(Ptr<const Packet> packet, Ptr<Ipv4> Ipv4, uint32_t interfaceIndex)
 {
+    // static uint16_t asdf;
+    // asdf++;
+    // if (asdf%200==0)
+    // {
+    //     std::cout<<Simulator::Now()<<"rsu packet :"<<asdf<<std::endl;
+    // }
+
+
     Ipv4Header Ipv4Header;
     packet->PeekHeader(Ipv4Header);
 
@@ -324,12 +335,13 @@ int main(void)
 {
     Ipv4Address groupAddress4("224.1.1.1");
     Ipv4Address rsrpAddress("239.255.0.1");
-    uint16_t ueNum = 2;
-    Time simTime = Seconds(93);
+    uint16_t ueNum = 1;
+    Time simTime = Seconds(70);
     std::string csvFileName = "/home/kiho/ns-3-quic/scratch/final_3d_trace";
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
+    // nrHelper->SetAttribute("HarqEnabled",BooleanValue(false));//이놈은 에러남
     nrHelper->SetEpcHelper(epcHelper);
 
     NodeContainer gnbNodeContainer;
@@ -351,6 +363,15 @@ int main(void)
     Ptr<Node> ue1 = ueNodeContainer.Get(0);
     Ptr<Node> ue2 = ueNodeContainer.Get(1);
 
+    NS_LOG_UNCOND("PGW NodeId: "    << pgw->GetId());
+    NS_LOG_UNCOND("Server NodeId: " << server->GetId());
+    NS_LOG_UNCOND("RSU NodeId: "    << rsu->GetId());
+    NS_LOG_UNCOND("gNB NodeId: "    << gnb->GetId());
+    NS_LOG_UNCOND("Router NodeId: " << router->GetId());
+    NS_LOG_UNCOND("UE1 NodeId: "    << ue1->GetId());
+    // NS_LOG_UNCOND("UE2 NodeId: "    << ue2->GetId());
+
+
     MobilityHelper mobility;
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(gnbNodeContainer);
@@ -363,84 +384,89 @@ int main(void)
     mobility.Install(routerNodeContainer);
     routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(900.0,4000.0,80.0));
 
-    //UE위치 할당
-    mobility.SetMobilityModel("ns3::WaypointMobilityModel");
-    mobility.Install(ueNodeContainer);
-    for (uint32_t i = 0; i < ueNum; i++)
-    {
-        std::vector<WaypointData> waypoints;
-        std::string finalFileName;
-        if (i==0)
-        {
-            finalFileName = csvFileName+".csv";
-        }else
-        {
-            finalFileName = csvFileName+"_"+std::to_string(i+1)+".csv";
-        }
+    //rsu테스트 용
+    // mobility.Install(ueNodeContainer);
+    // ueNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
 
-        ueNodeContainer.Get(i)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
-        Ptr<WaypointMobilityModel> ueMobility = ueNodeContainer.Get(i)->GetObject<WaypointMobilityModel>();
+    // UE위치 할당 실제 시나리오
+     mobility.SetMobilityModel("ns3::WaypointMobilityModel");
+     mobility.Install(ueNodeContainer);
+     for (uint32_t i = 0; i < ueNum; i++)
+     {
+         std::vector<WaypointData> waypoints;
+         std::string finalFileName;
+         if (i==0)
+         {
+             finalFileName = csvFileName+".csv";
+         }else
+         {
+             finalFileName = csvFileName+"_"+std::to_string(i+1)+".csv";
+         }
+
+         ueNodeContainer.Get(i)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
+         Ptr<WaypointMobilityModel> ueMobility = ueNodeContainer.Get(i)->GetObject<WaypointMobilityModel>();
 
 
-        std::ifstream file(finalFileName);
+         std::ifstream file(finalFileName);
 
-        if (!file.is_open())
-        {
-            std::cout << "Could not open CSV file: " << finalFileName << std::endl;
-            return 2;
-        }
+         if (!file.is_open())
+         {
+             std::cout << "Could not open CSV file: " << finalFileName << std::endl;
+             return 2;
+         }
 
-        std::string line;
-        // 헤더 라인 무시
-        std::getline(file, line);
+         std::string line;
+         // 헤더 라인 무시
+         std::getline(file, line);
 
-        double maxTime = 0.0;
-        while (std::getline(file, line))
-        {
-            std::stringstream ss(line);
-            std::string value;
-            WaypointData data;
+         double maxTime = 0.0;
+         while (std::getline(file, line))
+         {
+             std::stringstream ss(line);
+             std::string value;
+             WaypointData data;
 
-            // 각 열 파싱
-            std::getline(ss, value, ','); // time
-            data.time = std::stod(value);
-            std::getline(ss, value, ','); // vehicle_id (skip)
-            std::getline(ss, value, ','); // x
-            data.x = std::stod(value);
-            std::getline(ss, value, ','); // y
-            data.y = std::stod(value);
-            std::getline(ss, value, ','); // z
-            data.z = std::stod(value);
-            std::getline(ss, value, ','); // speed
-            data.speed = std::stod(value);
-            std::getline(ss, value, ','); // lon (skip)
-            std::getline(ss, value, ','); // lat (skip)
+             // 각 열 파싱
+             std::getline(ss, value, ','); // time
+             data.time = std::stod(value);
+             std::getline(ss, value, ','); // vehicle_id (skip)
+             std::getline(ss, value, ','); // x
+             data.x = std::stod(value);
+             std::getline(ss, value, ','); // y
+             data.y = std::stod(value);
+             std::getline(ss, value, ','); // z
+             data.z = std::stod(value);
+             std::getline(ss, value, ','); // speed
+             data.speed = std::stod(value);
+             std::getline(ss, value, ','); // lon (skip)
+             std::getline(ss, value, ','); // lat (skip)
 
-            waypoints.push_back(data);
-            if (data.time > maxTime)
-            {
-                maxTime = data.time;
-            }
-        }
-        file.close();
-        NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV "<< i);
+             waypoints.push_back(data);
+             if (data.time > maxTime)
+             {
+                 maxTime = data.time;
+             }
+         }
+         file.close();
+         NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV "<< i);
 
-        // 읽어온 CSV 데이터를 Waypoint로 추가
-        for (const auto& data : waypoints)
-        {
-            Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
-            ueMobility->AddWaypoint(waypoint);
-        }
-    }
+         // 읽어온 CSV 데이터를 Waypoint로 추가
+         for (const auto& data : waypoints)
+         {
+             Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
+             ueMobility->AddWaypoint(waypoint);
+         }
+     }
 
 
 
     // gnb bwp 설정
 
     nrHelper->SetSchedulerTypeId(TypeId::LookupByName("ns3::NrMacSchedulerTdmaRR"));
+    // nrHelper -> SetSchedulerAttribute ( "EnableHarqReTx" , BooleanValue ( false ));
 
     double gNbFrequencyBand = 3.5e9; // 3.5GHz
-    double gNbBandwidthBand = 1e8;   // 100MHz
+    double gNbBandwidthBand = 2e8;   // 100MHz
     uint8_t gNbnumContiguousCc = 1;  // 100MHz 안에 몇개의 CC가 들어가 있는지
     uint16_t gNbNumerology = 1;
     double gNbTxPower = 43.0; // 단위dBm
@@ -476,13 +502,13 @@ int main(void)
     // // NRHelper에 적용
     // nrHelper->SetPathlossAttribute("PathlossModel", PointerValue(bldgLoss));
 
-    nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(true));
+    nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(false));
 
     // 안테나 설정
     nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(4));
     nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(8));
     nrHelper->SetGnbAntennaAttribute("AntennaElement",
-                                     PointerValue(CreateObject<ThreeGppAntennaModel>()));
+                                     PointerValue(CreateObject<IsotropicAntennaModel>()));
     nrHelper->SetGnbBwpManagerAlgorithmAttribute("NGBR_VIDEO_TCP_PREMIUM",
                                                  UintegerValue(0)); // bwp하나만 한거
 
@@ -492,6 +518,8 @@ int main(void)
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetAttribute("TxPower", DoubleValue(gNbTxPower));
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetAttribute("Pattern", StringValue(pattern));
     nrHelper->GetGnbPhy(gnbNetDev.Get(0), 0)->SetNoiseFigure(5.0);
+    // nrHelper->GetGnbMac(gnbNetDev.Get(0), 0)->SetAttribute("NumHarqProcess",UintegerValue(1));//harq
+
 
     // 설정 적용
     for (auto it = gnbNetDev.Begin(); it != gnbNetDev.End(); ++it)
@@ -516,6 +544,7 @@ int main(void)
     {
         nrHelper->GetUePhy(*it,0)->SetNoiseFigure((7.0));
         nrHelper->GetUePhy(*it, 0)->SetAttribute("TxPower", DoubleValue(ueTxPower));
+        // nrHelper->GetUeMac(*it, 0)->SetAttribute("NumHarqProcess",UintegerValue(1));//harq
     }
 
     //설정 적용
@@ -544,7 +573,7 @@ int main(void)
     CcBwpCreator::SimpleOperationBandConf RsuBandConf(RsuFrequencyBand,
                                                       RsuBandwidthHz,
                                                       RsunumContiguousCc,
-                                                      BandwidthPartInfo::V2V_Highway);
+                                                      BandwidthPartInfo::RMa_LoS);
     OperationBandInfo RsuBand = RsuCcBwpCreator.CreateOperationBandContiguousCc(RsuBandConf);
 
     nrHelper->InitializeOperationBand(&RsuBand);
@@ -559,9 +588,9 @@ int main(void)
     nrHelper->SetUePhyAttribute("TxPower", DoubleValue(RsuTxPower)); // dBm그대로 넣는듯
 
     nrHelper->SetUeMacTypeId(NrSlUeMac::GetTypeId()); // 이거 필수임 이유는 찾아봐 todo
-    nrHelper->SetUeMacAttribute("EnableSensing", BooleanValue(false));
-    nrHelper->SetUeMacAttribute("T1", UintegerValue(2));
-    nrHelper->SetUeMacAttribute("T2", UintegerValue(33));
+    nrHelper->SetUeMacAttribute("EnableSensing", BooleanValue(true));
+    nrHelper->SetUeMacAttribute("T1", UintegerValue(2)); //tft
+    nrHelper->SetUeMacAttribute("T2", UintegerValue(12)); //tft
     nrHelper->SetUeMacAttribute("ActivePoolId", UintegerValue(0));
 
     uint8_t bwpIdForGbrMcptt = 0;
@@ -623,7 +652,7 @@ int main(void)
 
 
     nrSlHelper->SetNrSlSchedulerTypeId(NrSlUeMacSchedulerFixedMcs::GetTypeId());
-    nrSlHelper->SetUeSlSchedulerAttribute("Mcs", UintegerValue(14));
+    nrSlHelper->SetUeSlSchedulerAttribute("Mcs", UintegerValue(18));
 
     nrSlHelper->PrepareUeForSidelink(SlNetDev, bwpIdContainer);
 
@@ -631,15 +660,16 @@ int main(void)
     // get it from pool factory
     Ptr<NrSlCommResourcePoolFactory> ptrFactory = Create<NrSlCommResourcePoolFactory>();
     std::vector<std::bitset<1>> slBitmap =
-        {1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1}; // The sidelink time resource bitmap
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // The sidelink time resource bitmap
+    //시간 자원의 허가 여부
 
     ptrFactory->SetSlTimeResources(slBitmap);
-    ptrFactory->SetSlSensingWindow(100);    //!< Start of the sensing window in milliseconds.
-    ptrFactory->SetSlSelectionWindow(5);    //!< End of the selection window in number of slots.
-    ptrFactory->SetSlFreqResourcePscch(10); // PSCCH RBs
-    ptrFactory->SetSlSubchannelSize(50);
-    ptrFactory->SetSlMaxNumPerReserve(3);
-    std::list<uint16_t> resourceReservePeriodList = {0, 100}; // in ms
+    ptrFactory->SetSlSensingWindow(100);    //!< Start of the sensing window in milliseconds. 전100ms동안 다른 단말들이 어떤 자원 활용했는지 관찰
+    ptrFactory->SetSlSelectionWindow(5);    //!< End of the selection window in number of slots. 5슬롯 내에 있는 자원 중 하나 선택
+    ptrFactory->SetSlFreqResourcePscch(12); // PSCCH RBs
+    ptrFactory->SetSlSubchannelSize(50); // PSSCH 자원 블록
+    ptrFactory->SetSlMaxNumPerReserve(3); // 한번 자원 할당 받으면 이와 동일 패턴의 자원을 3회 동안 사용하겠다는 것
+    std::list<uint16_t> resourceReservePeriodList = {0, 10}; // in ms //자원 예약 주기
     ptrFactory->SetSlResourceReservePeriodList(resourceReservePeriodList);
 
     LteRrcSap::SlResourcePoolNr pool = ptrFactory->CreatePool();
@@ -705,7 +735,7 @@ int main(void)
     slUeSelectedPreConfig.slProbResourceKeep = 0;
     // Configure the SlPsschTxParameters IE
     LteRrcSap::SlPsschTxParameters psschParams;
-    psschParams.slMaxTxTransNumPssch = 5;
+    psschParams.slMaxTxTransNumPssch = 3;// harq 숫자 기본값5인데 낮춤. harq가 나머지에 할당
     // Configure the SlPsschTxConfigList IE
     LteRrcSap::SlPsschTxConfigList pscchTxConfigList;
     pscchTxConfigList.slPsschTxParameters[0] = psschParams;
@@ -721,6 +751,31 @@ int main(void)
     slPreConfigNr.slPreconfigFreqInfoList[0] = slFreConfigCommonNr;
 
     nrSlHelper->InstallNrSlPreConfiguration(SlNetDev, slPreConfigNr);
+
+    // sidelink 무선 베어러 설정=====================================================================
+    Ptr<LteSlTft> tft;
+    uint32_t dstL2Id = 255;
+    Time delayBudget = Seconds(0.5);
+
+    SidelinkInfo slInfo;
+    slInfo.m_castType = SidelinkInfo::CastType::Groupcast;
+    slInfo.m_dstL2Id = dstL2Id;
+    slInfo.m_rri = MilliSeconds(10);
+    slInfo.m_pdb = delayBudget;
+    slInfo.m_dynamic = false;
+    slInfo.m_harqEnabled = false;
+
+    // 1. 데이터 트래픽(groupAddress4) 베어러 설정
+    // UE와 RSU 양쪽 모두에 BIDIRECTIONAL로 설정
+    Ptr<LteSlTft> tft_data = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, groupAddress4, slInfo);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft_data); // UE에 활성화
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft_data);  // RSU에도 활성화
+
+    // 2. RSRP 측정 트래픽(rsrpAddress) 베어러 설정
+    // UE와 RSU 양쪽 모두에 BIDIRECTIONAL로 설정
+    Ptr<LteSlTft> tft_rsrp = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, rsrpAddress, slInfo);
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft_rsrp); // UE에 활성화
+    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft_rsrp);  // RSU에도 활성화
 
     // 진짜 시작todo:
     // ===============================================================================
@@ -782,10 +837,10 @@ int main(void)
     Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
     Ipv4Address rsuSlIp = ueSlIface.GetAddress(0);
     Ipv4Address ue1SlIp = ueSlIface.GetAddress(1);
-    Ipv4Address ue2SlIp = ueSlIface.GetAddress(2);
+    // Ipv4Address ue2SlIp = ueSlIface.GetAddress(2);
     std::cout<<"rsuSlIp : "<<rsuSlIp<<std::endl;
     std::cout<<"ue1SlIp : "<<ue1SlIp<<std::endl;
-    std::cout<<"ue2SlIp : "<<ue2SlIp<<std::endl;
+    // std::cout<<"ue2SlIp : "<<ue2SlIp<<std::endl;
 
 
     // 라우팅======================================================
@@ -924,39 +979,14 @@ int main(void)
     // stackHelper.PrintRoutingTable(pgw);
 
     // sidelink 무선 베어러 설정=====================================================================
-    Ptr<LteSlTft> tft;
-    uint32_t dstL2Id = 255;
-    Time delayBudget = Seconds(0);
 
-    SidelinkInfo slInfo;
-    slInfo.m_castType = SidelinkInfo::CastType::Groupcast;
-    slInfo.m_dstL2Id = dstL2Id;
-    slInfo.m_rri = MilliSeconds(100);
-    slInfo.m_pdb = delayBudget;
-    slInfo.m_dynamic = false;
-    slInfo.m_harqEnabled = true;
-
-    // 1. 데이터 트래픽(groupAddress4) 베어러 설정
-    // UE와 RSU 양쪽 모두에 BIDIRECTIONAL로 설정
-    Ptr<LteSlTft> tft_data = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, groupAddress4, slInfo);
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft_data); // UE에 활성화
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft_data);  // RSU에도 활성화
-
-    // 2. RSRP 측정 트래픽(rsrpAddress) 베어러 설정
-    // UE와 RSU 양쪽 모두에 BIDIRECTIONAL로 설정
-    Ptr<LteSlTft> tft_rsrp = Create<LteSlTft>(LteSlTft::Direction::BIDIRECTIONAL, rsrpAddress, slInfo);
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft_rsrp); // UE에 활성화
-    nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft_rsrp);  // RSU에도 활성화
-
-    // sidelink 무선 베어러 설정=====================================================================
-
-    SidelinkInfo slInfo1;
-    slInfo1.m_castType = SidelinkInfo::CastType::Unicast;
-    slInfo1.m_dstL2Id = dstL2Id;
-    slInfo1.m_rri = MilliSeconds(100);
-    slInfo1.m_pdb = delayBudget;
-    slInfo1.m_dynamic = false;
-    slInfo1.m_harqEnabled = true;
+    // SidelinkInfo slInfo1;
+    // slInfo1.m_castType = SidelinkInfo::CastType::Unicast;
+    // slInfo1.m_dstL2Id = dstL2Id;
+    // slInfo1.m_rri = MilliSeconds(100);
+    // slInfo1.m_pd = delayBudget;
+    // slInfo1.m_dynamic = false;
+    // slInfo1.m_harqEnabled = true;
 
     // for (auto it = ueSlNetDev.Begin(); it != ueSlNetDev.End(); ++it)
     // {
@@ -994,14 +1024,15 @@ int main(void)
     serverApp->SetAttribute("Port", UintegerValue(serverPort));
     serverApp->SetStartTime(Seconds(1.0));
     serverApp->SetStopTime(simTime);
-
+    Simulator::Schedule(Seconds(9.0), &UdpKohServer::clearCount, serverApp,0); //학습시작전 초기화
 
     for (uint16_t i = 0; i < ueNodeContainer.GetN(); ++i)
     {
         Ptr<UdpKohClient> clientApp = CreateObject<UdpKohClient>();
-        clientApp->SetAttribute("MaxPackets", UintegerValue(100));
-        clientApp->SetAttribute("Interval", TimeValue(Seconds(1.0)));
-        clientApp->SetAttribute("PacketSize", UintegerValue(100));
+        clientApp->SetAttribute("MaxPackets", UintegerValue(1000000));
+        // clientApp->SetAttribute("Interval", TimeValue(Seconds(0.01)));
+        clientApp->SetAttribute("PacketSize", UintegerValue(1000));//1492=1500-8(udp) 40000되어야 10ms에 32mbps임
+        clientApp->SetAttribute("Interval", TimeValue(Seconds(0.001)));
         clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
         clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
         clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
@@ -1032,7 +1063,9 @@ int main(void)
             }
         }
         g_clientApps[i] = clientApp;
-        Simulator::Schedule(Seconds(3.0), &TotalParameter, clientApp, serverApp, ueNodeContainer.Get(i));
+        Simulator::Schedule(Seconds(9.0), &UdpKohClient::clearCount, clientApp); //학습시작전 초기화
+        // Simulator::Schedule(Seconds(10.0), &TotalParameter, clientApp, serverApp, ueNodeContainer.Get(i));
+        Simulator::Schedule(Seconds(2.0), &TotalParameter, clientApp, serverApp, ueNodeContainer.Get(i));
     }
 
 
@@ -1121,7 +1154,7 @@ int main(void)
     // Config::ConnectWithoutContext("/NodeList/" + std::to_string(server->GetId()) +
     //                           "/$ns3::Ipv4L3Protocol/Rx",
     //                       MakeCallback(&Ipv4PacketTraceAtServer));
-    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(ue->GetId()) +
+    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(gnb->GetId()) +
     //                           "/$ns3::Ipv4L3Protocol/Rx",
     //                       MakeCallback(&Ipv4PacketTraceAtUe));
 
@@ -1133,15 +1166,16 @@ int main(void)
 
     // OpenGym Env
     // uint32_t openGymPort = 5555;
-
-    openGym->SetGetActionSpaceCb( MakeCallback (&GetActionSpace) );
-    openGym->SetGetObservationSpaceCb( MakeCallback (&GetObservationSpace) );
-    openGym->SetGetGameOverCb( MakeCallback (&GetGameOver) );
-    openGym->SetGetObservationCb( MakeCallback (&GetObservation) );
-    openGym->SetGetRewardCb( MakeCallback (&GetReward) );
-    openGym->SetExecuteActionsCb( MakeCallback (&ExecuteActions) );
     // double envStepTime = 0.5;
     // Simulator::Schedule (Seconds(0.0), &ScheduleNextStateRead, envStepTime, openGym);
+
+    // openGym->SetGetActionSpaceCb( MakeCallback (&GetActionSpace) );
+    // openGym->SetGetObservationSpaceCb( MakeCallback (&GetObservationSpace) );
+    // openGym->SetGetGameOverCb( MakeCallback (&GetGameOver) );
+    // openGym->SetGetObservationCb( MakeCallback (&GetObservation) );
+    // openGym->SetGetRewardCb( MakeCallback (&GetReward) );
+    // openGym->SetExecuteActionsCb( MakeCallback (&ExecuteActions) );
+
 
     // --- 시뮬레이션 실행 ---
     Simulator::Stop(simTime);

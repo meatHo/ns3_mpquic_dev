@@ -28,8 +28,7 @@
 #include "ns3/nr-sl-ue-cphy-sap.h"
 #include "ns3/oh-buildings-propagation-loss-model.h"
 #include "ns3/point-to-point-module.h"
-#include "ns3/udp-koh-client.h"
-#include "ns3/udp-koh-server.h"
+
 #include "ns3/quic-koh-server.h"
 #include "ns3/quic-koh-client.h"
 #include "ns3/quic-helper.h"
@@ -642,27 +641,20 @@ int main(void)
     serverApp->SetStopTime(simTime);
 
     Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
-    clientApp->SetAttribute("MaxPackets", UintegerValue(45));
+    clientApp->SetAttribute("MaxPackets", UintegerValue(1));
     clientApp->SetAttribute("Interval", TimeValue(Seconds(1.0)));
-    clientApp->SetAttribute("PacketSize", UintegerValue(100));
+    clientApp->SetAttribute("PacketSize", UintegerValue(1000));
     clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
     clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
     clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
     clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
 
     ue->AddApplication(clientApp);
-    clientApp->SetStartTime(Seconds(2.0));
+    clientApp->SetStartTime(Seconds(4.0));
     clientApp->SetStopTime(simTime);
-
-
-
-
-
-
 
     // todo:여기다가포트랑 주소 넣어야함
     // clientApp->setAddressSlUu(gnbServerIpv4, serverPort, groupAddress6, rsuSlPort);
-
 
     // 인터페이스 바꾸는거 그냥 예시
     clientApp->setInterface(ueUuNetDev.Get(0), ueUuNetDev.Get(0));

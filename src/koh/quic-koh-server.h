@@ -7,72 +7,90 @@
 
 #endif
 /*
-* Copyright (c) 2007,2008,2009 INRIA, UDCAST
+ * Copyright (c) 2007,2008,2009 INRIA, UDCAST
  */
-
 
 #include "ns3/application.h"
 #include "ns3/event-id.h"
-#include "ns3/ipv4-address.h"
 #include "ns3/internet-module.h"
-#include "ns3/ptr.h"
+#include "ns3/ipv4-address.h"
 #include "ns3/packet-loss-counter.h"
+#include "ns3/ptr.h"
 #include <ns3/traced-callback.h>
 
-namespace ns3 {
+namespace ns3
+{
 
+struct clientInfos
+{
+    Address address;
+    uint32_t lastSequenceNum;
+    Time connectionTime;
+    uint32_t RTT;
+    float_t packetLossRate;
+    uint64_t totalBytesReceived;
+};
 
-    class QuicKohServer : public Application {
-    public:
-        static TypeId GetTypeId();
+class QuicKohServer : public Application
+{
+  public:
+    static TypeId GetTypeId();
 
-        QuicKohServer();
+    QuicKohServer();
 
-        ~QuicKohServer() override {
-        };
+    ~QuicKohServer() override {};
 
-        /**
-        * \brief Returns the number of lost packets
-        * \return the number of lost packets
-        */
-        uint32_t GetLost(void) const;
+    /**
+     * \brief Returns the number of lost packets
+     * \return the number of lost packets
+     */
+    uint32_t GetLost(void) const;
 
-        /**
-         * \brief Returns the number of received packets
-         * \return the number of received packets
-         */
-        uint64_t GetReceived(void) const;
+    /**
+     * \brief Returns the number of received packets
+     * \return the number of received packets
+     */
+    uint64_t GetReceived(void) const;
 
-        void SetPacketWindowSize(uint16_t size);
+    void SetPacketWindowSize(uint16_t size);
 
+    uint16_t GetPacketWindowSize() const;
 
-        uint16_t GetPacketWindowSize() const;
+    uint32_t GetRecvCount(uint16_t ueId);
+    double GetLatency(uint16_t ueId);
+    void clearCount(uint16_t ueId);
+    uint64_t GetTotalRecv();
 
-    private:
+  private:
+    std::map<uint16_t, clientInfos> clients;
+    void StartApplication() override;
 
-        void StartApplication() override;
+    void StopApplication() override;
 
-        void StopApplication() override;
+    void SendPacket(Ptr<Socket> socket, const std::string& message);
 
-        void SendPacket(Ptr<Socket> socket, Address from, const std::string &message);
+    void HandleRead(Ptr<Socket> socket);
 
-        void HandleRead(Ptr<Socket> socket);
+    void SendUeStats(uint16_t ueId);
+    void Send();
 
-        uint16_t m_port; //!< Port on which we listen for incoming packets.
-        // uint8_t m_tos; //!< The packets Type of Service
-        Ptr<Socket> m_socket;            //!< IPv4 Socket
-        Ptr<Socket> m_socket6; //!< IPv6 Socket
-        uint64_t m_received; //!< Number of received packets
-        PacketLossCounter m_lossCounter; //!< Lost packet counter
-        uint16_t m_nextClientId;
+    uint16_t m_port; //!< Port on which we listen for incoming packets.
+    // uint8_t m_tos; //!< The packets Type of Service
+    Ptr<Socket> m_socket;            //!< IPv4 Socket
+    Ptr<Socket> m_socket6;           //!< IPv6 Socket
+    uint64_t m_totalReceived;        //!< Number of received packets
+    PacketLossCounter m_lossCounter; //!< Lost packet counter
+    uint16_t m_nextClientId;
 
-        Time m_txTs; //!< Time at which the last packet with header was received
+    Time m_txTs; //!< Time at which the last packet with header was received
 
-        /// Callbacks for tracing the packet Rx events
-        TracedCallback<Ptr<const Packet> > m_rxTrace;
+    /// Callbacks for tracing the packet Rx events
+    TracedCallback<Ptr<const Packet>> m_rxTrace;
+    std::map<uint16_t, uint32_t> m_recvPerUe;
+    std::map<uint16_t, double> m_latencySumPerUe;
+    std::map<uint16_t, uint32_t> m_latencyCountPerUe;
 
-        /// Callbacks for tracing the packet Rx events, includes source and destination addresses
-        TracedCallback<Ptr<const Packet>, const Address &, const Address &> m_rxTraceWithAddresses;
-
-    };
+    /// Callbacks for tracing the packet Rx events, includes source and destination addresses
+    TracedCallback<Ptr<const Packet>, const Address&, const Address&> m_rxTraceWithAddresses;
+};
 } // namespace ns3

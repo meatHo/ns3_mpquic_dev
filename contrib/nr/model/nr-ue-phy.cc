@@ -2253,6 +2253,7 @@ NrUePhy::PhyPsschPduReceived(const Ptr<PacketBurst>& pb, const SpectrumValue& ps
     {
         // NS_LOG_UNCOND("실행됨1?");
         uint32_t srcL2Id = sciF2a.GetSrcId();
+        // NS_LOG_UNCOND(srcL2Id);
         Ptr<Packet> packet = pktIt->Copy();
         packet->RemovePacketTag(tag);
 

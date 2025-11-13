@@ -76,7 +76,7 @@ NrSlUeMac::GetTypeId()
             .AddAttribute("T2",
                           "The end of the selection window in physical slots; the "
                           "value used is min(T2, packet delay budget) if PDB is set",
-                          UintegerValue(33),
+                          UintegerValue(11),
                           MakeUintegerAccessor(&NrSlUeMac::m_t2),
                           MakeUintegerChecker<uint16_t>())
             .AddAttribute(
@@ -411,6 +411,9 @@ NrSlUeMac::GetCandidateResourcesPrivate(const SfnSf& sfn,
     uint16_t nsMs =
         (t2 - m_t1 + 1) *
         (1 / pow(2, numerology)); // number of slots multiplied by the slot duration in ms
+    // std::cout << "t2: " << t2 << std::endl;
+    // std::cout << "m_t1: " << m_t1 << std::endl;
+    // std::cout << "numerology: " << numerology << std::endl;
     uint16_t rsvpMs =
         static_cast<uint16_t>(params.m_pRsvpTx.GetMilliSeconds()); // reservation period in ms
     NS_ABORT_MSG_IF(rsvpMs && nsMs > rsvpMs,

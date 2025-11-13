@@ -43,6 +43,10 @@ namespace ns3
         void SelectInterface(uint32_t i);
         uint16_t GetUeId();
         uint32_t GetSentCount();
+        void clearCount();
+        uint64_t GetTotalSent();
+        Callback<void, KStats> m_KCallback;
+
     private:
         void StartApplication() override;
         void StopApplication() override;
@@ -58,6 +62,9 @@ namespace ns3
         uint32_t m_size;
 
         uint32_t m_sent;
+        uint32_t m_sentSync;
+        uint32_t m_totalSent;
+
         uint64_t m_totalTx;
         Ptr<Socket> m_uuSocket;
         Ptr<Socket> m_slSocket;
@@ -73,6 +80,12 @@ namespace ns3
         KohTag tag;
         uint8_t m_tos;
         EventId m_sendEvent;
+        void SendBurst();
+        void ScheduleNextPacketInBurst(uint32_t count);
+        void SyncSent();
+
+        uint32_t m_burstPacketCount;
+        Time     m_burstInterval;
 
 #ifdef NS3_LOG_ENABLE
         std::string m_peerAddressString;

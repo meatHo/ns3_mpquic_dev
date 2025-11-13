@@ -80,12 +80,13 @@ UdpKohServer::GetTypeId()
 }
 
 UdpKohServer::UdpKohServer()
-    : m_received(0),
+    : m_totalReceived(0),
       m_lossCounter(0)
 {
     m_nextClientId = 0;
     m_recvPerUe.clear();
-    m_latencyPerUe.clear();
+    m_latencySumPerUe.clear();
+    m_latencyCountPerUe.clear();
 }
 
 void
@@ -111,6 +112,7 @@ UdpKohServer::StartApplication()
     }
 
     m_socket->SetRecvCallback(MakeCallback(&UdpKohServer::HandleRead, this));
+    Simulator::Schedule(Seconds(3.0), &UdpKohServer::SendUeStats, this, 0);
 }
 
 void
@@ -135,26 +137,49 @@ UdpKohServer::SetPacketWindowSize(uint16_t size)
     m_lossCounter.SetBitMapSize(size);
 }
 
-
-
 uint32_t
 UdpKohServer::GetRecvCount(uint16_t ueId)
 {
     auto it = m_recvPerUe.find(ueId);
+    uint32_t temp = 0;
     if (it != m_recvPerUe.end())
-        return it->second;
+    {
+        temp = it->second;
+        it->second = 0;
+        return temp;
+    }
     return 0;
 }
 
 double
 UdpKohServer::GetLatency(uint16_t ueId)
 {
-    auto it = m_latencyPerUe.find(ueId);
-    if (it != m_latencyPerUe.end())
-        return it->second;
-    return 0;
+    auto itSum = m_latencySumPerUe.find(ueId);
+    auto itCnt = m_latencyCountPerUe.find(ueId);
+
+    if (itSum != m_latencySumPerUe.end() && itCnt != m_latencyCountPerUe.end() && itCnt->second > 0)
+    {
+        double avg = itSum->second / itCnt->second;
+
+        itSum->second = 0.0;
+        itCnt->second = 0;
+
+        return avg;
+    }
+    return 0.0;
 }
 
+void
+UdpKohServer::clearCount(uint16_t ueId)
+{
+    m_recvPerUe[ueId] = 0;
+}
+
+uint64_t
+UdpKohServer::GetTotalRecv()
+{
+    return m_totalReceived;
+}
 
 void
 UdpKohServer::HandleRead(Ptr<Socket> socket)
@@ -163,7 +188,7 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
     Ptr<Packet> packet;
     Address from;
     Address localAddress;
-    double latency;
+    // double latency;
     uint16_t ueId;
 
     while ((packet = socket->RecvFrom(from)))
@@ -194,8 +219,8 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
             newClient.totalBytesReceived = 0;
             clients[newId] = newClient;
             clientId = newId;
-            std::cout << "New client detected | Address: " << newClient.address
-                 << " | Connection Time: " << newClient.connectionTime << std::endl;
+            // std::cout << "New client detected | Address: " << newClient.address
+            //      << " | Connection Time: " << newClient.connectionTime << std::endl;
         }
 
         // 수신
@@ -208,28 +233,40 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
         {
             Time tx = tag.txTime;
             ueId = tag.ueId;
-            m_recvPerUe[ueId]++;
+            double frac = fmod(Simulator::Now().GetSeconds(), 1.0);
 
+            // 매초 0.1초 ~ 1.0초 카운트 증가
+            if (frac >= 0.1 && frac < 1.0)
+            {
+                m_recvPerUe[ueId]++;
+            }
+
+            // m_recvPerUe[ueId]++;
+
+            // latency X
+            double latency;
             latency = (Simulator::Now() - tx).GetSeconds();
             // NS_LOG_UNCOND("UE=" << ueId << " delay=" << latency << " s");
-            m_latencyPerUe[ueId] = latency;
+            m_latencySumPerUe[ueId] += latency;
+            m_latencyCountPerUe[ueId] += 1;
         }
 
         if (packet->GetSize() > 0)
         {
             uint32_t receivedSize = packet->GetSize();
+            NS_LOG_UNCOND("server application received "<<receivedSize<<"byte");
             SeqTsHeader seqTs;
             packet->RemoveHeader(seqTs);
             uint32_t currentSequenceNumber = seqTs.GetSeq();
             if (InetSocketAddress::IsMatchingType(from))
             {
-                std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
-                          << InetSocketAddress::ConvertFrom(from).GetIpv4()
-                          << " port: " << InetSocketAddress::ConvertFrom(from).GetPort()
-                          << " Sequence Number: " << currentSequenceNumber
-                          << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
-                          << " RXtime: " << Simulator::Now()
-                          << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
+                // std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
+                //           << InetSocketAddress::ConvertFrom(from).GetIpv4()
+                //           << " port: " << InetSocketAddress::ConvertFrom(from).GetPort()
+                //           << " Sequence Number: " << currentSequenceNumber
+                //           << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
+                //           << " RXtime: " << Simulator::Now()
+                //           << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
             }
             else if (Inet6SocketAddress::IsMatchingType(from))
             {
@@ -243,10 +280,11 @@ UdpKohServer::HandleRead(Ptr<Socket> socket)
             }
 
             m_lossCounter.NotifyReceived(currentSequenceNumber);
-            m_received++;
+            m_totalReceived++;
 
-            SendPacket(clientId, "good");
-            std::cout << "sent to client - clientId : " << clientId << "  Address : "<<InetSocketAddress::ConvertFrom(clients[clientId].address).GetIpv4()<< std::endl;
+            // SendPacket(clientId, "good");
+            // std::cout << "sent to client - clientId : " << clientId << "  Address :
+            // "<<InetSocketAddress::ConvertFrom(clients[clientId].address).GetIpv4()<< std::endl;
         }
     }
 }
@@ -276,12 +314,67 @@ UdpKohServer::SendPacket(uint16_t clientId, std::string message)
         // IPv6 주소일 경우 m_socket6 사용
         m_socket6->SendTo(packet, 0, destAddress);
         std::cout << "Sent an IPv6 packet to client ID " << clientId << std::endl;
-    }else
+    }
+    else
     {
         m_socket->SendTo(packet, 0, destAddress);
-        std::cout << "Sent an IPv4 packet to client ID " << clientId << std::endl;
+        // std::cout << "Sent an IPv4 packet to client ID " << clientId << std::endl;
     }
+    Simulator::Schedule(Seconds(1.0), &UdpKohServer::SendPacket, this, 0, "fuckkjhgkjhgkjhgkjhg");
 }
 
+void
+UdpKohServer::Send()
+{
+    Ipv4Address ipv4Dest = Ipv4Address("7.0.0.2");
+    Address destAddress = Address(ipv4Dest);
+    std::string message = "씨발";
+    Ptr<Packet> packet = Create<Packet>((uint8_t*)message.c_str(), message.length());
+
+    // if (InetSocketAddress::IsMatchingType(destAddress))
+    // {
+    //     // IPv4 주소일 경우 m_socket 사용
+    //     m_socket->SendTo(packet, 0, destAddress);
+    //     NS_LOG_INFO("Sent an IPv4 packet to client ID " << clientId);
+    // }
+    if (Inet6SocketAddress::IsMatchingType(destAddress))
+    {
+        // IPv6 주소일 경우 m_socket6 사용
+        m_socket6->SendTo(packet, 0, destAddress);
+        std::cout << "Sent an IPv6 packet to client ID " << std::endl;
+    }
+    else
+    {
+        m_socket->SendTo(packet, 0, destAddress);
+        std::cout << "Sent an IPv4 packet to client ID " << std::endl;
+    }
+    Simulator::Schedule(Seconds(1.0), &UdpKohServer::Send, this);
+}
+
+void
+UdpKohServer::SendUeStats(uint16_t ueId)
+{
+    auto it = clients.find(ueId);
+
+    if (it == clients.end())
+    {
+        std::cout << "SendPacket failed: Client with ID " << ueId << " not found." << std::endl;
+        return;
+    }
+
+    Address destAddress = it->second.address;
+    KStats stats;
+    stats.ueId = ueId;
+    stats.recvCount = GetRecvCount(ueId);
+    stats.avgLatency = GetLatency(ueId);
+
+    Ptr<Packet> packet = Create<Packet>((uint8_t*)&stats, sizeof(KStats));
+    m_socket->SendTo(packet, 0, destAddress);
+    // NS_LOG_UNCOND("server sent packet to client "<<Simulator::Now().GetSeconds());
+    if (Simulator::Now().GetSeconds() <= 58)
+    {
+        Simulator::Schedule(Seconds(1.0), &UdpKohServer::SendUeStats, this, 0);
+    }
+}
 
 } // Namespace ns3
