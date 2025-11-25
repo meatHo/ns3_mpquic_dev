@@ -1,0 +1,510 @@
+Simulation process id: 238013 (parent (waf shell) id: 237942)
+Waiting for Python process to connect on port: tcp://localhost:5554
+Please start proper Python Gym Agent
+ExecuteActions called at 4.01167 with action=0 몇번쨰? 0
+sent : 1000  recv : 899
+Time 5.01167s
+UE 0 PRR=0.998889
+Uu RSRP(avg)=-83.146 dB
+Sl RSRP(avg)=-108.464 dB
+UE Pos=(295.856,4696.51,59) Vel=(-3.8,-2.3,0)4.44185
+
+
+ExecuteActions called at 5.01167 with action=0 몇번쨰? 1
+sent : 1000  recv : 899
+Time 6.01167s
+UE 0 PRR=0.998889
+Uu RSRP(avg)=-81.4993 dB
+Sl RSRP(avg)=-110.188 dB
+UE Pos=(291.296,4693.67,59) Vel=(-5.5,-3.4,0)6.46607
+
+
+ExecuteActions called at 6.01167 with action=0 몇번쨰? 2
+sent : 1000  recv : 900
+Time 7.01167s
+UE 0 PRR=1
+Uu RSRP(avg)=-82.266 dB
+Sl RSRP(avg)=-108.707 dB
+UE Pos=(286.907,4688.11,59) Vel=(-3.7,-7.5,0)8.36301
+
+
+ExecuteActions called at 7.01167 with action=0 몇번쨰? 3
+sent : 1000  recv : 891
+Time 8.01167s
+UE 0 PRR=0.99
+Uu RSRP(avg)=-83.0819 dB
+Sl RSRP(avg)=-109.331 dB
+UE Pos=(282.826,4679.77,59) Vel=(-4.6,-9.4,0)10.4652
+
+
+ExecuteActions called at 8.01167 with action=0 몇번쨰? 4
+sent : 0  recv : 860
+Time 9.01167s
+UE 0 PRR=0.955556
+Uu RSRP(avg)=-86.1648 dB
+Sl RSRP(avg)=-107.994 dB
+UE Pos=(281.718,4668.61,59) Vel=(-0.2,-12.4,0)12.4016
+
+
+ExecuteActions called at 9.01167 with action=0 몇번쨰? 5
+sent : 1000  recv : 826
+Time 10.0117s
+UE 0 PRR=0.917778
+Uu RSRP(avg)=-88.3776 dB
+Sl RSRP(avg)=-107.124 dB
+UE Pos=(281.486,4655.67,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 10.0117 with action=1 몇번쨰? 6
+RL Action: 0 Switch to PC5
+UdpKohClient change to PC5 socket
+sent : 99  recv : 89
+Time 11.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-88.2993 dB
+Sl RSRP(avg)=-105.978 dB
+UE Pos=(281.246,4642.57,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 11.0117 with action=1 몇번쨰? 7
+sent : 100  recv : 90
+Time 12.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-93.403 dB
+Sl RSRP(avg)=-102.306 dB
+UE Pos=(281.006,4629.49,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 12.0117 with action=1 몇번쨰? 8
+sent : 100  recv : 72
+Time 13.0117s
+UE 0 PRR=0.8
+Uu RSRP(avg)=-94.3347 dB
+Sl RSRP(avg)=-106.237 dB
+UE Pos=(280.766,4616.39,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 13.0117 with action=0 몇번쨰? 9
+RL Action: 0 Switch to Uu
+UdpKohClient change to UU socket
+sent : 988  recv : 846
+Time 14.0117s
+UE 0 PRR=0.94
+Uu RSRP(avg)=-94.4181 dB
+Sl RSRP(avg)=-102.566 dB
+UE Pos=(280.526,4603.3,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 14.0117 with action=1 몇번쨰? 10
+RL Action: 0 Switch to PC5
+UdpKohClient change to PC5 socket
+sent : 99  recv : 97
+Time 15.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.9876 dB
+Sl RSRP(avg)=-107.363 dB
+UE Pos=(280.286,4590.19,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 15.0117 with action=0 몇번쨰? 11
+RL Action: 0 Switch to Uu
+UdpKohClient change to UU socket
+sent : 988  recv : 798
+Time 16.0117s
+UE 0 PRR=0.886667
+Uu RSRP(avg)=-103.501 dB
+Sl RSRP(avg)=-105.138 dB
+UE Pos=(280.046,4577.07,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 16.0117 with action=0 몇번쨰? 12
+sent : 1000  recv : 839
+Time 17.0117s
+UE 0 PRR=0.932222
+Uu RSRP(avg)=-101.757 dB
+Sl RSRP(avg)=-107 dB
+UE Pos=(279.806,4563.98,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 17.0117 with action=0 몇번쨰? 13
+sent : 1000  recv : 879
+Time 18.0156s
+UE 0 PRR=0.976667
+Uu RSRP(avg)=-104.93 dB
+Sl RSRP(avg)=-107.062 dB
+UE Pos=(279.565,4550.83,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 18.0156 with action=0 몇번쨰? 14
+sent : 1000  recv : 980
+Time 19.0156s
+UE 0 PRR=1
+Uu RSRP(avg)=-108.214 dB
+Sl RSRP(avg)=-107.708 dB
+UE Pos=(279.325,4537.72,59) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 19.0156 with action=0 몇번쨰? 15
+sent : 1000  recv : 884
+Time 20.0156s
+UE 0 PRR=0.982222
+Uu RSRP(avg)=-106.939 dB
+Sl RSRP(avg)=-109.297 dB
+UE Pos=(279.085,4524.61,59) Vel=(-0.3,-13,0)13.0035
+
+
+ExecuteActions called at 20.0156 with action=0 몇번쨰? 16
+sent : 1000  recv : 898
+Time 21.0117s
+UE 0 PRR=0.997778
+Uu RSRP(avg)=-107.501 dB
+Sl RSRP(avg)=-106.424 dB
+UE Pos=(278.846,4511.58,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 21.0117 with action=0 몇번쨰? 17
+sent : 1000  recv : 883
+Time 22.0156s
+UE 0 PRR=0.981111
+Uu RSRP(avg)=-103.482 dB
+Sl RSRP(avg)=-102.578 dB
+UE Pos=(278.605,4498.42,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 22.0156 with action=1 몇번쨰? 18
+RL Action: 0 Switch to PC5
+UdpKohClient change to PC5 socket
+sent : 99  recv : 90
+Time 23.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-104.384 dB
+Sl RSRP(avg)=-102.368 dB
+UE Pos=(278.366,4485.38,59) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 23.0117 with action=1 몇번쨰? 19
+sent : 100  recv : 90
+Time 24.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-100.676 dB
+Sl RSRP(avg)=-98.6731 dB
+UE Pos=(278.126,4472.27,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 24.0117 with action=1 몇번쨰? 20
+sent : 100  recv : 91
+Time 25.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-100.708 dB
+Sl RSRP(avg)=-102.315 dB
+UE Pos=(277.886,4459.16,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 25.0117 with action=1 몇번쨰? 21
+sent : 100  recv : 89
+Time 26.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-103.475 dB
+Sl RSRP(avg)=-96.9005 dB
+UE Pos=(277.646,4446.06,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 26.0117 with action=1 몇번쨰? 22
+sent : 100  recv : 90
+Time 27.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-95.9588 dB
+Sl RSRP(avg)=-99.5514 dB
+UE Pos=(277.406,4432.95,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 27.0117 with action=1 몇번쨰? 23
+sent : 100  recv : 90
+Time 28.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-95.3353 dB
+Sl RSRP(avg)=-101.155 dB
+UE Pos=(277.166,4419.83,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 28.0117 with action=1 몇번쨰? 24
+sent : 100  recv : 97
+Time 29.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-92.7799 dB
+Sl RSRP(avg)=-94.29 dB
+UE Pos=(276.926,4406.72,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 29.0117 with action=1 몇번쨰? 25
+sent : 100  recv : 72
+Time 30.0117s
+UE 0 PRR=0.8
+Uu RSRP(avg)=-92.7882 dB
+Sl RSRP(avg)=-96.235 dB
+UE Pos=(276.686,4393.62,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 30.0117 with action=1 몇번쨰? 26
+sent : 100  recv : 89
+Time 31.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-95.4265 dB
+Sl RSRP(avg)=-98.7347 dB
+UE Pos=(276.446,4380.51,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 31.0117 with action=1 몇번쨰? 27
+sent : 100  recv : 90
+Time 32.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.3668 dB
+Sl RSRP(avg)=-99.5866 dB
+UE Pos=(276.206,4367.41,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 32.0117 with action=1 몇번쨰? 28
+sent : 100  recv : 90
+Time 33.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-98.6035 dB
+Sl RSRP(avg)=-94.1734 dB
+UE Pos=(275.966,4354.32,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 33.0117 with action=1 몇번쨰? 29
+sent : 100  recv : 90
+Time 34.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-94.9651 dB
+Sl RSRP(avg)=-90.8997 dB
+UE Pos=(275.726,4341.22,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 34.0117 with action=1 몇번쨰? 30
+sent : 100  recv : 91
+Time 35.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-94.0866 dB
+Sl RSRP(avg)=-94.4722 dB
+UE Pos=(275.486,4328.11,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 35.0117 with action=1 몇번쨰? 31
+sent : 100  recv : 89
+Time 36.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-91.2523 dB
+Sl RSRP(avg)=-91.1372 dB
+UE Pos=(275.246,4315,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 36.0117 with action=1 몇번쨰? 32
+sent : 100  recv : 90
+Time 37.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-91.8411 dB
+Sl RSRP(avg)=-86.687 dB
+UE Pos=(275.006,4301.89,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 37.0117 with action=1 몇번쨰? 33
+sent : 100  recv : 90
+Time 38.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-94.9253 dB
+Sl RSRP(avg)=-88.4602 dB
+UE Pos=(274.766,4288.77,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 38.0117 with action=1 몇번쨰? 34
+sent : 100  recv : 90
+Time 39.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-92.6765 dB
+Sl RSRP(avg)=-86.8273 dB
+UE Pos=(274.526,4275.67,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 39.0117 with action=1 몇번쨰? 35
+sent : 100  recv : 90
+Time 40.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-96.556 dB
+Sl RSRP(avg)=-87.0302 dB
+UE Pos=(274.286,4262.56,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 40.0117 with action=1 몇번쨰? 36
+sent : 100  recv : 44
+Time 41.0117s
+UE 0 PRR=0.488889
+Uu RSRP(avg)=-99.1302 dB
+Sl RSRP(avg)=-85.0076 dB
+UE Pos=(274.046,4249.45,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 41.0117 with action=1 몇번쨰? 37
+sent : 100  recv : 91
+Time 42.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-98.778 dB
+Sl RSRP(avg)=-78.4022 dB
+UE Pos=(273.806,4236.35,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 42.0117 with action=1 몇번쨰? 38
+sent : 100  recv : 89
+Time 43.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-103.94 dB
+Sl RSRP(avg)=-81.3176 dB
+UE Pos=(273.566,4223.24,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 43.0117 with action=1 몇번쨰? 39
+sent : 100  recv : 90
+Time 44.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.2705 dB
+Sl RSRP(avg)=-81.0212 dB
+UE Pos=(273.326,4210.13,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 44.0117 with action=1 몇번쨰? 40
+sent : 100  recv : 77
+Time 45.0117s
+UE 0 PRR=0.855556
+Uu RSRP(avg)=-96.3641 dB
+Sl RSRP(avg)=-69.0748 dB
+UE Pos=(273.086,4197.01,60) Vel=(-0.3,-13,0)13.0035
+
+
+ExecuteActions called at 45.0117 with action=1 몇번쨰? 41
+sent : 100  recv : 97
+Time 46.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.0182 dB
+Sl RSRP(avg)=-72.007 dB
+UE Pos=(272.846,4183.89,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 46.0117 with action=1 몇번쨰? 42
+sent : 100  recv : 77
+Time 47.0117s
+UE 0 PRR=0.855556
+Uu RSRP(avg)=-96.032 dB
+Sl RSRP(avg)=-76.8493 dB
+UE Pos=(272.606,4170.78,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 47.0117 with action=1 몇번쨰? 43
+sent : 100  recv : 90
+Time 48.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-100.107 dB
+Sl RSRP(avg)=-79.5203 dB
+UE Pos=(272.366,4157.68,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 48.0117 with action=1 몇번쨰? 44
+sent : 100  recv : 84
+Time 49.0117s
+UE 0 PRR=0.933333
+Uu RSRP(avg)=-99.6485 dB
+Sl RSRP(avg)=-85.4169 dB
+UE Pos=(272.126,4144.57,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 49.0117 with action=1 몇번쨰? 45
+sent : 100  recv : 50
+Time 50.0117s
+UE 0 PRR=0.555556
+Uu RSRP(avg)=-101.829 dB
+Sl RSRP(avg)=-92.2572 dB
+UE Pos=(271.886,4131.46,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 50.0117 with action=1 몇번쨰? 46
+sent : 100  recv : 82
+Time 51.0117s
+UE 0 PRR=0.911111
+Uu RSRP(avg)=-100.615 dB
+Sl RSRP(avg)=-96.9811 dB
+UE Pos=(271.646,4118.35,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 51.0117 with action=1 몇번쨰? 47
+sent : 100  recv : 90
+Time 52.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-100.986 dB
+Sl RSRP(avg)=-98.5503 dB
+UE Pos=(271.406,4105.25,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions called at 52.0117 with action=1 몇번쨰? 48
+sent : 100  recv : 90
+Time 53.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.0507 dB
+Sl RSRP(avg)=-93.6368 dB
+UE Pos=(271.166,4092.16,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions called at 53.0117 with action=1 몇번쨰? 49
+sent : 100  recv : 80
+Time 54.0117s
+UE 0 PRR=0.888889
+Uu RSRP(avg)=-95.0433 dB
+Sl RSRP(avg)=-90.41 dB
+UE Pos=(272.508,4079.35,60) Vel=(5,-12.1,0)13.0924
+
+
+ExecuteActions called at 54.0117 with action=1 몇번쨰? 50
+sent : 100  recv : 91
+Time 55.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-96.7204 dB
+Sl RSRP(avg)=-93.1806 dB
+UE Pos=(277.62,4067.28,61) Vel=(5.1,-12.1,0)13.1309
+
+
+ExecuteActions called at 55.0117 with action=1 몇번쨰? 51
+sent : 100  recv : 90
+Time 56.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-96.4664 dB
+Sl RSRP(avg)=-96.3143 dB
+UE Pos=(282.73,4055.23,61) Vel=(5.1,-12.1,0)13.1309
+
+
+ExecuteActions called at 56.0117 with action=1 몇번쨰? 52
+sent : 100  recv : 89
+Time 57.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-98.5669 dB
+Sl RSRP(avg)=-98.8568 dB
+UE Pos=(288.708,4043.58,61) Vel=(6.7,-11.2,0)13.0511
+
+
+ExecuteActions called at 57.0117 with action=1 몇번쨰? 53
+sent : 100  recv : 90
+Time 58.0156s
+UE 0 PRR=1
+Uu RSRP(avg)=-105.62 dB
+Sl RSRP(avg)=-99.0432 dB
+UE Pos=(295.485,4032.3,61) Vel=(6.7,-11.2,0)13.0511
+
+
+ExecuteActions called at 58.0156 with action=1 몇번쨰? 54
+sent : 100  recv : 41
+Time 59.0156s
+UE 0 PRR=0.455556
+Uu RSRP(avg)=-105.462 dB
+Sl RSRP(avg)=-101.049 dB
+UE Pos=(302.236,4021.06,61) Vel=(6.8,-11.2,0)13.1027
+
+
+>>>> Simulator::Run() finished. Starting to create result file. <<<<
+Final simulation results saved to sim_results.json

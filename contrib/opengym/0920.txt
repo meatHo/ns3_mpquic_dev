@@ -1,0 +1,20 @@
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+Waiting for simulation script to connect on port: tcp://localhost:5555
+Please start proper ns-3 simulation script using ./waf --run "..."
+Traceback (most recent call last):
+  File "/home/kiho/ns-3-quic/contrib/opengym/dqn_test.py", line 103, in <module>
+    main()
+  File "/home/kiho/ns-3-quic/contrib/opengym/dqn_test.py", line 17, in main
+    env = ns3env.Ns3Env(
+  File "/home/kiho/.local/lib/python3.10/site-packages/ns3gym/ns3env.py", line 396, in __init__
+    self.ns3ZmqBridge.initialize_env(self.stepTime)
+  File "/home/kiho/.local/lib/python3.10/site-packages/ns3gym/ns3env.py", line 151, in initialize_env
+    request = self.socket.recv()
+  File "zmq/backend/cython/socket.pyx", line 805, in zmq.backend.cython.socket.Socket.recv
+  File "zmq/backend/cython/socket.pyx", line 841, in zmq.backend.cython.socket.Socket.recv
+  File "zmq/backend/cython/socket.pyx", line 194, in zmq.backend.cython.socket._recv_copy
+  File "zmq/backend/cython/checkrc.pxd", line 13, in zmq.backend.cython.checkrc._check_rc
+KeyboardInterrupt

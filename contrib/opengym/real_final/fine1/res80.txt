@@ -1,0 +1,516 @@
+TOTAL SENT=56000, TOTAL RECEIVED=53200, TOTAL PRR=95.0%
+
+
+Please start proper Python Gym Agent
+ExecuteActions at 4.01167 action=0
+sent : 1000  recv : 901
+Time 5.01167s
+UE 0 PRR=1
+Uu RSRP(avg)=-83.1582 dB
+Sl RSRP(avg)=-105.172 dB
+UE Pos=(295.856,4696.51,59) Vel=(-3.8,-2.3,0)4.44185
+
+
+ExecuteActions at 5.01167 action=0
+sent : 1000  recv : 889
+Time 6.01167s
+UE 0 PRR=0.987778
+Uu RSRP(avg)=-81.5621 dB
+Sl RSRP(avg)=-103.796 dB
+UE Pos=(291.296,4693.67,59) Vel=(-5.5,-3.4,0)6.46607
+
+
+ExecuteActions at 6.01167 action=0
+sent : 1000  recv : 907
+Time 7.01167s
+UE 0 PRR=1
+Uu RSRP(avg)=-82.3778 dB
+Sl RSRP(avg)=-103.676 dB
+UE Pos=(286.907,4688.11,59) Vel=(-3.7,-7.5,0)8.36301
+
+
+ExecuteActions at 7.01167 action=0
+sent : 1000  recv : 900
+Time 8.01167s
+UE 0 PRR=1
+Uu RSRP(avg)=-83.2452 dB
+Sl RSRP(avg)=-103.316 dB
+UE Pos=(282.826,4679.77,59) Vel=(-4.6,-9.4,0)10.4652
+
+
+ExecuteActions at 8.01167 action=0
+sent : 1000  recv : 900
+Time 9.01167s
+UE 0 PRR=1
+Uu RSRP(avg)=-86.4914 dB
+Sl RSRP(avg)=-102.974 dB
+UE Pos=(281.718,4668.61,59) Vel=(-0.2,-12.4,0)12.4016
+
+
+ExecuteActions at 9.01167 action=0
+sent : 1000  recv : 895
+Time 10.0117s
+UE 0 PRR=0.994444
+Uu RSRP(avg)=-89.5942 dB
+Sl RSRP(avg)=-103.457 dB
+UE Pos=(281.486,4655.67,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 10.0117 action=1
+UdpKohClient change to PC5 socket
+sent : 987  recv : 38
+Time 11.0117s
+UE 0 PRR=0.0422222
+Uu RSRP(avg)=-90.0803 dB
+Sl RSRP(avg)=-105.72 dB
+UE Pos=(281.246,4642.57,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 11.0117 action=0
+UdpKohClient change to UU socket
+sent : 987  recv : 710
+Time 12.0117s
+UE 0 PRR=0.788889
+Uu RSRP(avg)=-94.4445 dB
+Sl RSRP(avg)=-103.733 dB
+UE Pos=(281.006,4629.49,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 12.0117 action=0
+sent : 1000  recv : 986
+Time 13.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.9508 dB
+Sl RSRP(avg)=-101.115 dB
+UE Pos=(280.766,4616.39,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 13.0117 action=0
+sent : 1000  recv : 917
+Time 14.0156s
+UE 0 PRR=1
+Uu RSRP(avg)=-100.976 dB
+Sl RSRP(avg)=-102.486 dB
+UE Pos=(280.525,4603.25,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 14.0156 action=1
+UdpKohClient change to PC5 socket
+sent : 983  recv : 578
+Time 15.0156s
+UE 0 PRR=0.642222
+Uu RSRP(avg)=-104.391 dB
+Sl RSRP(avg)=-102.309 dB
+UE Pos=(280.285,4590.14,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 15.0156 action=1
+sent : 1000  recv : 677
+Time 16.0156s
+UE 0 PRR=0.752222
+Uu RSRP(avg)=-104.631 dB
+Sl RSRP(avg)=-102.166 dB
+UE Pos=(280.045,4577.02,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 16.0156 action=1
+sent : 1000  recv : 891
+Time 17.0156s
+UE 0 PRR=0.99
+Uu RSRP(avg)=-102.832 dB
+Sl RSRP(avg)=-100.614 dB
+UE Pos=(279.805,4563.93,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 17.0156 action=1
+sent : 1000  recv : 650
+Time 18.0156s
+UE 0 PRR=0.722222
+Uu RSRP(avg)=-106.655 dB
+Sl RSRP(avg)=-102.374 dB
+UE Pos=(279.565,4550.83,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 18.0156 action=1
+sent : 1000  recv : 704
+Time 19.0156s
+UE 0 PRR=0.782222
+Uu RSRP(avg)=-106.255 dB
+Sl RSRP(avg)=-100.374 dB
+UE Pos=(279.325,4537.72,59) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 19.0156 action=1
+sent : 1000  recv : 781
+Time 20.0117s
+UE 0 PRR=0.867778
+Uu RSRP(avg)=-101.35 dB
+Sl RSRP(avg)=-97.4719 dB
+UE Pos=(279.086,4524.66,59) Vel=(-0.3,-13,0)13.0035
+
+
+ExecuteActions at 20.0117 action=0
+UdpKohClient change to UU socket
+sent : 987  recv : 886
+Time 21.0117s
+UE 0 PRR=0.984444
+Uu RSRP(avg)=-98.3257 dB
+Sl RSRP(avg)=-101.131 dB
+UE Pos=(278.846,4511.58,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 21.0117 action=0
+sent : 1000  recv : 851
+Time 22.0117s
+UE 0 PRR=0.945556
+Uu RSRP(avg)=-99.6722 dB
+Sl RSRP(avg)=-100.548 dB
+UE Pos=(278.606,4498.47,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 22.0117 action=0
+sent : 1000  recv : 811
+Time 23.0117s
+UE 0 PRR=0.901111
+Uu RSRP(avg)=-100.427 dB
+Sl RSRP(avg)=-100.238 dB
+UE Pos=(278.366,4485.38,59) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 23.0117 action=1
+UdpKohClient change to PC5 socket
+sent : 987  recv : 778
+Time 24.0117s
+UE 0 PRR=0.864444
+Uu RSRP(avg)=-97.2837 dB
+Sl RSRP(avg)=-96.0129 dB
+UE Pos=(278.126,4472.27,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 24.0117 action=0
+UdpKohClient change to UU socket
+sent : 987  recv : 950
+Time 25.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.7728 dB
+Sl RSRP(avg)=-95.3476 dB
+UE Pos=(277.886,4459.16,59) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 25.0117 action=0
+sent : 1000  recv : 846
+Time 26.0117s
+UE 0 PRR=0.94
+Uu RSRP(avg)=-97.844 dB
+Sl RSRP(avg)=-98.5916 dB
+UE Pos=(277.646,4446.06,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 26.0117 action=0
+sent : 1000  recv : 891
+Time 27.0117s
+UE 0 PRR=0.99
+Uu RSRP(avg)=-96.8852 dB
+Sl RSRP(avg)=-102.339 dB
+UE Pos=(277.406,4432.95,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 27.0117 action=0
+sent : 1000  recv : 967
+Time 28.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-95.2883 dB
+Sl RSRP(avg)=-102.019 dB
+UE Pos=(277.166,4419.83,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 28.0117 action=0
+sent : 1000  recv : 888
+Time 29.0117s
+UE 0 PRR=0.986667
+Uu RSRP(avg)=-94.9962 dB
+Sl RSRP(avg)=-105.257 dB
+UE Pos=(276.926,4406.72,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 29.0117 action=0
+sent : 1000  recv : 964
+Time 30.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-97.5918 dB
+Sl RSRP(avg)=-103.438 dB
+UE Pos=(276.686,4393.62,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 30.0117 action=0
+sent : 1000  recv : 783
+Time 31.0117s
+UE 0 PRR=0.87
+Uu RSRP(avg)=-97.9109 dB
+Sl RSRP(avg)=-101.185 dB
+UE Pos=(276.446,4380.51,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 31.0117 action=0
+sent : 1000  recv : 813
+Time 32.0117s
+UE 0 PRR=0.903333
+Uu RSRP(avg)=-97.2434 dB
+Sl RSRP(avg)=-100.273 dB
+UE Pos=(276.206,4367.41,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 32.0117 action=0
+sent : 1000  recv : 1055
+Time 33.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-99.3411 dB
+Sl RSRP(avg)=-99.2106 dB
+UE Pos=(275.966,4354.32,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 33.0117 action=0
+sent : 1000  recv : 888
+Time 34.0117s
+UE 0 PRR=0.986667
+Uu RSRP(avg)=-99.9037 dB
+Sl RSRP(avg)=-95.0205 dB
+UE Pos=(275.726,4341.22,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 34.0117 action=0
+sent : 1000  recv : 954
+Time 35.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-98.1674 dB
+Sl RSRP(avg)=-90.5969 dB
+UE Pos=(275.486,4328.11,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 35.0117 action=0
+sent : 1000  recv : 887
+Time 36.0117s
+UE 0 PRR=0.985556
+Uu RSRP(avg)=-97.9049 dB
+Sl RSRP(avg)=-85.6118 dB
+UE Pos=(275.246,4315,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 36.0117 action=0
+sent : 1000  recv : 756
+Time 37.0156s
+UE 0 PRR=0.84
+Uu RSRP(avg)=-101.304 dB
+Sl RSRP(avg)=-87.3429 dB
+UE Pos=(275.005,4301.84,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 37.0156 action=1
+UdpKohClient change to PC5 socket
+sent : 983  recv : 1017
+Time 38.0156s
+UE 0 PRR=1
+Uu RSRP(avg)=-105.49 dB
+Sl RSRP(avg)=-86.4366 dB
+UE Pos=(274.765,4288.72,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 38.0156 action=1
+sent : 1000  recv : 767
+Time 39.0156s
+UE 0 PRR=0.852222
+Uu RSRP(avg)=-104.14 dB
+Sl RSRP(avg)=-86.574 dB
+UE Pos=(274.525,4275.62,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 39.0156 action=1
+sent : 1000  recv : 871
+Time 40.0156s
+UE 0 PRR=0.967778
+Uu RSRP(avg)=-103.934 dB
+Sl RSRP(avg)=-82.4682 dB
+UE Pos=(274.285,4262.51,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 40.0156 action=1
+sent : 1000  recv : 748
+Time 41.0117s
+UE 0 PRR=0.831111
+Uu RSRP(avg)=-102.433 dB
+Sl RSRP(avg)=-79.7862 dB
+UE Pos=(274.046,4249.45,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 41.0117 action=1
+sent : 1000  recv : 741
+Time 42.0117s
+UE 0 PRR=0.823333
+Uu RSRP(avg)=-99.8754 dB
+Sl RSRP(avg)=-77.3486 dB
+UE Pos=(273.806,4236.35,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 42.0117 action=0
+UdpKohClient change to UU socket
+sent : 987  recv : 906
+Time 43.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-98.0257 dB
+Sl RSRP(avg)=-75.1058 dB
+UE Pos=(273.566,4223.24,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 43.0117 action=0
+sent : 1000  recv : 774
+Time 44.0117s
+UE 0 PRR=0.86
+Uu RSRP(avg)=-97.5136 dB
+Sl RSRP(avg)=-70.3903 dB
+UE Pos=(273.326,4210.13,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 44.0117 action=0
+sent : 1000  recv : 972
+Time 45.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-100.649 dB
+Sl RSRP(avg)=-68.5249 dB
+UE Pos=(273.086,4197.01,60) Vel=(-0.3,-13,0)13.0035
+
+
+ExecuteActions at 45.0117 action=1
+UdpKohClient change to PC5 socket
+sent : 987  recv : 890
+Time 46.0117s
+UE 0 PRR=0.988889
+Uu RSRP(avg)=-97.8353 dB
+Sl RSRP(avg)=-69.4431 dB
+UE Pos=(272.846,4183.89,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 46.0117 action=0
+UdpKohClient change to UU socket
+sent : 987  recv : 886
+Time 47.0117s
+UE 0 PRR=0.984444
+Uu RSRP(avg)=-96.4564 dB
+Sl RSRP(avg)=-72.6573 dB
+UE Pos=(272.606,4170.78,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 47.0117 action=0
+sent : 1000  recv : 896
+Time 48.0117s
+UE 0 PRR=0.995556
+Uu RSRP(avg)=-95.6858 dB
+Sl RSRP(avg)=-77.4536 dB
+UE Pos=(272.366,4157.68,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 48.0117 action=0
+sent : 1000  recv : 891
+Time 49.0117s
+UE 0 PRR=0.99
+Uu RSRP(avg)=-94.4437 dB
+Sl RSRP(avg)=-80.4405 dB
+UE Pos=(272.126,4144.57,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 49.0117 action=0
+sent : 1000  recv : 896
+Time 50.0117s
+UE 0 PRR=0.995556
+Uu RSRP(avg)=-95.5088 dB
+Sl RSRP(avg)=-83.9804 dB
+UE Pos=(271.886,4131.46,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 50.0117 action=0
+sent : 1000  recv : 915
+Time 51.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-96.638 dB
+Sl RSRP(avg)=-91.1971 dB
+UE Pos=(271.646,4118.35,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 51.0117 action=0
+sent : 1000  recv : 919
+Time 52.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-94.7815 dB
+Sl RSRP(avg)=-94.191 dB
+UE Pos=(271.406,4105.25,60) Vel=(-0.3,-13.1,0)13.1034
+
+
+ExecuteActions at 52.0117 action=0
+sent : 1000  recv : 1021
+Time 53.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-93.3123 dB
+Sl RSRP(avg)=-92.9114 dB
+UE Pos=(271.166,4092.16,60) Vel=(-0.3,-13.2,0)13.2034
+
+
+ExecuteActions at 53.0117 action=0
+sent : 1000  recv : 895
+Time 54.0117s
+UE 0 PRR=0.994444
+Uu RSRP(avg)=-95.0852 dB
+Sl RSRP(avg)=-90.2402 dB
+UE Pos=(272.508,4079.35,60) Vel=(5,-12.1,0)13.0924
+
+
+ExecuteActions at 54.0117 action=0
+sent : 1000  recv : 906
+Time 55.0117s
+UE 0 PRR=1
+Uu RSRP(avg)=-96.134 dB
+Sl RSRP(avg)=-93.4862 dB
+UE Pos=(277.62,4067.28,61) Vel=(5.1,-12.1,0)13.1309
+
+
+ExecuteActions at 55.0117 action=0
+sent : 1000  recv : 891
+Time 56.0117s
+UE 0 PRR=0.99
+Uu RSRP(avg)=-100.207 dB
+Sl RSRP(avg)=-94.2483 dB
+UE Pos=(282.73,4055.23,61) Vel=(5.1,-12.1,0)13.1309
+
+
+ExecuteActions at 56.0117 action=1
+UdpKohClient change to PC5 socket
+sent : 987  recv : 845
+Time 57.0117s
+UE 0 PRR=0.938889
+Uu RSRP(avg)=-98.9783 dB
+Sl RSRP(avg)=-94.0493 dB
+UE Pos=(288.708,4043.58,61) Vel=(6.7,-11.2,0)13.0511
+
+
+ExecuteActions at 57.0117 action=0
+UdpKohClient change to UU socket
+sent : 987  recv : 898
+Time 58.0117s
+UE 0 PRR=0.997778
+Uu RSRP(avg)=-100.73 dB
+Sl RSRP(avg)=-92.876 dB
+UE Pos=(295.458,4032.34,61) Vel=(6.7,-11.2,0)13.0511
+
+
+ExecuteActions at 58.0117 action=1
+UdpKohClient change to PC5 socket
+sent : 987  recv : 878
+Time 59.0117s
+UE 0 PRR=0.975556
+Uu RSRP(avg)=-100.072 dB
+Sl RSRP(avg)=-94.9866 dB
+UE Pos=(302.209,4021.1,61) Vel=(6.8,-11.2,0)13.1027
+
+
+>>>> Simulator::Run() finished. Starting to create result file. <<<<
+Final simulation results saved to sim_results.json
+  "Total Sent": 56000,
+  "Total Received": 53200,

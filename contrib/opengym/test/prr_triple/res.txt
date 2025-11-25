@@ -1,0 +1,818 @@
+[Episode 0] total_reward=29.01, Avg PRR=85.327, PC5=33, Uu=22
+TOTAL SENT=26291, TOTAL RECEIVED=24028, TOTAL PRR=91.39249%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 1] total_reward=30.91, Avg PRR=86.345, PC5=28, Uu=27
+TOTAL SENT=30791, TOTAL RECEIVED=28436, TOTAL PRR=92.35166%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 2] total_reward=34.94, Avg PRR=89.337, PC5=28, Uu=27
+TOTAL SENT=30800, TOTAL RECEIVED=28603, TOTAL PRR=92.86688%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 3] total_reward=-17.12, Avg PRR=55.752, PC5=28, Uu=27
+TOTAL SENT=30802, TOTAL RECEIVED=9216, TOTAL PRR=29.92014%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 4] total_reward=31.55, Avg PRR=87.333, PC5=24, Uu=31
+TOTAL SENT=34391, TOTAL RECEIVED=32013, TOTAL PRR=93.0854%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 5] total_reward=31.21, Avg PRR=86.933, PC5=27, Uu=28
+TOTAL SENT=31715, TOTAL RECEIVED=29212, TOTAL PRR=92.10784%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 6] total_reward=35.21, Avg PRR=89.267, PC5=17, Uu=38
+TOTAL SENT=40700, TOTAL RECEIVED=37776, TOTAL PRR=92.81572%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 7] total_reward=30.30, Avg PRR=86.115, PC5=22, Uu=33
+TOTAL SENT=36191, TOTAL RECEIVED=33771, TOTAL PRR=93.31325%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 8] total_reward=35.79, Avg PRR=89.293, PC5=22, Uu=33
+TOTAL SENT=36193, TOTAL RECEIVED=33716, TOTAL PRR=93.15614%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 9] total_reward=32.33, Avg PRR=87.412, PC5=24, Uu=31
+TOTAL SENT=34382, TOTAL RECEIVED=31806, TOTAL PRR=92.50771%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep10.pth
+[Episode 10] total_reward=33.16, Avg PRR=88.020, PC5=23, Uu=32
+TOTAL SENT=35291, TOTAL RECEIVED=32698, TOTAL PRR=92.65252%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 11] total_reward=30.35, Avg PRR=86.186, PC5=20, Uu=35
+TOTAL SENT=38000, TOTAL RECEIVED=34931, TOTAL PRR=91.92368%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 12] total_reward=34.94, Avg PRR=89.244, PC5=20, Uu=35
+TOTAL SENT=37984, TOTAL RECEIVED=35323, TOTAL PRR=92.99442%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 13] total_reward=16.62, Avg PRR=77.531, PC5=22, Uu=33
+TOTAL SENT=36206, TOTAL RECEIVED=28848, TOTAL PRR=79.6774%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 14] total_reward=33.73, Avg PRR=88.804, PC5=16, Uu=39
+TOTAL SENT=41611, TOTAL RECEIVED=38687, TOTAL PRR=92.97301%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 15] total_reward=23.53, Avg PRR=82.509, PC5=30, Uu=25
+TOTAL SENT=29000, TOTAL RECEIVED=26463, TOTAL PRR=91.25172%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 16] total_reward=38.81, Avg PRR=91.489, PC5=21, Uu=34
+TOTAL SENT=37102, TOTAL RECEIVED=34945, TOTAL PRR=94.1863%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 17] total_reward=39.77, Avg PRR=91.970, PC5=22, Uu=33
+TOTAL SENT=36191, TOTAL RECEIVED=33707, TOTAL PRR=93.13642%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 18] total_reward=37.21, Avg PRR=90.253, PC5=23, Uu=32
+TOTAL SENT=35315, TOTAL RECEIVED=32939, TOTAL PRR=93.27198%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 19] total_reward=44.26, Avg PRR=94.210, PC5=27, Uu=28
+TOTAL SENT=31711, TOTAL RECEIVED=29709, TOTAL PRR=93.68673%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep20.pth
+[Episode 20] total_reward=43.24, Avg PRR=94.242, PC5=35, Uu=20
+TOTAL SENT=24491, TOTAL RECEIVED=22977, TOTAL PRR=93.81814%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 21] total_reward=34.30, Avg PRR=88.824, PC5=38, Uu=17
+TOTAL SENT=21802, TOTAL RECEIVED=20138, TOTAL PRR=92.36767%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 22] total_reward=37.30, Avg PRR=90.479, PC5=29, Uu=26
+TOTAL SENT=29915, TOTAL RECEIVED=27992, TOTAL PRR=93.57179%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 23] total_reward=35.14, Avg PRR=89.519, PC5=26, Uu=29
+TOTAL SENT=32600, TOTAL RECEIVED=30368, TOTAL PRR=93.15337%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 24] total_reward=39.12, Avg PRR=91.325, PC5=29, Uu=26
+TOTAL SENT=29900, TOTAL RECEIVED=27875, TOTAL PRR=93.22742%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 25] total_reward=43.28, Avg PRR=93.644, PC5=31, Uu=24
+TOTAL SENT=28100, TOTAL RECEIVED=26680, TOTAL PRR=94.94662%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 26] total_reward=38.67, Avg PRR=90.681, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=20602, TOTAL PRR=94.45693%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 27] total_reward=41.69, Avg PRR=92.897, PC5=28, Uu=27
+TOTAL SENT=30791, TOTAL RECEIVED=28952, TOTAL PRR=94.02748%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 28] total_reward=42.65, Avg PRR=93.596, PC5=30, Uu=25
+TOTAL SENT=29006, TOTAL RECEIVED=27523, TOTAL PRR=94.88726%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 29] total_reward=43.22, Avg PRR=94.125, PC5=31, Uu=24
+TOTAL SENT=28111, TOTAL RECEIVED=26486, TOTAL PRR=94.21934%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep30.pth
+[Episode 30] total_reward=38.87, Avg PRR=91.675, PC5=36, Uu=19
+TOTAL SENT=23611, TOTAL RECEIVED=22355, TOTAL PRR=94.68045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 31] total_reward=34.25, Avg PRR=88.693, PC5=33, Uu=22
+TOTAL SENT=26293, TOTAL RECEIVED=24532, TOTAL PRR=93.3024%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 32] total_reward=40.02, Avg PRR=91.943, PC5=30, Uu=25
+TOTAL SENT=28984, TOTAL RECEIVED=27197, TOTAL PRR=93.83453%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 33] total_reward=45.32, Avg PRR=95.210, PC5=34, Uu=21
+TOTAL SENT=25402, TOTAL RECEIVED=24067, TOTAL PRR=94.74451%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 34] total_reward=37.57, Avg PRR=90.733, PC5=32, Uu=23
+TOTAL SENT=27202, TOTAL RECEIVED=25484, TOTAL PRR=93.68429%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 35] total_reward=40.33, Avg PRR=92.321, PC5=32, Uu=23
+TOTAL SENT=27202, TOTAL RECEIVED=25483, TOTAL PRR=93.68061%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 36] total_reward=36.71, Avg PRR=90.608, PC5=32, Uu=23
+TOTAL SENT=27202, TOTAL RECEIVED=25559, TOTAL PRR=93.96%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 37] total_reward=36.88, Avg PRR=90.588, PC5=29, Uu=26
+TOTAL SENT=29891, TOTAL RECEIVED=27896, TOTAL PRR=93.32575%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 38] total_reward=44.61, Avg PRR=94.384, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=20641, TOTAL PRR=94.63573%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 39] total_reward=46.39, Avg PRR=95.636, PC5=33, Uu=22
+TOTAL SENT=26311, TOTAL RECEIVED=25109, TOTAL PRR=95.43157%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep40.pth
+[Episode 40] total_reward=42.11, Avg PRR=93.101, PC5=35, Uu=20
+TOTAL SENT=24511, TOTAL RECEIVED=22973, TOTAL PRR=93.72527%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 41] total_reward=36.37, Avg PRR=90.206, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=20489, TOTAL PRR=93.93884%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 42] total_reward=19.22, Avg PRR=77.970, PC5=35, Uu=20
+TOTAL SENT=24502, TOTAL RECEIVED=13775, TOTAL PRR=56.2199%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 43] total_reward=45.85, Avg PRR=95.402, PC5=34, Uu=21
+TOTAL SENT=25411, TOTAL RECEIVED=24192, TOTAL PRR=95.20286%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 44] total_reward=39.33, Avg PRR=91.887, PC5=30, Uu=25
+TOTAL SENT=28982, TOTAL RECEIVED=27287, TOTAL PRR=94.15154%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 45] total_reward=40.93, Avg PRR=92.495, PC5=35, Uu=20
+TOTAL SENT=24511, TOTAL RECEIVED=23055, TOTAL PRR=94.05981%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 46] total_reward=45.29, Avg PRR=95.158, PC5=34, Uu=21
+TOTAL SENT=25411, TOTAL RECEIVED=24219, TOTAL PRR=95.30912%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 47] total_reward=32.82, Avg PRR=88.681, PC5=36, Uu=19
+TOTAL SENT=23600, TOTAL RECEIVED=21909, TOTAL PRR=92.83475%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 48] total_reward=39.83, Avg PRR=91.776, PC5=37, Uu=18
+TOTAL SENT=22702, TOTAL RECEIVED=21220, TOTAL PRR=93.47194%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 49] total_reward=33.32, Avg PRR=88.756, PC5=32, Uu=23
+TOTAL SENT=27202, TOTAL RECEIVED=25009, TOTAL PRR=91.93809%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep50.pth
+[Episode 50] total_reward=47.78, Avg PRR=96.299, PC5=36, Uu=19
+TOTAL SENT=23602, TOTAL RECEIVED=22406, TOTAL PRR=94.93263%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 51] total_reward=31.62, Avg PRR=87.970, PC5=33, Uu=22
+TOTAL SENT=26311, TOTAL RECEIVED=24512, TOTAL PRR=93.16256%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 52] total_reward=45.29, Avg PRR=95.182, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21667, TOTAL PRR=95.40311%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 53] total_reward=45.44, Avg PRR=95.204, PC5=28, Uu=27
+TOTAL SENT=30800, TOTAL RECEIVED=29203, TOTAL PRR=94.81494%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 54] total_reward=46.06, Avg PRR=95.210, PC5=29, Uu=26
+TOTAL SENT=29873, TOTAL RECEIVED=28651, TOTAL PRR=95.90935%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 55] total_reward=42.77, Avg PRR=93.873, PC5=38, Uu=17
+TOTAL SENT=21800, TOTAL RECEIVED=20575, TOTAL PRR=94.38073%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 56] total_reward=40.87, Avg PRR=92.743, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=19637, TOTAL PRR=93.90751%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 57] total_reward=40.39, Avg PRR=92.800, PC5=41, Uu=14
+TOTAL SENT=19082, TOTAL RECEIVED=18045, TOTAL PRR=94.56556%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 58] total_reward=29.44, Avg PRR=85.527, PC5=45, Uu=10
+TOTAL SENT=15511, TOTAL RECEIVED=10904, TOTAL PRR=70.2985%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 59] total_reward=19.74, Avg PRR=79.964, PC5=44, Uu=11
+TOTAL SENT=16393, TOTAL RECEIVED=10440, TOTAL PRR=63.68572%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep60.pth
+[Episode 60] total_reward=37.10, Avg PRR=90.879, PC5=36, Uu=19
+TOTAL SENT=23611, TOTAL RECEIVED=22126, TOTAL PRR=93.71056%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 61] total_reward=45.66, Avg PRR=95.325, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17478, TOTAL PRR=95.97496%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 62] total_reward=47.82, Avg PRR=96.408, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20082, TOTAL PRR=96.03558%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 63] total_reward=48.45, Avg PRR=96.705, PC5=38, Uu=17
+TOTAL SENT=21806, TOTAL RECEIVED=20921, TOTAL PRR=95.94148%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 64] total_reward=46.74, Avg PRR=95.855, PC5=31, Uu=24
+TOTAL SENT=28088, TOTAL RECEIVED=26954, TOTAL PRR=95.96269%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 65] total_reward=39.81, Avg PRR=92.436, PC5=39, Uu=16
+TOTAL SENT=20902, TOTAL RECEIVED=19724, TOTAL PRR=94.36418%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 66] total_reward=44.47, Avg PRR=94.760, PC5=39, Uu=16
+TOTAL SENT=20902, TOTAL RECEIVED=19920, TOTAL PRR=95.30188%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 67] total_reward=42.22, Avg PRR=93.689, PC5=35, Uu=20
+TOTAL SENT=24502, TOTAL RECEIVED=23204, TOTAL PRR=94.70247%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 68] total_reward=44.09, Avg PRR=94.461, PC5=36, Uu=19
+TOTAL SENT=23593, TOTAL RECEIVED=22472, TOTAL PRR=95.24859%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 69] total_reward=43.56, Avg PRR=94.420, PC5=38, Uu=17
+TOTAL SENT=21800, TOTAL RECEIVED=20603, TOTAL PRR=94.50917%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep70.pth
+[Episode 70] total_reward=43.29, Avg PRR=93.877, PC5=41, Uu=14
+TOTAL SENT=19100, TOTAL RECEIVED=18109, TOTAL PRR=94.81152%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 71] total_reward=42.52, Avg PRR=93.463, PC5=35, Uu=20
+TOTAL SENT=24493, TOTAL RECEIVED=23076, TOTAL PRR=94.21467%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 72] total_reward=47.47, Avg PRR=96.075, PC5=36, Uu=19
+TOTAL SENT=23582, TOTAL RECEIVED=22598, TOTAL PRR=95.82733%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 73] total_reward=38.92, Avg PRR=91.786, PC5=38, Uu=17
+TOTAL SENT=21791, TOTAL RECEIVED=20515, TOTAL PRR=94.14437%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 74] total_reward=41.71, Avg PRR=93.093, PC5=36, Uu=19
+TOTAL SENT=23591, TOTAL RECEIVED=22567, TOTAL PRR=95.65936%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 75] total_reward=40.71, Avg PRR=92.733, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17276, TOTAL PRR=94.86574%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 76] total_reward=48.54, Avg PRR=96.667, PC5=35, Uu=20
+TOTAL SENT=24502, TOTAL RECEIVED=23368, TOTAL PRR=95.37181%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 77] total_reward=42.34, Avg PRR=93.665, PC5=31, Uu=24
+TOTAL SENT=28102, TOTAL RECEIVED=26724, TOTAL PRR=95.09643%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 78] total_reward=25.01, Avg PRR=82.325, PC5=44, Uu=11
+TOTAL SENT=16393, TOTAL RECEIVED=10669, TOTAL PRR=65.08266%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 79] total_reward=47.01, Avg PRR=95.927, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19125, TOTAL PRR=95.57244%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep80.pth
+[Episode 80] total_reward=44.36, Avg PRR=94.491, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21834, TOTAL PRR=96.13844%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 81] total_reward=49.69, Avg PRR=97.331, PC5=37, Uu=18
+TOTAL SENT=22691, TOTAL RECEIVED=21900, TOTAL PRR=96.51404%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 82] total_reward=45.55, Avg PRR=95.198, PC5=34, Uu=21
+TOTAL SENT=25402, TOTAL RECEIVED=24281, TOTAL PRR=95.58696%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 83] total_reward=49.03, Avg PRR=96.974, PC5=41, Uu=14
+TOTAL SENT=19100, TOTAL RECEIVED=18230, TOTAL PRR=95.44503%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 84] total_reward=34.91, Avg PRR=88.925, PC5=36, Uu=19
+TOTAL SENT=23573, TOTAL RECEIVED=22003, TOTAL PRR=93.33984%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 85] total_reward=44.15, Avg PRR=94.412, PC5=35, Uu=20
+TOTAL SENT=24493, TOTAL RECEIVED=23339, TOTAL PRR=95.28845%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 86] total_reward=43.75, Avg PRR=94.313, PC5=34, Uu=21
+TOTAL SENT=25411, TOTAL RECEIVED=24141, TOTAL PRR=95.00216%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 87] total_reward=48.10, Avg PRR=96.455, PC5=38, Uu=17
+TOTAL SENT=21800, TOTAL RECEIVED=20958, TOTAL PRR=96.13761%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 88] total_reward=41.52, Avg PRR=92.749, PC5=36, Uu=19
+TOTAL SENT=23582, TOTAL RECEIVED=22258, TOTAL PRR=94.38555%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 89] total_reward=51.04, Avg PRR=97.931, PC5=39, Uu=16
+TOTAL SENT=20891, TOTAL RECEIVED=20184, TOTAL PRR=96.61577%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep90.pth
+[Episode 90] total_reward=36.15, Avg PRR=90.392, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=19648, TOTAL PRR=93.96012%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 91] total_reward=41.60, Avg PRR=92.768, PC5=43, Uu=12
+TOTAL SENT=17291, TOTAL RECEIVED=16345, TOTAL PRR=94.52895%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 92] total_reward=44.90, Avg PRR=94.659, PC5=38, Uu=17
+TOTAL SENT=21800, TOTAL RECEIVED=20666, TOTAL PRR=94.79817%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 93] total_reward=37.19, Avg PRR=91.014, PC5=34, Uu=21
+TOTAL SENT=25411, TOTAL RECEIVED=23784, TOTAL PRR=93.59726%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 94] total_reward=46.27, Avg PRR=95.632, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=21020, TOTAL PRR=96.37339%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 95] total_reward=43.40, Avg PRR=94.255, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19093, TOTAL PRR=95.41252%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 96] total_reward=50.52, Avg PRR=97.653, PC5=36, Uu=19
+TOTAL SENT=23611, TOTAL RECEIVED=22875, TOTAL PRR=96.88281%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 97] total_reward=47.33, Avg PRR=96.071, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20024, TOTAL PRR=95.75821%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 98] total_reward=49.15, Avg PRR=96.994, PC5=34, Uu=21
+TOTAL SENT=25402, TOTAL RECEIVED=24286, TOTAL PRR=95.60665%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 99] total_reward=40.16, Avg PRR=92.465, PC5=39, Uu=16
+TOTAL SENT=20902, TOTAL RECEIVED=19739, TOTAL PRR=94.43594%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep100.pth
+[Episode 100] total_reward=43.61, Avg PRR=94.305, PC5=36, Uu=19
+TOTAL SENT=23611, TOTAL RECEIVED=22252, TOTAL PRR=94.24421%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 101] total_reward=38.07, Avg PRR=90.982, PC5=46, Uu=9
+TOTAL SENT=14611, TOTAL RECEIVED=13792, TOTAL PRR=94.39463%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 102] total_reward=46.86, Avg PRR=95.786, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20159, TOTAL PRR=96.40381%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 103] total_reward=45.11, Avg PRR=94.897, PC5=36, Uu=19
+TOTAL SENT=23600, TOTAL RECEIVED=22602, TOTAL PRR=95.77119%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 104] total_reward=40.69, Avg PRR=92.501, PC5=34, Uu=21
+TOTAL SENT=25406, TOTAL RECEIVED=23910, TOTAL PRR=94.11163%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 105] total_reward=48.66, Avg PRR=96.774, PC5=38, Uu=17
+TOTAL SENT=21802, TOTAL RECEIVED=21015, TOTAL PRR=96.39024%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 106] total_reward=47.27, Avg PRR=96.111, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21817, TOTAL PRR=96.06358%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 107] total_reward=44.43, Avg PRR=94.511, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17370, TOTAL PRR=95.38191%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 108] total_reward=47.84, Avg PRR=96.315, PC5=37, Uu=18
+TOTAL SENT=22702, TOTAL RECEIVED=21916, TOTAL PRR=96.53775%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 109] total_reward=42.35, Avg PRR=93.206, PC5=43, Uu=12
+TOTAL SENT=17311, TOTAL RECEIVED=16548, TOTAL PRR=95.5924%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep110.pth
+[Episode 110] total_reward=44.99, Avg PRR=94.673, PC5=39, Uu=16
+TOTAL SENT=20902, TOTAL RECEIVED=19976, TOTAL PRR=95.5698%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 111] total_reward=49.28, Avg PRR=97.091, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19378, TOTAL PRR=96.83674%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 112] total_reward=43.53, Avg PRR=94.337, PC5=35, Uu=20
+TOTAL SENT=24511, TOTAL RECEIVED=23338, TOTAL PRR=95.21439%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 113] total_reward=40.16, Avg PRR=92.659, PC5=35, Uu=20
+TOTAL SENT=24502, TOTAL RECEIVED=23293, TOTAL PRR=95.06571%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 114] total_reward=49.05, Avg PRR=96.996, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20211, TOTAL PRR=96.65248%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 115] total_reward=49.75, Avg PRR=97.370, PC5=39, Uu=16
+TOTAL SENT=20902, TOTAL RECEIVED=20185, TOTAL PRR=96.56971%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 116] total_reward=43.05, Avg PRR=93.782, PC5=43, Uu=12
+TOTAL SENT=17302, TOTAL RECEIVED=16549, TOTAL PRR=95.6479%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 117] total_reward=51.06, Avg PRR=97.947, PC5=40, Uu=15
+TOTAL SENT=20000, TOTAL RECEIVED=19443, TOTAL PRR=97.215%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 118] total_reward=39.17, Avg PRR=92.121, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19046, TOTAL PRR=95.17765%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 119] total_reward=50.47, Avg PRR=97.679, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19413, TOTAL PRR=97.01164%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep120.pth
+[Episode 120] total_reward=42.41, Avg PRR=93.626, PC5=39, Uu=16
+TOTAL SENT=20915, TOTAL RECEIVED=19997, TOTAL PRR=95.61081%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 121] total_reward=48.25, Avg PRR=96.558, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=21060, TOTAL PRR=96.55678%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 122] total_reward=51.34, Avg PRR=98.014, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=21179, TOTAL PRR=97.10238%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 123] total_reward=41.74, Avg PRR=93.036, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21455, TOTAL PRR=94.46964%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 124] total_reward=48.19, Avg PRR=96.485, PC5=35, Uu=20
+TOTAL SENT=24511, TOTAL RECEIVED=23601, TOTAL PRR=96.28738%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 125] total_reward=51.04, Avg PRR=97.939, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18597, TOTAL PRR=97.31045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 126] total_reward=51.92, Avg PRR=98.337, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19500, TOTAL PRR=97.4464%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 127] total_reward=45.78, Avg PRR=95.236, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18322, TOTAL PRR=95.87149%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 128] total_reward=42.12, Avg PRR=93.083, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17301, TOTAL PRR=95.00302%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 129] total_reward=49.05, Avg PRR=96.996, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20211, TOTAL PRR=96.65248%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep130.pth
+[Episode 130] total_reward=41.15, Avg PRR=92.800, PC5=40, Uu=15
+TOTAL SENT=20002, TOTAL RECEIVED=18954, TOTAL PRR=94.76052%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 131] total_reward=51.04, Avg PRR=97.939, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18597, TOTAL PRR=97.31045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 132] total_reward=51.92, Avg PRR=98.337, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19500, TOTAL PRR=97.4464%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 133] total_reward=36.63, Avg PRR=90.372, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=20304, TOTAL PRR=93.09064%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 134] total_reward=44.10, Avg PRR=94.622, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17397, TOTAL PRR=95.53017%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 135] total_reward=50.91, Avg PRR=97.802, PC5=37, Uu=18
+TOTAL SENT=22700, TOTAL RECEIVED=21961, TOTAL PRR=96.74449%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 136] total_reward=41.41, Avg PRR=92.295, PC5=43, Uu=12
+TOTAL SENT=17311, TOTAL RECEIVED=16399, TOTAL PRR=94.73167%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 137] total_reward=46.42, Avg PRR=95.743, PC5=44, Uu=11
+TOTAL SENT=16411, TOTAL RECEIVED=15729, TOTAL PRR=95.84425%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 138] total_reward=51.52, Avg PRR=98.129, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20251, TOTAL PRR=96.84377%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 139] total_reward=48.82, Avg PRR=96.895, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17490, TOTAL PRR=96.04085%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep140.pth
+[Episode 140] total_reward=47.96, Avg PRR=96.436, PC5=36, Uu=19
+TOTAL SENT=23582, TOTAL RECEIVED=22734, TOTAL PRR=96.40404%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 141] total_reward=45.85, Avg PRR=95.301, PC5=37, Uu=18
+TOTAL SENT=22691, TOTAL RECEIVED=21849, TOTAL PRR=96.28928%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 142] total_reward=48.42, Avg PRR=96.626, PC5=39, Uu=16
+TOTAL SENT=20902, TOTAL RECEIVED=20168, TOTAL PRR=96.48837%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 143] total_reward=44.59, Avg PRR=94.798, PC5=44, Uu=11
+TOTAL SENT=16402, TOTAL RECEIVED=15758, TOTAL PRR=96.07365%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 144] total_reward=42.14, Avg PRR=93.164, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21427, TOTAL PRR=94.34635%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 145] total_reward=45.14, Avg PRR=95.095, PC5=37, Uu=18
+TOTAL SENT=22700, TOTAL RECEIVED=21775, TOTAL PRR=95.92511%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 146] total_reward=46.10, Avg PRR=95.640, PC5=41, Uu=14
+TOTAL SENT=19115, TOTAL RECEIVED=18313, TOTAL PRR=95.80434%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 147] total_reward=51.02, Avg PRR=97.923, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19464, TOTAL PRR=97.2665%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 148] total_reward=47.82, Avg PRR=96.279, PC5=38, Uu=17
+TOTAL SENT=21815, TOTAL RECEIVED=20979, TOTAL PRR=96.16777%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 149] total_reward=42.18, Avg PRR=93.612, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21727, TOTAL PRR=95.6673%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep150.pth
+[Episode 150] total_reward=47.91, Avg PRR=96.461, PC5=37, Uu=18
+TOTAL SENT=22702, TOTAL RECEIVED=21860, TOTAL PRR=96.29108%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 151] total_reward=37.50, Avg PRR=90.832, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=18880, TOTAL PRR=94.34811%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 152] total_reward=48.60, Avg PRR=96.756, PC5=38, Uu=17
+TOTAL SENT=21806, TOTAL RECEIVED=21016, TOTAL PRR=96.37714%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 153] total_reward=47.17, Avg PRR=96.014, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20145, TOTAL PRR=96.33686%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 154] total_reward=47.05, Avg PRR=95.861, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20161, TOTAL PRR=96.41337%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 155] total_reward=47.50, Avg PRR=96.162, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20187, TOTAL PRR=96.53771%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 156] total_reward=40.83, Avg PRR=92.339, PC5=44, Uu=11
+TOTAL SENT=16411, TOTAL RECEIVED=15460, TOTAL PRR=94.20511%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 157] total_reward=48.75, Avg PRR=96.859, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17484, TOTAL PRR=96.00791%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 158] total_reward=50.65, Avg PRR=97.758, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19377, TOTAL PRR=96.83174%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 159] total_reward=47.03, Avg PRR=95.711, PC5=42, Uu=13
+TOTAL SENT=18211, TOTAL RECEIVED=17464, TOTAL PRR=95.89808%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep160.pth
+[Episode 160] total_reward=42.70, Avg PRR=93.644, PC5=36, Uu=19
+TOTAL SENT=23602, TOTAL RECEIVED=22550, TOTAL PRR=95.54275%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 161] total_reward=49.78, Avg PRR=97.378, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20184, TOTAL PRR=96.52336%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 162] total_reward=49.99, Avg PRR=97.461, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20222, TOTAL PRR=96.70508%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 163] total_reward=51.04, Avg PRR=97.939, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18597, TOTAL PRR=97.31045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 164] total_reward=46.34, Avg PRR=95.604, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18390, TOTAL PRR=96.2273%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 165] total_reward=41.99, Avg PRR=93.426, PC5=32, Uu=23
+TOTAL SENT=27211, TOTAL RECEIVED=25900, TOTAL PRR=95.1821%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 166] total_reward=48.06, Avg PRR=96.533, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20194, TOTAL PRR=96.57118%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 167] total_reward=45.19, Avg PRR=95.154, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18421, TOTAL PRR=96.38951%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 168] total_reward=43.41, Avg PRR=94.024, PC5=34, Uu=21
+TOTAL SENT=25402, TOTAL RECEIVED=24102, TOTAL PRR=94.88229%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 169] total_reward=49.15, Avg PRR=96.990, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21862, TOTAL PRR=96.26172%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep170.pth
+[Episode 170] total_reward=46.19, Avg PRR=95.608, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21665, TOTAL PRR=95.3943%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 171] total_reward=39.70, Avg PRR=92.055, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21453, TOTAL PRR=94.46083%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 172] total_reward=45.49, Avg PRR=95.166, PC5=38, Uu=17
+TOTAL SENT=21811, TOTAL RECEIVED=20734, TOTAL PRR=95.06212%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 173] total_reward=44.79, Avg PRR=94.739, PC5=36, Uu=19
+TOTAL SENT=23602, TOTAL RECEIVED=22613, TOTAL PRR=95.80968%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 174] total_reward=41.65, Avg PRR=93.198, PC5=36, Uu=19
+TOTAL SENT=23602, TOTAL RECEIVED=22569, TOTAL PRR=95.62325%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 175] total_reward=47.42, Avg PRR=96.139, PC5=37, Uu=18
+TOTAL SENT=22700, TOTAL RECEIVED=21742, TOTAL PRR=95.77974%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 176] total_reward=47.62, Avg PRR=96.238, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18350, TOTAL PRR=96.018%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 177] total_reward=46.71, Avg PRR=95.832, PC5=38, Uu=17
+TOTAL SENT=21802, TOTAL RECEIVED=20827, TOTAL PRR=95.52793%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 178] total_reward=42.41, Avg PRR=93.626, PC5=39, Uu=16
+TOTAL SENT=20915, TOTAL RECEIVED=19997, TOTAL PRR=95.61081%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 179] total_reward=49.63, Avg PRR=97.176, PC5=36, Uu=19
+TOTAL SENT=23611, TOTAL RECEIVED=22702, TOTAL PRR=96.1501%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep180.pth
+[Episode 180] total_reward=45.26, Avg PRR=95.053, PC5=38, Uu=17
+TOTAL SENT=21793, TOTAL RECEIVED=20755, TOTAL PRR=95.237%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 181] total_reward=47.62, Avg PRR=96.238, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18350, TOTAL PRR=96.018%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 182] total_reward=51.04, Avg PRR=97.939, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18597, TOTAL PRR=97.31045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 183] total_reward=46.23, Avg PRR=95.620, PC5=37, Uu=18
+TOTAL SENT=22700, TOTAL RECEIVED=21671, TOTAL PRR=95.46696%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 184] total_reward=51.04, Avg PRR=97.939, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18597, TOTAL PRR=97.31045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 185] total_reward=43.44, Avg PRR=94.174, PC5=41, Uu=14
+TOTAL SENT=19115, TOTAL RECEIVED=18355, TOTAL PRR=96.02406%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 186] total_reward=49.16, Avg PRR=97.057, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21798, TOTAL PRR=95.97992%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 187] total_reward=46.88, Avg PRR=95.802, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20141, TOTAL PRR=96.31773%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 188] total_reward=46.24, Avg PRR=95.584, PC5=43, Uu=12
+TOTAL SENT=17311, TOTAL RECEIVED=16701, TOTAL PRR=96.47623%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 189] total_reward=43.65, Avg PRR=94.378, PC5=40, Uu=15
+TOTAL SENT=20011, TOTAL RECEIVED=19157, TOTAL PRR=95.73235%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+💾 체크포인트 저장: ./test/prr_triple/checkpoint_ep190.pth
+[Episode 190] total_reward=51.04, Avg PRR=97.939, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18597, TOTAL PRR=97.31045%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 191] total_reward=43.18, Avg PRR=94.129, PC5=37, Uu=18
+TOTAL SENT=22711, TOTAL RECEIVED=21639, TOTAL PRR=95.27982%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 192] total_reward=46.39, Avg PRR=95.566, PC5=38, Uu=17
+TOTAL SENT=21800, TOTAL RECEIVED=20921, TOTAL PRR=95.96789%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 193] total_reward=47.62, Avg PRR=96.238, PC5=41, Uu=14
+TOTAL SENT=19111, TOTAL RECEIVED=18350, TOTAL PRR=96.018%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 194] total_reward=46.74, Avg PRR=95.828, PC5=37, Uu=18
+TOTAL SENT=22700, TOTAL RECEIVED=21753, TOTAL PRR=95.82819%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 195] total_reward=49.12, Avg PRR=97.040, PC5=38, Uu=17
+TOTAL SENT=21800, TOTAL RECEIVED=20873, TOTAL PRR=95.74771%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 196] total_reward=42.40, Avg PRR=93.798, PC5=35, Uu=20
+TOTAL SENT=24511, TOTAL RECEIVED=23290, TOTAL PRR=95.01856%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 197] total_reward=43.44, Avg PRR=94.174, PC5=41, Uu=14
+TOTAL SENT=19115, TOTAL RECEIVED=18355, TOTAL PRR=96.02406%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 198] total_reward=42.93, Avg PRR=93.705, PC5=47, Uu=8
+TOTAL SENT=13711, TOTAL RECEIVED=13162, TOTAL PRR=95.99592%
+Waiting for simulation script to connect on port: tcp://localhost:5554
+Please start proper ns-3 simulation script using ./waf --run "..."
+[Episode 199] total_reward=47.13, Avg PRR=96.028, PC5=39, Uu=16
+TOTAL SENT=20911, TOTAL RECEIVED=20114, TOTAL PRR=96.18861%
+✅ 최종 모델 저장 완료: dqn_ns3_final.pth

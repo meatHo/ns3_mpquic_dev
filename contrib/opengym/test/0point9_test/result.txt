@@ -1,0 +1,16 @@
+eps decay 5000
+
+def compute_reward(prr_t, prr_tm1):
+    a, b, c = 1, 0.5, 1
+    τ_R = 0.95
+
+    # prr_diff = (prr_t-prr_tm1)
+    penalty = max(0, (τ_R-prr_t))
+    return (
+            a * prr_t -
+            # b * prr_diff -
+            c * penalty
+            # 시그모이드 쓰는것도 방법일듯
+    )
+    감마 0.9
+agent replay updat호출하는거 1000에 호출

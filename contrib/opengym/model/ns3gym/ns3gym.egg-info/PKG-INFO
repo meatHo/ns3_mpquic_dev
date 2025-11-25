@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: ns3gym
+Version: 0.1.0
+Summary: OpenAI Gym meets ns-3
+Home-page: 
+Author: Piotr Gawlowicz
+Author-email: gawlowicz.p@gmail.com
+License: MIT
+Keywords: openAI gym,ML,RL,ns-3
+License-File: LICENSE
+Requires-Dist: pyzmq
+Requires-Dist: numpy
+Requires-Dist: protobuf==3.20.3
+Requires-Dist: gym
+
+OpenAI Gym meets ns-3
