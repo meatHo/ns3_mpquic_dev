@@ -2580,7 +2580,7 @@ QuicSocketBase::DoClose(void)
 void
 QuicSocketBase::ReceivedData(Ptr<Packet> p, const QuicHeader& quicHeader, Address& address)
 {
-    NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
+    // NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
     NS_LOG_FUNCTION(this);
 
     m_rxTrace(p, quicHeader, this);

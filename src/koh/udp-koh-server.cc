@@ -20,7 +20,6 @@
 #include "udp-koh-server.h"
 
 #include "./../applications/model/seq-ts-header.h"
-#include "kohTag.h"
 
 #include "ns3/inet-socket-address.h"
 #include "ns3/inet6-socket-address.h"

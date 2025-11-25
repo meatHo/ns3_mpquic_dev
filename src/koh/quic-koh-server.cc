@@ -20,7 +20,6 @@
 #include "quic-koh-server.h"
 
 #include "./../applications/model/seq-ts-header.h"
-#include "kohTag.h"
 
 #include "ns3/inet-socket-address.h"
 #include "ns3/inet6-socket-address.h"
@@ -79,6 +78,7 @@ QuicKohServer::QuicKohServer()
       m_lossCounter(0)
 {
     m_nextClientId = 0;
+    m_totalRx=0;
     m_recvPerUe.clear();
     m_latencySumPerUe.clear();
     m_latencyCountPerUe.clear();
@@ -115,7 +115,15 @@ QuicKohServer::StartApplication()
     m_socket->SetRecvCallback(MakeCallback(&QuicKohServer::HandleRead, this));
 
     NS_LOG_UNCOND("QUIC server started on port " << m_port);
-    Simulator::Schedule(Seconds(3.0), &QuicKohServer::SendUeStats, this, 0);
+    // Simulator::Schedule(Seconds(3.0), &QuicKohServer::SendUeStats, this, 0);
+}
+
+// HandleRead 이전에 이 함수를 추가합니다.
+void
+QuicKohServer::HandleAccept(Ptr<Socket> newSocket, const Address& from)
+{
+    NS_LOG_UNCOND("New QUIC connection accepted from: ");
+
 }
 
 void
@@ -198,7 +206,7 @@ QuicKohServer::GetTotalRecv()
 void
 QuicKohServer::HandleRead(Ptr<Socket> socket)
 {
-    NS_LOG_UNCOND("QuicKohServer::HandleRead");
+    // NS_LOG_UNCOND("QuicKohServer::HandleRead");
     Ptr<Packet> packet;
     Address from;
     Address localAddress;
@@ -220,9 +228,12 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                 break;
             }
         }
+        InetSocketAddress addr = InetSocketAddress::ConvertFrom(from);
+        // NS_LOG_UNCOND("who's ip : handle read: " << addr.GetIpv4() << " Port: " << addr.GetPort());
         // 새 클라이언트 저장
         if (!clientFound)
         {
+            NS_LOG_UNCOND("new client detected");
             uint16_t newId = m_nextClientId++;
             clientInfos newClient;
             newClient.address = from;
@@ -230,6 +241,7 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
             newClient.connectionTime = Simulator::Now();
             newClient.packetLossRate = 0;
             newClient.RTT = 0;
+            newClient.socket=socket;
             newClient.totalBytesReceived = 0;
             clients[newId] = newClient;
             clientId = newId;
@@ -265,13 +277,16 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
             m_latencyCountPerUe[ueId] += 1;
         }
 
-        if (packet->GetSize() > 0)
+        if (packet->GetSize() > 12)
         {
             uint32_t receivedSize = packet->GetSize();
+            m_totalRx += receivedSize;
+            NS_LOG_UNCOND("total rx : "<<m_totalRx);
             // NS_LOG_UNCOND("server application received "<<receivedSize<<"byte");
             SeqTsHeader seqTs;
-            NS_LOG_UNCOND("서버에서 받은 패킷 크기 : "<<packet->GetSize());
+            // NS_LOG_UNCOND("서버에서 받은 패킷 크기 : "<<packet->GetSize()<<" seqt사이즈:"<<sizeof(seqTs)<<"  serialize :"<<seqTs.GetSerializedSize());
             packet->RemoveHeader(seqTs);
+            NS_LOG_UNCOND("ip :" << addr.GetIpv4() <<"  size :"<<packet->GetSize()<<"  seq :"<<seqTs.GetSeq());
 
             uint32_t currentSequenceNumber = seqTs.GetSeq();
             if (InetSocketAddress::IsMatchingType(from))
@@ -298,11 +313,25 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
             m_lossCounter.NotifyReceived(currentSequenceNumber);
             m_totalReceived++;
 
-            // SendPacket(clientId, "good");
+            // SendPacket(socket, from, std::string("good"));
+            // NS_LOG_UNCOND("handleread socket : "<<socket);
             // std::cout << "sent to client - clientId : " << clientId << "  Address :
             // "<<InetSocketAddress::ConvertFrom(clients[clientId].address).GetIpv4()<< std::endl;
         }
     }
+}
+
+void QuicKohServer::SendPacket(Ptr<Socket> socket, Address from, const std::string &message)
+{
+    NS_LOG_UNCOND("QuicKohServer::SendPacket");
+
+    if (InetSocketAddress::IsMatchingType(from))
+    {
+        InetSocketAddress addr = InetSocketAddress::ConvertFrom(from);
+        NS_LOG_UNCOND("Sending stats to Client IP: " << addr.GetIpv4() << " Port: " << addr.GetPort());
+    }
+    Ptr<Packet> packet = Create<Packet>((uint8_t*) message.c_str(), message.length());
+    socket->SendTo(packet,0,from);
 }
 
 // void
@@ -342,7 +371,7 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 void
 QuicKohServer::Send()
 {
-    NS_LOG_UNCOND("QuicKohServer::Send");
+    // NS_LOG_UNCOND("QuicKohServer::Send");
     Ipv4Address ipv4Dest = Ipv4Address("7.0.0.2");
     Address destAddress = Address(ipv4Dest);
     std::string message = "씨발";
@@ -371,6 +400,7 @@ QuicKohServer::Send()
 void
 QuicKohServer::SendUeStats(uint16_t ueId)
 {
+    // NS_LOG_UNCOND("QuicKohServer::SendUeStats");
     auto it = clients.find(ueId);
 
     if (it == clients.end())
@@ -385,8 +415,17 @@ QuicKohServer::SendUeStats(uint16_t ueId)
     stats.recvCount = GetRecvCount(ueId);
     stats.avgLatency = GetLatency(ueId);
 
+    Ptr<Socket> socket = it->second.socket;
+    // NS_LOG_UNCOND("SendUeStats socket : "<<socket);
+    if (InetSocketAddress::IsMatchingType(destAddress))
+    {
+        InetSocketAddress addr = InetSocketAddress::ConvertFrom(destAddress);
+        NS_LOG_UNCOND("Sending stats to Client IP: " << addr.GetIpv4() << " Port: " << addr.GetPort());
+    }
+
     Ptr<Packet> packet = Create<Packet>((uint8_t*)&stats, sizeof(KStats));
-    m_socket->SendTo(packet, 0, destAddress);
+    // socket->Send(packet);
+    socket->SendTo(packet,0,destAddress);
     // NS_LOG_UNCOND("server sent packet to client "<<Simulator::Now().GetSeconds());
     if (Simulator::Now().GetSeconds() <= 58)
     {

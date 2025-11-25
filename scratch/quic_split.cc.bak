@@ -6,7 +6,6 @@
  *  ue            router ----server
  *   \              /
  *     rsu --------
- *     ue-> serve은 멀티캐스트 반대는 unicast
  */
 
 #include "../src/koh/kohTag.h"
@@ -1174,11 +1173,9 @@ main(void)
     for (uint16_t i = 0; i < ueNodeContainer.GetN(); ++i)
     {
         Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
-        clientApp->SetAttribute("MaxPackets", UintegerValue(1));
-        clientApp->SetAttribute("Interval", TimeValue(Seconds(0.02)));//0.001
-        clientApp->SetAttribute("IntervalSl", TimeValue(Seconds(0.04)));//0.001
-        clientApp->SetAttribute("IntervalUu", TimeValue(Seconds(0.006)));//0.001
-        clientApp->SetAttribute("PacketSize", UintegerValue(9702));
+        clientApp->SetAttribute("MaxPackets", UintegerValue(1000000));
+        clientApp->SetAttribute("Interval", TimeValue(Seconds(1)));
+        clientApp->SetAttribute("PacketSize", UintegerValue(1000));
         clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
         clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
         clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
@@ -1187,6 +1184,8 @@ main(void)
         clientApp->m_KCallback = MakeBoundCallback(&TotalParameter, ueNodeContainer.Get(i));
 
         // 태그 설정
+        KohTag tag(i);
+        clientApp->SetTag(tag);
 
         clientApp->SetStartTime(Seconds(3.0));
         clientApp->SetStopTime(simTime - Seconds(2));
@@ -1271,18 +1270,18 @@ main(void)
 
     // RSU 노드의 Ipv4 L3 프로토콜의 "Rx" Trace Source에 콜백 함수를 연결합니다.
     // "Rx"는 IP 계층에서 패킷을 수신하는 이벤트입니다.
-    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsu->GetId()) +
-    //                                   "/$ns3::Ipv4L3Protocol/Rx",
-    //                               MakeCallback(&Ipv4PacketTraceAtRsu));
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(rsu->GetId()) +
+                                      "/$ns3::Ipv4L3Protocol/Rx",
+                                  MakeCallback(&Ipv4PacketTraceAtRsu));
     // Config::ConnectWithoutContext("/NodeList/" + std::to_string(pgw->GetId()) +
     //                                   "/$ns3::Ipv4L3Protocol/Rx",
     //                               MakeCallback(&Ipv4PacketTraceAtPgw));
-    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(router->GetId()) +
-    //                               "/$ns3::Ipv4L3Protocol/Rx",
-    //                           MakeCallback(&Ipv4PacketTraceAtRouter));
-    // Config::ConnectWithoutContext("/NodeList/" + std::to_string(server->GetId()) +
-    //                           "/$ns3::Ipv4L3Protocol/Rx",
-    //                       MakeCallback(&Ipv4PacketTraceAtServer));
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(router->GetId()) +
+                                  "/$ns3::Ipv4L3Protocol/Rx",
+                              MakeCallback(&Ipv4PacketTraceAtRouter));
+    Config::ConnectWithoutContext("/NodeList/" + std::to_string(server->GetId()) +
+                              "/$ns3::Ipv4L3Protocol/Rx",
+                          MakeCallback(&Ipv4PacketTraceAtServer));
     // Config::ConnectWithoutContext("/NodeList/" + std::to_string(ue->GetId()) +
     //                           "/$ns3::Ipv4L3Protocol/Rx",
     //                       MakeCallback(&Ipv4PacketTraceAtUe));

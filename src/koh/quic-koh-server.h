@@ -17,19 +17,10 @@
 #include "ns3/packet-loss-counter.h"
 #include "ns3/ptr.h"
 #include <ns3/traced-callback.h>
+#include "kohTag.h"
 
 namespace ns3
 {
-
-struct clientInfos
-{
-    Address address;
-    uint32_t lastSequenceNum;
-    Time connectionTime;
-    uint32_t RTT;
-    float_t packetLossRate;
-    uint64_t totalBytesReceived;
-};
 
 class QuicKohServer : public Application
 {
@@ -67,9 +58,10 @@ class QuicKohServer : public Application
 
     void StopApplication() override;
 
-    void SendPacket(Ptr<Socket> socket, const std::string& message);
+    void SendPacket(Ptr<Socket> socket,  Address from, const std::string& message);
 
     void HandleRead(Ptr<Socket> socket);
+    void HandleAccept(Ptr<Socket> newSocket, const Address& from);
 
     void SendUeStats(uint16_t ueId);
     void Send();
@@ -81,7 +73,7 @@ class QuicKohServer : public Application
     uint64_t m_totalReceived;        //!< Number of received packets
     PacketLossCounter m_lossCounter; //!< Lost packet counter
     uint16_t m_nextClientId;
-
+    uint64_t m_totalRx;
     Time m_txTs; //!< Time at which the last packet with header was received
 
     /// Callbacks for tracing the packet Rx events

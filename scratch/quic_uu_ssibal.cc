@@ -549,10 +549,10 @@ int main(void)
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
     //인터페이스 확인하는 코드=============================================================================
-    // Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
-    // Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
-    // uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
-    // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
+    Ptr<Ipv4> pgwIpv4 = server->GetObject<Ipv4>();
+    Ptr<NetDevice> deviceOnPgw = routerToServerNetDev.Get(1);
+    uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
+    std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
     uint32_t ueUuItf = 1;
@@ -586,10 +586,10 @@ int main(void)
     Ptr<Ipv4StaticRouting> serverStaticRouting = Ipv4RoutingHelper.GetStaticRouting(server->GetObject<Ipv4>());
     serverStaticRouting->SetDefaultRoute(routerServerIp, serverRouterItf);
     // serverStaticRouting->AddNetworkRouteTo(
-    //     Ipv4Address("7.0.0.0"),
-    //     Ipv4Mask("255.0.0.0"),
-    //     routerServerIp,
-    //     serverRouterItf
+        // Ipv4Address("7.0.0.0"),
+        // Ipv4Mask("255.0.0.0"),
+        // routerServerIp,
+        // serverRouterItf
     // );
 
     // router 라우팅
@@ -619,7 +619,7 @@ int main(void)
 
     StackHelper stackHelper;
     stackHelper.PrintRoutingTable(router);
-    stackHelper.PrintRoutingTable(rsu);
+    stackHelper.PrintRoutingTable(server);
     stackHelper.PrintRoutingTable(pgw);
 
     //  todo: 앱설치 =============================================================
@@ -641,8 +641,8 @@ int main(void)
     serverApp->SetStopTime(simTime);
 
     Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
-    clientApp->SetAttribute("MaxPackets", UintegerValue(1));
-    clientApp->SetAttribute("Interval", TimeValue(Seconds(1.0)));
+    clientApp->SetAttribute("MaxPackets", UintegerValue(100000));
+    clientApp->SetAttribute("Interval", TimeValue(Seconds(0.01)));
     clientApp->SetAttribute("PacketSize", UintegerValue(1000));
     clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
     clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));

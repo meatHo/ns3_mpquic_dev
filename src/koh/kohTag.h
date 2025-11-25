@@ -3,6 +3,7 @@
 
 #include "ns3/tag.h"
 #include "ns3/nstime.h"
+#include "ns3/internet-module.h"
 
 namespace ns3 {
 
@@ -13,6 +14,17 @@ struct KStats
     uint32_t sentCount;
     double avgLatency;
 } __attribute__((packed));
+
+struct clientInfos
+{
+    Address address;
+    uint32_t lastSequenceNum;
+    Time connectionTime;
+    uint32_t RTT;
+    float_t packetLossRate;
+    uint64_t totalBytesReceived;
+    Ptr<Socket> socket;
+};
 
 class KohTag : public Tag {
 public:

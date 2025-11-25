@@ -182,7 +182,7 @@ QuicL5Protocol::DispatchSend(Ptr<Packet> data)
 
     for (std::vector<Ptr<Packet>>::iterator it = disgregated.begin(); it != disgregated.end(); ++jt)
     {
-        NS_LOG_UNCOND("DispatchSend::각data크기 : "<<(*it)->GetSize());
+        // NS_LOG_UNCOND("DispatchSend::각data크기 : "<<(*it)->GetSize());
         if (jt == m_streams.end()) // Sending Remaining Load
         {
             jt = m_streams.begin() + 1;
@@ -193,7 +193,6 @@ QuicL5Protocol::DispatchSend(Ptr<Packet> data)
         if ((*jt)->GetStreamDirectionType() == QuicStream::SENDER or
             (*jt)->GetStreamDirectionType() == QuicStream::BIDIRECTIONAL)
         {
-            NS_LOG_INFO("Sending data on stream " << (*jt)->GetStreamId());
             int streamSentData = (*jt)->Send((*it));
             if (streamSentData > 0)
             {
@@ -375,7 +374,7 @@ QuicL5Protocol::DisgregateRecv(Ptr<Packet> data)
     uint32_t dataSizeByte = data->GetSize();
     std::vector<std::pair<Ptr<Packet>, QuicSubheader>> disgregated;
     NS_LOG_INFO("DisgregateRecv for a packet with size " << dataSizeByte);
-    NS_LOG_UNCOND("QuicL5Protocol::DisgregateRecv datasize : " << dataSizeByte);
+    // NS_LOG_UNCOND("QuicL5Protocol::DisgregateRecv datasize : " << dataSizeByte);
     // data->Print(std::cout);
 
     // the packet could contain multiple frames

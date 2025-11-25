@@ -745,7 +745,7 @@ int main(void)
     // std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
-    uint32_t ueUuItf = 1;
+    // uint32_t ueUuItf = 1;
     // uint32_t ueSlItf = 2;
     uint32_t rsuSlItf = 2;
     uint32_t rsuRouterItf = 1;

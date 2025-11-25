@@ -1008,7 +1008,7 @@ int main(void)
 
     // 인터페이스 바꾸는거 그냥 예시
     clientApp->setInterface(ueUuNetDev.Get(0), ueSlNetDev.Get(0));
-    Simulator::Schedule(Seconds(5.0), &QuicKohClient::changeInterface, clientApp);
+    Simulator::Schedule(Seconds(7.0), &QuicKohClient::changeInterface, clientApp);
 
     Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
     for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)

@@ -42,6 +42,7 @@ namespace ns3
         void SetTag(KohTag temp);
         void SelectInterface(uint32_t i);
         uint16_t GetUeId();
+        uint32_t GetSentCount();
         void clearCount();
         uint64_t GetTotalSent();
         Callback<void, KStats> m_KCallback;
@@ -53,7 +54,6 @@ namespace ns3
         void SendUu();
         void SelectInterface(Ptr<Socket> socket);
         void HandleRecv(Ptr<Socket> socket);
-        void SendSplit();
 
         TracedCallback<Ptr<const Packet>> m_txTrace;
         TracedCallback<Ptr<const Packet>, const Address&, const Address&> m_txTraceWithAddresses;
@@ -62,16 +62,9 @@ namespace ns3
         Time m_interval;
         uint32_t m_size;
 
-        uint32_t m_sentUu;//1동안 얼마나 받았나
-        uint32_t m_sentSl;//1동안 얼마나 받았나
-        uint32_t m_sentUuSync;//메인코드로 전송
-        uint32_t m_sentSlSync;//메인코드로 전송
-        uint32_t m_totalSent;//전체 보낸것
-        uint64_t m_seqSl;
-        uint64_t m_seqUu;
-        Time m_intervalSl;
-        Time m_intervalUu;
-
+        uint32_t m_sent;
+        uint32_t m_sentSync;
+        uint32_t m_totalSent;
 
         uint64_t m_totalTx;
         Ptr<Socket> m_uuSocket;
@@ -100,8 +93,7 @@ namespace ns3
 
         uint32_t m_burstPacketCount;
         Time     m_burstInterval;
-        KohTag tagSl;
-        KohTag tagUu;
+        KohTag tag;
 
 #ifdef NS3_LOG_ENABLE
         std::string m_peerAddressString;

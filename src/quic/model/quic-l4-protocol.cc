@@ -307,7 +307,7 @@ QuicL4Protocol::UdpConnect(const Address& address, Ptr<QuicSocketBase> socket)
 int
 QuicL4Protocol::UdpSend(Ptr<Socket> udpSocket, Ptr<Packet> p, uint32_t flags) const
 {
-    // NS_LOG_UNCOND("QuicL4Protocol::UdpSend");
+    NS_LOG_UNCOND("QuicL4Protocol::UdpSend"<<p->GetSize());
     NS_LOG_FUNCTION(this << udpSocket);
 
     return udpSocket->Send(p, flags);
@@ -446,7 +446,7 @@ QuicL4Protocol::GetAuthAddresses() const
 void
 QuicL4Protocol::ForwardUp(Ptr<Socket> sock)
 {
-    NS_LOG_UNCOND("QuicL4Protocol::ForwardUp");
+    // NS_LOG_UNCOND("QuicL4Protocol::ForwardUp");
     NS_LOG_FUNCTION(this);
 
     Address from;
@@ -626,8 +626,8 @@ void
 QuicL4Protocol::SetRecvCallback(Callback<void, Ptr<Packet>, const QuicHeader&, Address&> handler,
                                 Ptr<Socket> sock)
 {
+    // NS_LOG_UNCOND("QuicL4Protocol::SetRecvCallback");
     NS_LOG_FUNCTION(this);
-
     m_socketHandlers.insert(
         std::pair<Ptr<Socket>, Callback<void, Ptr<Packet>, const QuicHeader&, Address&>>(sock,
                                                                                          handler));

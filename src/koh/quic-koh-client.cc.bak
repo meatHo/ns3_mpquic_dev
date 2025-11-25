@@ -28,15 +28,14 @@
 #include "ns3/log.h"
 #include "ns3/nstime.h"
 #include "ns3/packet.h"
-#include "ns3/quic-socket-factory.h"
 #include "ns3/simulator.h"
 #include "ns3/socket-factory.h"
+#include "ns3/quic-socket-factory.h"
 #include "ns3/socket.h"
 #include "ns3/uinteger.h"
 
 #include <cstdio>
 #include <cstdlib>
-#include <thread>
 
 namespace ns3
 {
@@ -63,16 +62,6 @@ QuicKohClient::GetTypeId()
                           "The time to wait between packets",
                           TimeValue(Seconds(1.0)),
                           MakeTimeAccessor(&QuicKohClient::m_interval),
-                          MakeTimeChecker())
-            .AddAttribute("IntervalSl",
-                          "The time to wait between packets",
-                          TimeValue(Seconds(1.0)),
-                          MakeTimeAccessor(&QuicKohClient::m_intervalSl),
-                          MakeTimeChecker())
-            .AddAttribute("IntervalUu",
-                          "The time to wait between packets",
-                          TimeValue(Seconds(1.0)),
-                          MakeTimeAccessor(&QuicKohClient::m_intervalUu),
                           MakeTimeChecker())
             .AddAttribute("slServerAddress",
                           "The destination Address of the outbound packets",
@@ -114,18 +103,14 @@ QuicKohClient::GetTypeId()
 QuicKohClient::QuicKohClient()
 {
     NS_LOG_FUNCTION(this);
-    m_sentSl = 0;
-    m_sentUu = 0;
+    m_sent = 0;
     m_totalTx = 0;
     m_uuSocket = nullptr;
     m_slSocket = nullptr;
     m_sendSocket = nullptr;
-    m_sendUuEvent = EventId();
-    m_sendSlEvent = EventId();
+    m_sendEvent = EventId();
     m_lastUsedStream = 1;
-    m_slSocketConnected = false;
-    m_seqSl = 1;
-    m_seqUu = 0;
+    m_slSocketConnected=false;
 
     m_totalSent = 0;
 }
@@ -134,6 +119,35 @@ QuicKohClient::~QuicKohClient()
 {
     NS_LOG_FUNCTION(this);
 }
+
+uint16_t
+QuicKohClient::GetUeId()
+{
+    return tag.ueId;
+}
+
+void
+QuicKohClient::clearCount()
+{
+    m_sent = 0;
+}
+
+void
+QuicKohClient::SyncSent()
+{
+    m_sentSync = m_sent;
+    m_sent = 0;
+    Simulator::Schedule(Seconds(1.0), &QuicKohClient::SyncSent, this);
+}
+
+uint32_t
+QuicKohClient::GetSentCount()
+{
+    uint32_t temp = m_sent;
+    m_sent = 0;
+    return temp;
+}
+
 
 void
 QuicKohClient::StartApplication()
@@ -144,6 +158,7 @@ QuicKohClient::StartApplication()
     // //  소켓 설정 rsrp
     // m_rsrpSocket = Socket::CreateSocket(GetNode(), tid);
     // m_rsrpSocket->BindToNetDevice(m_devSl);
+
 
     // // listening 소켓 설정
     // m_recvSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
@@ -161,8 +176,7 @@ QuicKohClient::StartApplication()
         NS_LOG_UNCOND("uu ipv6 socket connection started");
         m_uuSocket->Connect(
             Inet6SocketAddress(Ipv6Address::ConvertFrom(m_uuServerAddress), m_uuServerPort));
-    }
-    else
+    }else
     {
         NS_LOG_UNCOND("uu ipv4 socket connection started");
         m_uuSocket->Connect(
@@ -171,81 +185,36 @@ QuicKohClient::StartApplication()
 
     // Sl 소켓 설정
     m_slSocket = Socket::CreateSocket(GetNode(), TypeId(QuicSocketFactory::GetTypeId()));
-    m_slSocket->Bind();
-    m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
-    if (Ipv6Address::IsMatchingType(m_slServerAddress))
-    {
-        NS_LOG_UNCOND("sl socket connection started");
-        m_slSocket->Connect(
-            Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
-    }
-    else
-    {
-        NS_LOG_UNCOND("sl ipv4 socket connection started");
-        m_slSocket->Connect(
-            InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
-    }
+    // m_slSocket->Bind();
+    // m_slSocket->BindToNetDevice(m_devSl); // Connect 전에 Bind
+    // if (Ipv6Address::IsMatchingType(m_slServerAddress))
+    // {
+    //     NS_LOG_UNCOND("sl socket connection started");
+    //     m_slSocket->Connect(
+    //         Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+    // }else
+    // {
+    //     NS_LOG_UNCOND("sl ipv4 socket connection started");
+    //     m_slSocket->Connect(
+    //         InetSocketAddress(Ipv4Address::ConvertFrom(m_slServerAddress), m_slServerPort));
+    // }
 
     // 수신 콜백 설정 (양방향 통신 시 필요)
-    m_slSocket->SetRecvCallback(MakeCallback(&QuicKohClient::HandleRecv, this));
     m_uuSocket->SetRecvCallback(MakeCallback(&QuicKohClient::HandleRecv, this));
+    m_slSocket->SetRecvCallback(MakeCallback(&QuicKohClient::HandleRecv, this));
 
     // 초기 인터페이스는 Uu로 설정
-    // m_sendSocket = m_uuSocket;
-    // NS_LOG_UNCOND("Client starts with uu interface.");
+    m_sendSocket = m_uuSocket;
+    NS_LOG_UNCOND("Client starts with uu interface.");
 
-    // m_sendSlEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendSl, this);
-    m_sendUuEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendUu, this);
-
-    // Simulator::Schedule(Seconds(0.0), &QuicKohClient::SyncSent, this);
-
-
-}
-
-void
-QuicKohClient::HandleRecv(Ptr<Socket> socket)
-{
-    SyncSent();
-
-    NS_LOG_UNCOND("QuicKohClient::HandleRecv");
-    NS_LOG_FUNCTION(this << socket);
-    Address from;
-    Ptr<Packet> packet = socket->RecvFrom(from);
-    uint8_t* buffer = new uint8_t[packet->GetSize() + 1];
-    packet->CopyData(buffer, packet->GetSize());
-    buffer[packet->GetSize()] = '\0';
-
-    if (InetSocketAddress::IsMatchingType(from))
-    {
-        NS_LOG_UNCOND("Received a " << (socket == m_slSocket ? tagSl.ueId : tagUu.ueId) << " ue "
-                                    << packet->GetSize() << " bytes packet from"
-                                    << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
-                                    << buffer);
-
-        KStats stats;
-        packet->CopyData((uint8_t*)&stats, sizeof(KStats));
-        // stats.sentCount = m_sentSync; //todo: 나중에 다시 살ㄹ리셈 일단 생략
-        // NS_LOG_UNCOND("UE " << stats.ueId
-        //   << " RecvCount=" << stats.recvCount
-        //   << " PRR=" << stats.recvCount/m_sentSync
-        //   << " Latency=" << stats.avgLatency << " ms");
-        m_KCallback(stats);
-    }
-    else if (Inet6SocketAddress::IsMatchingType(from))
-    {
-        NS_LOG_UNCOND("Received a " << packet->GetSize() << " bytes packet from "
-                                    << Inet6SocketAddress::ConvertFrom(from).GetIpv6() << ": "
-                                    << buffer);
-    }
-    // 메모리 정리
-    delete[] buffer;
+    m_sendEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::Send, this);
 }
 
 // void
 // QuicKohClient::HandleRecv(Ptr<Socket> socket)
 // {
+//     NS_LOG_UNCOND("QuicKohClient::HandleRecv");
 //     NS_LOG_FUNCTION(this << socket);
-//
 //     Address from;
 //     Ptr<Packet> packet = socket->RecvFrom(from);
 //     uint8_t* buffer = new uint8_t[packet->GetSize() + 1];
@@ -254,9 +223,18 @@ QuicKohClient::HandleRecv(Ptr<Socket> socket)
 //
 //     if (InetSocketAddress::IsMatchingType(from))
 //     {
-//         NS_LOG_UNCOND("Client Received a " << packet->GetSize() << " bytes packet from "
+//         NS_LOG_UNCOND("Received a "<<tag.ueId<<" ue " << packet->GetSize() << " bytes packet from"
 //                                     << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
 //                                     << buffer);
+//
+//         KStats stats;
+//         packet->CopyData((uint8_t*)&stats, sizeof(KStats));
+//         stats.sentCount = m_sentSync;
+//         // NS_LOG_UNCOND("UE " << stats.ueId
+//         //   << " RecvCount=" << stats.recvCount
+//         //   << " PRR=" << stats.recvCount/m_sentSync
+//         //   << " Latency=" << stats.avgLatency << " ms");
+//         m_KCallback(stats);
 //     }
 //     else if (Inet6SocketAddress::IsMatchingType(from))
 //     {
@@ -269,52 +247,70 @@ QuicKohClient::HandleRecv(Ptr<Socket> socket)
 // }
 
 void
+QuicKohClient::HandleRecv(Ptr<Socket> socket)
+{
+    NS_LOG_FUNCTION(this << socket);
+
+    Address from;
+    Ptr<Packet> packet = socket->RecvFrom(from);
+    uint8_t* buffer = new uint8_t[packet->GetSize() + 1];
+    packet->CopyData(buffer, packet->GetSize());
+    buffer[packet->GetSize()] = '\0';
+
+    if (InetSocketAddress::IsMatchingType(from))
+    {
+        NS_LOG_UNCOND("Client Received a " << packet->GetSize() << " bytes packet from "
+                                    << InetSocketAddress::ConvertFrom(from).GetIpv4() << ": "
+                                    << buffer);
+    }
+    else if (Inet6SocketAddress::IsMatchingType(from))
+    {
+        NS_LOG_UNCOND("Received a " << packet->GetSize() << " bytes packet from "
+                                    << Inet6SocketAddress::ConvertFrom(from).GetIpv6() << ": "
+                                    << buffer);
+    }
+    // 메모리 정리
+    delete[] buffer;
+}
+
+void
 QuicKohClient::StopApplication()
 {
     NS_LOG_FUNCTION(this);
-    Simulator::Cancel(m_sendSlEvent);
-    Simulator::Cancel(m_sendUuEvent);
+    Simulator::Cancel(m_sendEvent);
     if (m_sendSocket)
     {
-        m_sendSocket->Close();
+        m_sendSocket->Close ();
         m_sendSocket = nullptr;
     }
     if (m_uuSocket)
     {
-        m_uuSocket->Close();
+        m_uuSocket->Close ();
         m_uuSocket = nullptr;
     }
     if (m_slSocket)
     {
-        m_slSocket->Close();
+        m_slSocket->Close ();
         m_slSocket = nullptr;
     }
 }
 
 void
-QuicKohClient::SendSplit()
-{
-
-}
-
-
-void
-QuicKohClient::SendSl()
+QuicKohClient::Send()
 {
     // NS_LOG_UNCOND("QuicKohClient::Send");
     NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_sendSlEvent.IsExpired());
+    NS_ASSERT(m_sendEvent.IsExpired());
     // NS_LOG_UNCOND("UdpKohClient::Send()");
     Address from;
     Address to;
-    m_slSocket->GetSockName(from);
-    m_slSocket->GetPeerName(to);
+    m_sendSocket->GetSockName(from);
+    m_sendSocket->GetPeerName(to);
     SeqTsHeader seqTs;
-    // seqTs.SetSeq(m_seqSl); // 이거 쓸거면 m_sent 재정의 필요
-    seqTs.SetSeq(m_seqUu+1); // 이거 쓸거면 m_sent 재정의 필요
+    seqTs.SetSeq(m_totalSent);//이거 쓸거면 m_sent 재정의 필요
     NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
     // Ptr<Packet> p = Create<Packet>(m_size);
-    tagSl.txTime = Simulator::Now();
+    tag.txTime = Simulator::Now();
     Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
     // NS_LOG_UNCOND("클라이언트에서 받은 후에 패킷 크기 : "<<p->GetSize());
     p->AddHeader(seqTs);
@@ -323,19 +319,18 @@ QuicKohClient::SendSl()
     m_txTrace(p);
     m_txTraceWithAddresses(p, from, to);
 
-    p->AddPacketTag(tagSl);
+    p->AddPacketTag(tag);
 
     // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
     // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
     // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
     // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
 
-    if ((m_slSocket->Send(p)) >= 0)
+    if ((m_sendSocket->Send(p)) >= 0)
     {
-        ++m_sentSl;
+        ++m_sent;
         ++m_totalSent;
         m_totalTx += p->GetSize();
-        m_seqSl += 2;
 #ifdef NS3_LOG_ENABLE
         NS_LOG_INFO("TraceDelay TX " << m_size << " bytes to " << m_peerAddressString << " Uid: "
                                      << p->GetUid() << " Time: " << (Simulator::Now()).As(Time::S));
@@ -347,68 +342,24 @@ QuicKohClient::SendSl()
         NS_LOG_INFO("Error while sending " << m_size << " bytes to " << m_peerAddressString);
     }
 #endif // NS3_LOG_ENABLE
-    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
+    NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
 
-    if (m_sentSl < m_count || m_count == 0)
+    if (m_sent < m_count || m_count == 0)
     {
-        m_sendSlEvent = Simulator::Schedule(m_intervalSl, &QuicKohClient::SendSl, this);
+        m_sendEvent = Simulator::Schedule(m_interval, &QuicKohClient::Send, this);
     }
 }
 
-void
-QuicKohClient::SendUu()
+uint64_t
+QuicKohClient::GetTotalTx() const
 {
-    // NS_LOG_UNCOND("QuicKohClient::Send");
-    NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_sendUuEvent.IsExpired());
-    // NS_LOG_UNCOND("UdpKohClient::Send()");
-    Address from;
-    Address to;
-    m_uuSocket->GetSockName(from);
-    m_uuSocket->GetPeerName(to);
-    SeqTsHeader seqTs;
-    seqTs.SetSeq(m_seqUu); // 이거 쓸거면 m_sent 재정의 필요
-    NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
-    // Ptr<Packet> p = Create<Packet>(m_size);
-    tagUu.txTime = Simulator::Now();
-    Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
-    // NS_LOG_UNCOND("클라이언트에서 받은 후에 패킷 크기 : "<<p->GetSize());
-    p->AddHeader(seqTs);
-    // NS_LOG_UNCOND("클라이언트에서 seqts 후에 패킷 크기 : "<<p->GetSize());
-    // Trace before adding header, for consistency with PacketSink
-    m_txTrace(p);
-    m_txTraceWithAddresses(p, from, to);
+    return m_totalTx;
+}
 
-    p->AddPacketTag(tagUu);
-
-    // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
-    // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
-    // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
-    // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
-
-    if ((m_uuSocket->Send(p)) >= 0)
-    {
-        ++m_sentUu;
-        ++m_totalSent;
-        m_totalTx += p->GetSize();
-        m_seqUu += 2;
-#ifdef NS3_LOG_ENABLE
-        NS_LOG_INFO("TraceDelay TX " << m_size << " bytes to " << m_peerAddressString << " Uid: "
-                                     << p->GetUid() << " Time: " << (Simulator::Now()).As(Time::S));
-#endif // NS3_LOG_ENABLE
-    }
-#ifdef NS3_LOG_ENABLE
-    else
-    {
-        NS_LOG_INFO("Error while sending " << m_size << " bytes to " << m_peerAddressString);
-    }
-#endif // NS3_LOG_ENABLE
-    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
-
-    if (m_sentUu < m_count || m_count == 0)
-    {
-        m_sendUuEvent = Simulator::Schedule(m_intervalUu, &QuicKohClient::SendUu, this);
-    }
+uint64_t
+QuicKohClient::GetTotalSent()
+{
+    return m_totalSent;
 }
 
 void
@@ -436,11 +387,11 @@ QuicKohClient::SelectInterface(uint32_t i)
     }
 }
 
-// void
-// QuicKohClient::SetTag(KohTag temp)
-// {
-//     tag = temp;
-// }
+void
+QuicKohClient::SetTag(KohTag temp)
+{
+    tag = temp;
+}
 
 // [핵심 수정] changeInterface() 함수
 void
@@ -471,8 +422,8 @@ QuicKohClient::changeInterface()
             m_slSocket->BindToNetDevice(m_devSl);
             if (Ipv6Address::IsMatchingType(m_slServerAddress))
             {
-                m_slSocket->Connect(Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress),
-                                                       m_slServerPort));
+                m_slSocket->Connect(
+                    Inet6SocketAddress(Ipv6Address::ConvertFrom(m_slServerAddress), m_slServerPort));
             }
             else
             {
@@ -523,44 +474,10 @@ QuicKohClient::changeInterface()
 }
 
 void
-QuicKohClient::setInterface(Ptr<NetDevice> uu, Ptr<NetDevice> sl) // 안씀
+QuicKohClient::setInterface(Ptr<NetDevice> uu, Ptr<NetDevice> sl)
 {
     m_devSl = sl;
     m_devUu = uu;
-}
-
-// uint16_t
-// QuicKohClient::GetUeId()//안씀
-// {
-//     return tag.ueId;
-// }
-
-void
-QuicKohClient::clearCount()
-{
-    m_sentSl = 0;
-    m_sentUu = 0;
-}
-
-void
-QuicKohClient::SyncSent()
-{
-    m_sentSlSync = m_sentSl;
-    m_sentUuSync = m_sentUu;
-    m_sentSl = 0;
-    m_sentUu = 0;
-}
-
-uint64_t
-QuicKohClient::GetTotalTx() const // 안씀
-{
-    return m_totalTx;
-}
-
-uint64_t
-QuicKohClient::GetTotalSent()
-{
-    return m_totalSent;
 }
 
 } // Namespace ns3

@@ -18,20 +18,13 @@
 #include "ns3/packet-loss-counter.h"
 #include "ns3/ptr.h"
 #include <ns3/traced-callback.h>
+#include "kohTag.h"
 
 namespace ns3
 {
 
 // udp 서버 설정===============================================================
-struct clientInfos
-{
-    Address address;
-    uint32_t lastSequenceNum;
-    Time connectionTime;
-    uint32_t RTT;
-    float_t packetLossRate;
-    uint64_t totalBytesReceived;
-};
+
 
 class UdpKohServer : public Application
 {
