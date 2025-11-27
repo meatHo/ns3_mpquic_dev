@@ -4,6 +4,10 @@
 
 #ifndef QUIC_KOH_SERVER_H
 #define QUIC_KOH_SERVER_H
+enum InterfaceType {
+    UU = 0,
+    SL = 1
+};
 
 #endif
 /*
@@ -57,6 +61,8 @@ class QuicKohServer : public Application
     void StartApplication() override;
 
     void StopApplication() override;
+
+    InterfaceType GetInterface(Address from);
 
     void SendPacket(Ptr<Socket> socket,  Address from, const std::string& message);
 

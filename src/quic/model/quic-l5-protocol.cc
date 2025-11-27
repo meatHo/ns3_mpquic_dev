@@ -157,6 +157,55 @@ QuicL5Protocol::SetSocket(Ptr<QuicSocketBase> sock)
     m_socket = sock;
 }
 
+// int
+// QuicL5Protocol::DispatchSend(Ptr<Packet> data)
+// {
+//     // NS_LOG_UNCOND("QuicL5Protocol::DispatchSend");
+//     NS_LOG_FUNCTION(this);
+//
+//     int sentData = 0;
+//
+//     // if the streams are not created yet, open the streams
+//     if (m_streams.size() != m_socket->GetMaxStreamId())
+//     {
+//         NS_LOG_INFO("Create the missing streams");
+//         CreateStream(
+//             QuicStream::SENDER,
+//             m_socket->GetMaxStreamId()); // TODO open up to max_stream_uni and max_stream_bidi
+//     }
+//    // NS_LOG_UNCOND("DispatchSend::dat크기 : "<<data->GetSize());
+//
+//     std::vector<Ptr<Packet>> disgregated = DisgregateSend(data);
+//
+//     std::vector<Ptr<QuicStreamBase>>::iterator jt =
+//         m_streams.begin() + 1; // Avoid Send on stream <0>, which is used only for handshake
+//
+//     for (std::vector<Ptr<Packet>>::iterator it = disgregated.begin(); it != disgregated.end(); ++jt)
+//     {
+//         // NS_LOG_UNCOND("DispatchSend::각data크기 : "<<(*it)->GetSize());
+//         if (jt == m_streams.end()) // Sending Remaining Load
+//         {
+//             jt = m_streams.begin() + 1;
+//         }
+//         NS_LOG_LOGIC(this << " " << (uint64_t)(*jt)->GetStreamDirectionType()
+//                           << (uint64_t)QuicStream::SENDER << (uint64_t)QuicStream::BIDIRECTIONAL);
+//
+//         if ((*jt)->GetStreamDirectionType() == QuicStream::SENDER or
+//             (*jt)->GetStreamDirectionType() == QuicStream::BIDIRECTIONAL)
+//         {
+//             int streamSentData = (*jt)->Send((*it));
+//             if (streamSentData > 0)
+//             {
+//                 sentData += streamSentData;
+//             }
+//             ++it;
+//         }
+//     }
+//
+//     return (sentData > 0) ? sentData : -1;
+// }
+
+
 int
 QuicL5Protocol::DispatchSend(Ptr<Packet> data)
 {
@@ -173,7 +222,7 @@ QuicL5Protocol::DispatchSend(Ptr<Packet> data)
             QuicStream::SENDER,
             m_socket->GetMaxStreamId()); // TODO open up to max_stream_uni and max_stream_bidi
     }
-   // NS_LOG_UNCOND("DispatchSend::dat크기 : "<<data->GetSize());
+    // NS_LOG_UNCOND("DispatchSend::dat크기 : "<<data->GetSize());
 
     std::vector<Ptr<Packet>> disgregated = DisgregateSend(data);
 

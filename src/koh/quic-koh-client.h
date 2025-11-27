@@ -46,6 +46,11 @@ namespace ns3
         uint64_t GetTotalSent();
         Callback<void, KStats> m_KCallback;
 
+        //split
+        uint8_t GetOptimalInterface();
+        uint8_t GetOptimalStream();
+
+
     private:
         void StartApplication() override;
         void StopApplication() override;

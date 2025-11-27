@@ -195,7 +195,7 @@ QuicKohClient::StartApplication()
     // m_sendSocket = m_uuSocket;
     // NS_LOG_UNCOND("Client starts with uu interface.");
 
-    // m_sendSlEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendSl, this);
+    m_sendSlEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendSl, this);
     m_sendUuEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendUu, this);
 
     // Simulator::Schedule(Seconds(0.0), &QuicKohClient::SyncSent, this);
@@ -310,52 +310,34 @@ QuicKohClient::SendSl()
     Address to;
     m_slSocket->GetSockName(from);
     m_slSocket->GetPeerName(to);
-    SeqTsHeader seqTs;
-    // seqTs.SetSeq(m_seqSl); // 이거 쓸거면 m_sent 재정의 필요
-    seqTs.SetSeq(m_seqUu+1); // 이거 쓸거면 m_sent 재정의 필요
-    NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
-    // Ptr<Packet> p = Create<Packet>(m_size);
-    tagSl.txTime = Simulator::Now();
-    tagSl.packetId = m_packetCounter++;
-    Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
-    // NS_LOG_UNCOND("클라이언트에서 받은 후에 패킷 크기 : "<<p->GetSize());
-    p->AddHeader(seqTs);
-    // NS_LOG_UNCOND("클라이언트에서 seqts 후에 패킷 크기 : "<<p->GetSize());
-    // Trace before adding header, for consistency with PacketSink
-    
-    uint32_t messageSize = p->GetSize();
-    Ptr<Packet> finalPacket = Create<Packet>(reinterpret_cast<uint8_t*>(&messageSize), sizeof(messageSize));
-    finalPacket->AddAtEnd(p);
 
-    m_txTrace(finalPacket);
-    m_txTraceWithAddresses(finalPacket, from, to);
 
-    finalPacket->AddPacketTag(tagSl);
+    Ptr<Packet> p = Create<Packet>(m_size);
+
+    KohMetadata header;
+    header.SetTxTime(Simulator::Now());
+    header.SetPacketNum(m_packetCounter++);
+    header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
+
+    p->AddHeader(header);
+
+    m_txTrace(p);
+    m_txTraceWithAddresses(p, from, to);
+
 
     // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
     // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
     // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
     // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
 
-    if ((m_slSocket->Send(finalPacket)) >= 0)
+    if ((m_slSocket->Send(p,1)) >= 0)
     {
         ++m_sentSl;
         ++m_totalSent;
         m_totalTx += p->GetSize();
-        m_seqSl += 2;
-#ifdef NS3_LOG_ENABLE
-        NS_LOG_INFO("TraceDelay TX " << m_size << " bytes to " << m_peerAddressString << " Uid: "
-                                     << p->GetUid() << " Time: " << (Simulator::Now()).As(Time::S));
-#endif // NS3_LOG_ENABLE
+        m_seqSl += 1;
     }
-#ifdef NS3_LOG_ENABLE
-    else
-    {
-        NS_LOG_INFO("Error while sending " << m_size << " bytes to " << m_peerAddressString);
-    }
-#endif // NS3_LOG_ENABLE
     // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
-
     if (m_sentSl < m_count || m_count == 0)
     {
         m_sendSlEvent = Simulator::Schedule(m_intervalSl, &QuicKohClient::SendSl, this);
@@ -393,27 +375,14 @@ QuicKohClient::SendUu()
     // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
     // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
 
-    if ((m_uuSocket->Send(p)) >= 0)
+    if ((m_uuSocket->Send(p,1)) >= 0)
     {
-
-
         ++m_sentUu;
         ++m_totalSent;
         m_totalTx += p->GetSize();
         m_seqUu += 2;
-#ifdef NS3_LOG_ENABLE
-        NS_LOG_INFO("TraceDelay TX " << m_size << " bytes to " << m_peerAddressString << " Uid: "
-                                     << p->GetUid() << " Time: " << (Simulator::Now()).As(Time::S));
-#endif // NS3_LOG_ENABLE
     }
-#ifdef NS3_LOG_ENABLE
-    else
-    {
-        NS_LOG_INFO("Error while sending " << m_size << " bytes to " << m_peerAddressString);
-    }
-#endif // NS3_LOG_ENABLE
     // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
-
     if (m_sentUu < m_count || m_count == 0)
     {
         m_sendUuEvent = Simulator::Schedule(m_intervalUu, &QuicKohClient::SendUu, this);

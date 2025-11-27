@@ -78,7 +78,7 @@ QuicKohServer::QuicKohServer()
       m_lossCounter(0)
 {
     m_nextClientId = 0;
-    m_totalRx=0;
+    m_totalRx = 0;
     m_recvPerUe.clear();
     m_latencySumPerUe.clear();
     m_latencyCountPerUe.clear();
@@ -123,7 +123,6 @@ void
 QuicKohServer::HandleAccept(Ptr<Socket> newSocket, const Address& from)
 {
     NS_LOG_UNCOND("New QUIC connection accepted from: ");
-
 }
 
 void
@@ -218,15 +217,17 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
         }
 
         // 1. 클라이언트 식별 및 상태 정보 생성/가져오기
-        auto it = std::find_if(clients.begin(), clients.end(),
+        auto it = std::find_if(clients.begin(),
+                               clients.end(),
                                [&](const std::pair<uint16_t, clientInfos>& clientPair) {
                                    return clientPair.second.address == from;
                                });
-        
+
         uint16_t clientId;
         if (it == clients.end())
         {
-            NS_LOG_UNCOND("New client detected: " << InetSocketAddress::ConvertFrom(from).GetIpv4());
+            NS_LOG_UNCOND(
+                "New client detected: " << InetSocketAddress::ConvertFrom(from).GetIpv4());
             clientId = m_nextClientId++;
             clients[clientId] = {}; // clientInfos 구조체를 0으로 초기화
             clients[clientId].address = from;
@@ -243,7 +244,7 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
         packet->CopyData(bufferData, packet->GetSize());
         client.buffer.insert(client.buffer.end(), bufferData, bufferData + packet->GetSize());
         delete[] bufferData;
-        
+
         socket->GetSockName(localAddress);
         m_rxTraceWithAddresses(packet, from, localAddress);
 
@@ -263,11 +264,12 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                     if (tempPacket->PeekHeader(metadata))
                     {
                         // Uu 패킷 스트림 시작 감지
-                        NS_LOG_INFO("Detected Uu packet stream start. Total size: " << metadata.GetPacketSize());
-                        client.isReassembly = true; // Use user's field name
+                        NS_LOG_INFO("Detected packet stream start. Total size: "
+                                    << metadata.GetPacketSize());
+                        client.isReassembly = true;                      // Use user's field name
                         client.expectedBytes = metadata.GetPacketSize(); // 전체 패킷 크기 저장
-                        client.txTime = metadata.GetTxTime(); // Use user's field name
-                        client.packtNum = metadata.GetPacketNum(); // Use user's field name
+                        client.txTime = metadata.GetTxTime();            // Use user's field name
+                        client.packtNum = metadata.GetPacketNum();       // Use user's field name
                     }
                 }
 
@@ -287,7 +289,7 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                     // Uu의 경우, expectedBytes가 전체 크기(헤더 포함)이므로 버퍼에 그만큼 있어야 함
                     requiredBytesInBuffer = client.expectedBytes;
                 }
-                
+
                 // C. 버퍼에 충분한 데이터가 있는지 확인
                 if (client.buffer.size() >= requiredBytesInBuffer)
                 {
@@ -296,32 +298,39 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 
                     if (client.isReassembly) // If it's a Uu reassembly
                     {
+                        InterfaceType interface = GetInterface(from);
                         // Uu 패킷 재조립 완료 및 처리
-                        NS_LOG_UNCOND("Uu packet reassembly complete. Total size: " << requiredBytesInBuffer<<" Packet num: "<<client.packtNum);
-                        
+
+                        NS_LOG_UNCOND(((interface==0)?"UU":"SL")<<" packet reassembly complete. Total size: "
+                                      << requiredBytesInBuffer
+                                      << " Packet num: " << client.packtNum);
+
                         // 버퍼에서 전체 패킷(헤더+몸통) 생성
-                        completePacket = Create<Packet>(client.buffer.data(), requiredBytesInBuffer);
-                        
+                        completePacket =
+                            Create<Packet>(client.buffer.data(), requiredBytesInBuffer);
+
                         // 헤더를 제거하면서 정보 다시 확인
                         KohMetadata metadata;
                         completePacket->RemoveHeader(metadata); // This also verifies it's there.
 
                         Time delay = Simulator::Now() - metadata.GetTxTime();
-                        NS_LOG_UNCOND("Processed Uu packet. Seq: " << metadata.GetPacketNum()
-                                      << ", Latency: " << delay.GetMilliSeconds() << "ms");
-                        
+
+                        NS_LOG_UNCOND("Processed packet. Seq: " << metadata.GetPacketNum()
+                                                                << ", Latency: "
+                                                                << delay.GetMilliSeconds() << "ms");
+
                         m_totalRx += requiredBytesInBuffer;
                         m_totalReceived++;
 
                         // Remove the full packet from client buffer
-                        client.buffer.erase(client.buffer.begin(), client.buffer.begin() + requiredBytesInBuffer);
+                        client.buffer.erase(client.buffer.begin(),
+                                            client.buffer.begin() + requiredBytesInBuffer);
                     }
-
 
                     // 상태 초기화하여 다음 메시지를 기다리도록 설정
                     client.expectedBytes = 0;
                     client.isReassembly = false; // Reset the reassembly flag
-                    
+
                     // 버퍼에 다른 메시지가 더 있을 수 있으므로 루프 계속
                     continue;
                 }
@@ -330,11 +339,33 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                     // 아직 데이터가 부족함. 루프를 중단하고 다음 데이터 수신을 기다림
                     break;
                 }
-            } 
+            }
         } // end while(true)
     } // end while(RecvFrom)
 }
 
+InterfaceType
+QuicKohServer::GetInterface(Address from)
+{
+    if (InetSocketAddress::IsMatchingType(from))
+    {
+        InetSocketAddress ipv4 = InetSocketAddress::ConvertFrom(from).GetIpv4();
+
+        std::stringstream ss;
+        ss << ipv4.GetIpv4();
+        std::string temp = ss.str();
+
+        if (temp.rfind("7.0.", 0) == 0)
+        {
+            return UU;
+        }
+        else
+        {
+            return SL;
+        }
+    }
+    return UU;
+}
 
 // void
 // QuicKohServer::HandleRead(Ptr<Socket> socket)
@@ -449,15 +480,17 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 //                 memcpy(&client.expectedBytes, client.buffer.data(), sizeof(uint32_t));
 //
 //                 // 버퍼에서 크기 정보(헤더) 삭제
-//                 client.buffer.erase(client.buffer.begin(), client.buffer.begin() + sizeof(uint32_t));
+//                 client.buffer.erase(client.buffer.begin(), client.buffer.begin() +
+//                 sizeof(uint32_t));
 //             }
 //
 //             // 2. 메시지 본문(Body) 확인 단계
 //             if (client.expectedBytes > 0 && client.buffer.size() >= client.expectedBytes)
 //             {
 //                 // 완전한 패킷 생성 (ns-3 Packet으로 재조립)
-//                 Ptr<Packet> completePacket = Create<Packet>(client.buffer.data(), client.expectedBytes);
-//                 NS_LOG_UNCOND(">>> [Reassembly Complete] Full Packet Received! Size: " << client.expectedBytes << " bytes");
+//                 Ptr<Packet> completePacket = Create<Packet>(client.buffer.data(),
+//                 client.expectedBytes); NS_LOG_UNCOND(">>> [Reassembly Complete] Full Packet
+//                 Received! Size: " << client.expectedBytes << " bytes");
 //                 // -----------------------------------------------------
 //                 // [E] 기존 애플리케이션 로직 (Header 파싱 및 로그)
 //                 // -----------------------------------------------------
@@ -471,7 +504,8 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 //                     // 조립된 패킷에서 헤더 제거 및 정보 읽기
 //                     completePacket->RemoveHeader(seqTs);
 //
-//                     NS_LOG_UNCOND("ip :" << addr.GetIpv4() << "  size :" << completePacket->GetSize() << "  seq :" << seqTs.GetSeq());
+//                     NS_LOG_UNCOND("ip :" << addr.GetIpv4() << "  size :" <<
+//                     completePacket->GetSize() << "  seq :" << seqTs.GetSeq());
 //
 //                     uint32_t currentSequenceNumber = seqTs.GetSeq();
 //
@@ -485,7 +519,8 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 //                                   << Inet6SocketAddress::ConvertFrom(from).GetIpv6()
 //                                   << " port: " << Inet6SocketAddress::ConvertFrom(from).GetPort()
 //                                   << " Sequence Number: " << currentSequenceNumber
-//                                   << " Uid: " << completePacket->GetUid() // 주의: 재조립된 패킷이라 UID는 새로 발급됨
+//                                   << " Uid: " << completePacket->GetUid() // 주의: 재조립된
+//                                   패킷이라 UID는 새로 발급됨
 //                                   << " TXtime: " << seqTs.GetTs()
 //                                   << " RXtime: " << Simulator::Now()
 //                                   << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
@@ -496,7 +531,8 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 //                 }
 //
 //                 // 처리 완료된 데이터를 버퍼에서 제거
-//                 client.buffer.erase(client.buffer.begin(), client.buffer.begin() + client.expectedBytes);
+//                 client.buffer.erase(client.buffer.begin(), client.buffer.begin() +
+//                 client.expectedBytes);
 //
 //                 // 다음 메시지 처리를 위해 초기화
 //                 client.expectedBytes = 0;
@@ -513,17 +549,19 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 //     } // end of while(RecvFrom)
 // }
 
-void QuicKohServer::SendPacket(Ptr<Socket> socket, Address from, const std::string &message)
+void
+QuicKohServer::SendPacket(Ptr<Socket> socket, Address from, const std::string& message)
 {
     NS_LOG_UNCOND("QuicKohServer::SendPacket");
 
     if (InetSocketAddress::IsMatchingType(from))
     {
         InetSocketAddress addr = InetSocketAddress::ConvertFrom(from);
-        NS_LOG_UNCOND("Sending stats to Client IP: " << addr.GetIpv4() << " Port: " << addr.GetPort());
+        NS_LOG_UNCOND("Sending stats to Client IP: " << addr.GetIpv4()
+                                                     << " Port: " << addr.GetPort());
     }
-    Ptr<Packet> packet = Create<Packet>((uint8_t*) message.c_str(), message.length());
-    socket->SendTo(packet,0,from);
+    Ptr<Packet> packet = Create<Packet>((uint8_t*)message.c_str(), message.length());
+    socket->SendTo(packet, 0, from);
 }
 
 // void
@@ -533,8 +571,8 @@ void QuicKohServer::SendPacket(Ptr<Socket> socket, Address from, const std::stri
 //
 //     if (it == clients.end())
 //     {
-//         std::cout << "SendPacket failed: Client with ID " << clientId << " not found." << std::endl;
-//         return;
+//         std::cout << "SendPacket failed: Client with ID " << clientId << " not found." <<
+//         std::endl; return;
 //     }
 //
 //     Address destAddress = it->second.address;
@@ -612,12 +650,13 @@ QuicKohServer::SendUeStats(uint16_t ueId)
     if (InetSocketAddress::IsMatchingType(destAddress))
     {
         InetSocketAddress addr = InetSocketAddress::ConvertFrom(destAddress);
-        NS_LOG_UNCOND("Sending stats to Client IP: " << addr.GetIpv4() << " Port: " << addr.GetPort());
+        NS_LOG_UNCOND("Sending stats to Client IP: " << addr.GetIpv4()
+                                                     << " Port: " << addr.GetPort());
     }
 
     Ptr<Packet> packet = Create<Packet>((uint8_t*)&stats, sizeof(KStats));
     // socket->Send(packet);
-    socket->SendTo(packet,0,destAddress);
+    socket->SendTo(packet, 0, destAddress);
     // NS_LOG_UNCOND("server sent packet to client "<<Simulator::Now().GetSeconds());
     if (Simulator::Now().GetSeconds() <= 58)
     {

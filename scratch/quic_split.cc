@@ -1177,7 +1177,7 @@ main(void)
         clientApp->SetAttribute("MaxPackets", UintegerValue(2));
         clientApp->SetAttribute("Interval", TimeValue(Seconds(0.02)));//0.001
         clientApp->SetAttribute("IntervalSl", TimeValue(Seconds(0.04)));//0.001
-        clientApp->SetAttribute("IntervalUu", TimeValue(Seconds(0.006)));//0.001
+        clientApp->SetAttribute("IntervalUu", TimeValue(Seconds(0.001)));//0.001
         clientApp->SetAttribute("PacketSize", UintegerValue(10000));
         clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
         clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
