@@ -307,7 +307,7 @@ QuicL4Protocol::UdpConnect(const Address& address, Ptr<QuicSocketBase> socket)
 int
 QuicL4Protocol::UdpSend(Ptr<Socket> udpSocket, Ptr<Packet> p, uint32_t flags) const
 {
-    NS_LOG_UNCOND("QuicL4Protocol::UdpSend"<<p->GetSize());
+    // NS_LOG_UNCOND("QuicL4Protocol::UdpSend"<<p->GetSize());
     NS_LOG_FUNCTION(this << udpSocket);
 
     return udpSocket->Send(p, flags);
@@ -843,7 +843,7 @@ QuicL4Protocol::SendPacket(Ptr<QuicSocketBase> socket,
                            Ptr<Packet> pkt,
                            const QuicHeader& outgoing) const
 {
-    NS_LOG_UNCOND("QuicL4Protocol::SendPacket "<<pkt->GetSize());
+    // NS_LOG_UNCOND("QuicL4Protocol::SendPacket "<<pkt->GetSize());
     NS_LOG_FUNCTION(this << socket);
     NS_LOG_LOGIC(this << " sending seq " << outgoing.GetPacketNumber() << " data size "
                       << pkt->GetSize());

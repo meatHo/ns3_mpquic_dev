@@ -122,7 +122,7 @@ int
 QuicStreamBase::Send(Ptr<Packet> frame)
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_UNCOND("QuicStreamBase::Send"<<frame->GetSize());
+    // NS_LOG_UNCOND("QuicStreamBase::Send"<<frame->GetSize());
 
     SetStreamStateSendIf(m_streamStateSend == IDLE and (m_streamDirectionType == SENDER or
                                                         m_streamDirectionType == BIDIRECTIONAL),
@@ -313,7 +313,7 @@ int
 QuicStreamBase::Recv(Ptr<Packet> frame, const QuicSubheader& sub, Address& address)
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_UNCOND("QuicStreamBase::Recv");
+    // NS_LOG_UNCOND("QuicStreamBase::Recv");
     uint8_t frameType = sub.GetFrameType();
 
     switch (frameType)
