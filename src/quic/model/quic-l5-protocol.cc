@@ -234,6 +234,7 @@ QuicL5Protocol::DispatchSend(Ptr<Packet> data, uint64_t streamId)
 int
 QuicL5Protocol::DispatchRecv(Ptr<Packet> data, Address& address)
 {
+    NS_LOG_UNCOND("QuicL5Protocol::DispatchRecv "<<data->GetSize());
     NS_LOG_FUNCTION(this);
     auto disgregated = DisgregateRecv(data);
 
@@ -369,6 +370,7 @@ QuicL5Protocol::DisgregateSend(Ptr<Packet> data)
 std::vector<std::pair<Ptr<Packet>, QuicSubheader>>
 QuicL5Protocol::DisgregateRecv(Ptr<Packet> data)
 {
+    NS_LOG_UNCOND("QuicL5Protocol::DisgregateRecv");
     NS_LOG_FUNCTION(this);
 
     uint32_t dataSizeByte = data->GetSize();

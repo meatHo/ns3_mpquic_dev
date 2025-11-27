@@ -1174,11 +1174,11 @@ main(void)
     for (uint16_t i = 0; i < ueNodeContainer.GetN(); ++i)
     {
         Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
-        clientApp->SetAttribute("MaxPackets", UintegerValue(1));
+        clientApp->SetAttribute("MaxPackets", UintegerValue(2));
         clientApp->SetAttribute("Interval", TimeValue(Seconds(0.02)));//0.001
         clientApp->SetAttribute("IntervalSl", TimeValue(Seconds(0.04)));//0.001
         clientApp->SetAttribute("IntervalUu", TimeValue(Seconds(0.006)));//0.001
-        clientApp->SetAttribute("PacketSize", UintegerValue(9702));
+        clientApp->SetAttribute("PacketSize", UintegerValue(10000));
         clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
         clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
         clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
@@ -1188,7 +1188,7 @@ main(void)
 
         // 태그 설정
 
-        clientApp->SetStartTime(Seconds(3.0));
+        clientApp->SetStartTime(Seconds(5.0));
         clientApp->SetStopTime(simTime - Seconds(2));
         clientApp->setInterface(ueUuNetDev.Get(i), ueSlNetDev.Get(i));
         ueNodeContainer.Get(i)->AddApplication(clientApp);

@@ -126,6 +126,7 @@ QuicKohClient::QuicKohClient()
     m_slSocketConnected = false;
     m_seqSl = 1;
     m_seqUu = 0;
+    m_packetCounter = 0;
 
     m_totalSent = 0;
 }
@@ -315,22 +316,28 @@ QuicKohClient::SendSl()
     NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
     // Ptr<Packet> p = Create<Packet>(m_size);
     tagSl.txTime = Simulator::Now();
+    tagSl.packetId = m_packetCounter++;
     Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
     // NS_LOG_UNCOND("클라이언트에서 받은 후에 패킷 크기 : "<<p->GetSize());
     p->AddHeader(seqTs);
     // NS_LOG_UNCOND("클라이언트에서 seqts 후에 패킷 크기 : "<<p->GetSize());
     // Trace before adding header, for consistency with PacketSink
-    m_txTrace(p);
-    m_txTraceWithAddresses(p, from, to);
+    
+    uint32_t messageSize = p->GetSize();
+    Ptr<Packet> finalPacket = Create<Packet>(reinterpret_cast<uint8_t*>(&messageSize), sizeof(messageSize));
+    finalPacket->AddAtEnd(p);
 
-    p->AddPacketTag(tagSl);
+    m_txTrace(finalPacket);
+    m_txTraceWithAddresses(finalPacket, from, to);
+
+    finalPacket->AddPacketTag(tagSl);
 
     // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
     // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
     // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
     // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
 
-    if ((m_slSocket->Send(p)) >= 0)
+    if ((m_slSocket->Send(finalPacket)) >= 0)
     {
         ++m_sentSl;
         ++m_totalSent;
@@ -366,20 +373,20 @@ QuicKohClient::SendUu()
     Address to;
     m_uuSocket->GetSockName(from);
     m_uuSocket->GetPeerName(to);
-    SeqTsHeader seqTs;
-    seqTs.SetSeq(m_seqUu); // 이거 쓸거면 m_sent 재정의 필요
-    NS_ABORT_IF(m_size < seqTs.GetSerializedSize());
-    // Ptr<Packet> p = Create<Packet>(m_size);
-    tagUu.txTime = Simulator::Now();
-    Ptr<Packet> p = Create<Packet>(m_size - seqTs.GetSerializedSize());
-    // NS_LOG_UNCOND("클라이언트에서 받은 후에 패킷 크기 : "<<p->GetSize());
-    p->AddHeader(seqTs);
-    // NS_LOG_UNCOND("클라이언트에서 seqts 후에 패킷 크기 : "<<p->GetSize());
-    // Trace before adding header, for consistency with PacketSink
+
+
+    Ptr<Packet> p = Create<Packet>(m_size);
+
+    KohMetadata header;
+    header.SetTxTime(Simulator::Now());
+    header.SetPacketNum(m_packetCounter++);
+    header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
+
+    p->AddHeader(header);
+
     m_txTrace(p);
     m_txTraceWithAddresses(p, from, to);
 
-    p->AddPacketTag(tagUu);
 
     // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
     // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
@@ -388,6 +395,8 @@ QuicKohClient::SendUu()
 
     if ((m_uuSocket->Send(p)) >= 0)
     {
+
+
         ++m_sentUu;
         ++m_totalSent;
         m_totalTx += p->GetSize();

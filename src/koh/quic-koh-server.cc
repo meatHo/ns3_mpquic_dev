@@ -206,15 +206,18 @@ QuicKohServer::GetTotalRecv()
 void
 QuicKohServer::HandleRead(Ptr<Socket> socket)
 {
-    // NS_LOG_UNCOND("QuicKohServer::HandleRead");
+    NS_LOG_UNCOND("QuicKohServer::HandleRead");
     Ptr<Packet> packet;
     Address from;
     Address localAddress;
-    // double latency;
-    uint16_t ueId;
+    // uint16_t ueId;
 
+    // 1. 소켓에서 수신된 데이터를 읽어옵니다.
     while ((packet = socket->RecvFrom(from)))
     {
+        // ---------------------------------------------------------
+        // [A] 클라이언트 식별 및 생성 (기존 로직 유지)
+        // ---------------------------------------------------------
         bool clientFound = false;
         uint16_t clientId;
         for (const auto& pair : clients)
@@ -224,13 +227,12 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                 clientFound = true;
                 clientId = pair.first;
                 from = clients[clientId].address;
-
                 break;
             }
         }
+
         InetSocketAddress addr = InetSocketAddress::ConvertFrom(from);
-        // NS_LOG_UNCOND("who's ip : handle read: " << addr.GetIpv4() << " Port: " << addr.GetPort());
-        // 새 클라이언트 저장
+
         if (!clientFound)
         {
             NS_LOG_UNCOND("new client detected");
@@ -241,84 +243,116 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
             newClient.connectionTime = Simulator::Now();
             newClient.packetLossRate = 0;
             newClient.RTT = 0;
-            newClient.socket=socket;
+            newClient.socket = socket;
             newClient.totalBytesReceived = 0;
+
+            // [추가] 버퍼링을 위한 초기화 (구조체에 이 멤버들이 있어야 함)
+            newClient.expectedBytes = 0;
+            newClient.buffer.clear();
+
             clients[newId] = newClient;
             clientId = newId;
-            // std::cout << "New client detected | Address: " << newClient.address
-            //      << " | Connection Time: " << newClient.connectionTime << std::endl;
         }
 
-        // 수신
+        // 편의를 위해 클라이언트 참조
+        clientInfos& client = clients[clientId];
+
+        // ---------------------------------------------------------
+        // [B] 물리/MAC 계층 통계 처리 (Tag 처리)
+        // 주의: Tag는 버퍼로 변환 시 사라지므로, 원본 packet에서 처리해야 함
+        // ---------------------------------------------------------
         socket->GetSockName(localAddress);
         m_rxTrace(packet);
         m_rxTraceWithAddresses(packet, from, localAddress);
 
-        KohTag tag;
-        if (packet->RemovePacketTag(tag))
+        // ---------------------------------------------------------
+        // [C] 데이터 버퍼링 (수신 패킷을 클라이언트 버퍼에 추가)
+        // ---------------------------------------------------------
+        uint8_t* bufferData = new uint8_t[packet->GetSize()];
+        packet->CopyData(bufferData, packet->GetSize());
+        client.buffer.insert(client.buffer.end(), bufferData, bufferData + packet->GetSize());
+        delete[] bufferData;
+
+        // ---------------------------------------------------------
+        // [D] 패킷 조립 및 애플리케이션 로직 처리 루프
+        // ---------------------------------------------------------
+        while (true)
         {
-            Time tx = tag.txTime;
-            ueId = tag.ueId;
-            double frac = fmod(Simulator::Now().GetSeconds(), 1.0);
-
-            // 매초 0.1초 ~ 1.0초 카운트 증가
-            if (frac >= 0.1 && frac < 1.0)
+            // 1. 메시지 크기(Header) 확인 단계
+            if (client.expectedBytes == 0)
             {
-                m_recvPerUe[ueId]++;
+                // 크기 정보(4바이트)가 아직 덜 왔으면 대기
+                if (client.buffer.size() < sizeof(uint32_t))
+                {
+                    break;
+                }
+
+                // 4바이트를 읽어 전체 메시지 크기 설정
+                memcpy(&client.expectedBytes, client.buffer.data(), sizeof(uint32_t));
+
+                // 버퍼에서 크기 정보(헤더) 삭제
+                client.buffer.erase(client.buffer.begin(), client.buffer.begin() + sizeof(uint32_t));
             }
 
-            // m_recvPerUe[ueId]++;
-
-            // latency X
-            double latency;
-            latency = (Simulator::Now() - tx).GetSeconds();
-            // NS_LOG_UNCOND("UE=" << ueId << " delay=" << latency << " s");
-            m_latencySumPerUe[ueId] += latency;
-            m_latencyCountPerUe[ueId] += 1;
-        }
-
-        if (packet->GetSize() > 12)
-        {
-            uint32_t receivedSize = packet->GetSize();
-            m_totalRx += receivedSize;
-            NS_LOG_UNCOND("total rx : "<<m_totalRx);
-            // NS_LOG_UNCOND("server application received "<<receivedSize<<"byte");
-            SeqTsHeader seqTs;
-            // NS_LOG_UNCOND("서버에서 받은 패킷 크기 : "<<packet->GetSize()<<" seqt사이즈:"<<sizeof(seqTs)<<"  serialize :"<<seqTs.GetSerializedSize());
-            packet->RemoveHeader(seqTs);
-            NS_LOG_UNCOND("ip :" << addr.GetIpv4() <<"  size :"<<packet->GetSize()<<"  seq :"<<seqTs.GetSeq());
-
-            uint32_t currentSequenceNumber = seqTs.GetSeq();
-            if (InetSocketAddress::IsMatchingType(from))
+            // 2. 메시지 본문(Body) 확인 단계
+            if (client.expectedBytes > 0 && client.buffer.size() >= client.expectedBytes)
             {
-                // std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
-                //           << InetSocketAddress::ConvertFrom(from).GetIpv4()
-                //           << " port: " << InetSocketAddress::ConvertFrom(from).GetPort()
-                //           << " Sequence Number: " << currentSequenceNumber
-                //           << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
-                //           << " RXtime: " << Simulator::Now()
-                //           << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
+                // 완전한 패킷 생성 (ns-3 Packet으로 재조립)
+                Ptr<Packet> completePacket = Create<Packet>(client.buffer.data(), client.expectedBytes);
+                NS_LOG_UNCOND(">>> [Reassembly Complete] Full Packet Received! Size: " << client.expectedBytes << " bytes");
+                // -----------------------------------------------------
+                // [E] 기존 애플리케이션 로직 (Header 파싱 및 로그)
+                // -----------------------------------------------------
+                if (completePacket->GetSize() > 12) // SeqTsHeader 크기 체크 등
+                {
+                    uint32_t receivedSize = completePacket->GetSize();
+                    m_totalRx += receivedSize; // 애플리케이션 레벨 수신량
+                    NS_LOG_UNCOND("total rx : " << m_totalRx);
+
+                    SeqTsHeader seqTs;
+                    // 조립된 패킷에서 헤더 제거 및 정보 읽기
+                    completePacket->RemoveHeader(seqTs);
+
+                    NS_LOG_UNCOND("ip :" << addr.GetIpv4() << "  size :" << completePacket->GetSize() << "  seq :" << seqTs.GetSeq());
+
+                    uint32_t currentSequenceNumber = seqTs.GetSeq();
+
+                    if (InetSocketAddress::IsMatchingType(from))
+                    {
+                        // IPv4 로그 (필요시 주석 해제)
+                    }
+                    else if (Inet6SocketAddress::IsMatchingType(from))
+                    {
+                        std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
+                                  << Inet6SocketAddress::ConvertFrom(from).GetIpv6()
+                                  << " port: " << Inet6SocketAddress::ConvertFrom(from).GetPort()
+                                  << " Sequence Number: " << currentSequenceNumber
+                                  << " Uid: " << completePacket->GetUid() // 주의: 재조립된 패킷이라 UID는 새로 발급됨
+                                  << " TXtime: " << seqTs.GetTs()
+                                  << " RXtime: " << Simulator::Now()
+                                  << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
+                    }
+
+                    m_lossCounter.NotifyReceived(currentSequenceNumber);
+                    m_totalReceived++;
+                }
+
+                // 처리 완료된 데이터를 버퍼에서 제거
+                client.buffer.erase(client.buffer.begin(), client.buffer.begin() + client.expectedBytes);
+
+                // 다음 메시지 처리를 위해 초기화
+                client.expectedBytes = 0;
+
+                // 버퍼에 데이터가 더 남아있을 수 있으므로 continue (while문 다시 실행)
+                continue;
             }
-            else if (Inet6SocketAddress::IsMatchingType(from))
+            else
             {
-                std::cout << "TraceDelay: RX " << receivedSize << " bytes from "
-                          << Inet6SocketAddress::ConvertFrom(from).GetIpv6()
-                          << " port: " << Inet6SocketAddress::ConvertFrom(from).GetPort()
-                          << " Sequence Number: " << currentSequenceNumber
-                          << " Uid: " << packet->GetUid() << " TXtime: " << seqTs.GetTs()
-                          << " RXtime: " << Simulator::Now()
-                          << " Delay: " << Simulator::Now() - seqTs.GetTs() << std::endl;
+                // 데이터가 아직 부족하면 루프 탈출 후 다음 소켓 수신 대기
+                break;
             }
-
-            m_lossCounter.NotifyReceived(currentSequenceNumber);
-            m_totalReceived++;
-
-            // SendPacket(socket, from, std::string("good"));
-            // NS_LOG_UNCOND("handleread socket : "<<socket);
-            // std::cout << "sent to client - clientId : " << clientId << "  Address :
-            // "<<InetSocketAddress::ConvertFrom(clients[clientId].address).GetIpv4()<< std::endl;
-        }
-    }
+        } // end of while(true)
+    } // end of while(RecvFrom)
 }
 
 void QuicKohServer::SendPacket(Ptr<Socket> socket, Address from, const std::string &message)

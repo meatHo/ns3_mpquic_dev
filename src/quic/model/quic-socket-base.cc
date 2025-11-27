@@ -1664,6 +1664,7 @@ QuicSocketBase::Recv(uint32_t maxSize, uint32_t flags)
 Ptr<Packet>
 QuicSocketBase::RecvFrom(uint32_t maxSize, uint32_t flags, Address& fromAddress)
 {
+    // NS_LOG_UNCOND("QuicSocketBase::RecvFrom");
     NS_LOG_FUNCTION(this);
 
     Ptr<Packet> packet = m_rxBuffer->Extract(maxSize);
@@ -2580,7 +2581,7 @@ QuicSocketBase::DoClose(void)
 void
 QuicSocketBase::ReceivedData(Ptr<Packet> p, const QuicHeader& quicHeader, Address& address)
 {
-    // NS_LOG_UNCOND("QuicSocketBase::ReceivedData");
+    // NS_LOG_UNCOND("QuicSocketBase::ReceivedData" << p->GetSize());
     NS_LOG_FUNCTION(this);
 
     m_rxTrace(p, quicHeader, this);

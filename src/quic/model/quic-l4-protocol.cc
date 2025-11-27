@@ -589,6 +589,7 @@ QuicL4Protocol::ForwardUp(Ptr<Socket> sock)
         }
         else if (header.IsShort())
         {
+            // NS_LOG_UNCOND("header is short");
             auto result = std::find(m_authAddresses.begin(),
                                     m_authAddresses.end(),
                                     InetSocketAddress::ConvertFrom(from).GetIpv4());
@@ -842,7 +843,7 @@ QuicL4Protocol::SendPacket(Ptr<QuicSocketBase> socket,
                            Ptr<Packet> pkt,
                            const QuicHeader& outgoing) const
 {
-    // NS_LOG_UNCOND("QuicL4Protocol::SendPacket");
+    NS_LOG_UNCOND("QuicL4Protocol::SendPacket "<<pkt->GetSize());
     NS_LOG_FUNCTION(this << socket);
     NS_LOG_LOGIC(this << " sending seq " << outgoing.GetPacketNumber() << " data size "
                       << pkt->GetSize());

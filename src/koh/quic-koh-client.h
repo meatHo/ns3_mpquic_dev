@@ -101,7 +101,8 @@ namespace ns3
         uint32_t m_burstPacketCount;
         Time     m_burstInterval;
         KohTag tagSl;
-        KohTag tagUu;
+        // KohTag tagUu;
+        uint32_t m_packetCounter;
 
 #ifdef NS3_LOG_ENABLE
         std::string m_peerAddressString;
