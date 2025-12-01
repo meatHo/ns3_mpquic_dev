@@ -391,7 +391,7 @@ QuicSocketState::QuicSocketState()
       m_largestAckedPacket(0),
       m_smoothedRtt(Seconds(0)),
       m_rttVar(0),
-      m_minRtt(Seconds(0)),
+      m_minRtt(Seconds(3600)), // KOHGIHO
       m_maxAckDelay(Seconds(0)),
       m_lossTime(Seconds(0)),
       m_kMinimumWindow(2 * m_segmentSize),
@@ -3084,5 +3084,25 @@ QuicSocketBase::NotifyPacingPerformed(void)
     NS_LOG_INFO("Pacing timer expired, try sending a packet");
     SendPendingData(m_connected);
 }
+
+Time
+QuicSocketBase::GetSmoothedRtt(void)
+{
+    return m_tcb->m_smoothedRtt;
+}
+
+Time
+QuicSocketBase::GetRttVar(void)
+{
+    return m_tcb->m_rttVar;
+}
+
+
+Time
+QuicSocketBase::GetMinRtt(void)
+{
+    return m_tcb->m_minRtt;
+}
+
 
 } // namespace ns3

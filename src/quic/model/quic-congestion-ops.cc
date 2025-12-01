@@ -166,8 +166,11 @@ QuicCongestionOps::UpdateRtt (Ptr<TcpSocketState> tcb, Time latestRtt,
     {
       Time rttVarSample = Time (
         std::abs ((tcbd->m_smoothedRtt - latestRtt).GetDouble ()));
-      tcbd->m_rttVar = 3 / 4 * tcbd->m_rttVar + 1 / 4 * rttVarSample;
-      tcbd->m_smoothedRtt = 7 / 8 * tcbd->m_smoothedRtt + 1 / 8 * latestRtt;
+      // tcbd->m_rttVar = 3 / 4 * tcbd->m_rttVar + 1 / 4 * rttVarSample;
+      // tcbd->m_smoothedRtt = 7 / 8 * tcbd->m_smoothedRtt + 1 / 8 * latestRtt;
+      //KOHGIHO
+      tcbd->m_rttVar = 3.0 / 4.0 * tcbd->m_rttVar + 1.0 / 4.0 * rttVarSample;
+      tcbd->m_smoothedRtt = 7.0 / 8.0 * tcbd->m_smoothedRtt + 1.0 / 8.0 * latestRtt;
     }
 
 }

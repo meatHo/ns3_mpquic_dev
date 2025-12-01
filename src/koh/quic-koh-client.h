@@ -19,9 +19,17 @@
 #include "ns3/internet-module.h"
 #include "ns3/ptr.h"
 #include <ns3/traced-callback.h>
+#include <fstream>
+#include <vector>
+#include <string>
 
+
+
+// static uint32_t g_currentFrameIndex = 0;
 namespace ns3
 {
+static std::vector<frameData> g_videoFrames;
+static std::vector<frameData>::iterator g_videoFramesIterator;
 
     class Socket;
     class Packet;
@@ -40,10 +48,11 @@ namespace ns3
         void setInterface(Ptr<NetDevice> uu, Ptr<NetDevice> sl);
         // [수정] RSU의 Sidelink IP 주소(Next Hop)를 받기 위한 파라미터 추가
         void SetTag(KohTag temp);
-        void SelectInterface(uint32_t i);
+        InterfaceType SelectInterface(frameType);
         uint16_t GetUeId();
         void clearCount();
         uint64_t GetTotalSent();
+        void LoadVideoData(std::string filename);
         Callback<void, KStats> m_KCallback;
 
         //split
@@ -55,10 +64,14 @@ namespace ns3
         void StartApplication() override;
         void StopApplication() override;
         void SendSl();
+        void SendSlFrame(frameData fd);
         void SendUu();
+        void SendUuFrame(frameData fd);
+        void ReadVideoData();
         void SelectInterface(Ptr<Socket> socket);
         void HandleRecv(Ptr<Socket> socket);
         void SendSplit();
+
 
         TracedCallback<Ptr<const Packet>> m_txTrace;
         TracedCallback<Ptr<const Packet>, const Address&, const Address&> m_txTraceWithAddresses;
@@ -76,6 +89,7 @@ namespace ns3
         uint64_t m_seqUu;
         Time m_intervalSl;
         Time m_intervalUu;
+        Time m_intervalReadVideoData;
 
 
         uint64_t m_totalTx;
@@ -95,6 +109,7 @@ namespace ns3
         // uint8_t m_tos;
         EventId m_sendUuEvent;
         EventId m_sendSlEvent;
+        EventId m_readVideoDataEvent;
 
         uint32_t m_numStreams;
         uint32_t m_lastUsedStream;
@@ -108,6 +123,7 @@ namespace ns3
         KohTag tagSl;
         KohTag tagUu;
         uint32_t m_packetCounter;
+        uint16_t m_gop;
 
 #ifdef NS3_LOG_ENABLE
         std::string m_peerAddressString;

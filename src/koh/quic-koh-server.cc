@@ -256,20 +256,23 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
             {
                 // A. Uu 메시지인지 확인 (KohMetadata 헤더 확인)
                 // KohMetadata 크기(16바이트)보다 버퍼가 크거나 같아야 확인 가능
-                if (client.buffer.size() >= 16)
+                if (client.buffer.size() >= 20)
                 {
                     // 버퍼의 앞부분으로 임시 패킷을 만들어 헤더를 확인(Peek)
-                    Ptr<Packet> tempPacket = Create<Packet>(client.buffer.data(), 16);
+                    Ptr<Packet> tempPacket = Create<Packet>(client.buffer.data(), 20);
                     KohMetadata metadata;
                     if (tempPacket->PeekHeader(metadata))
                     {
                         // Uu 패킷 스트림 시작 감지
-                        NS_LOG_INFO("Detected packet stream start. Total size: "
-                                    << metadata.GetPacketSize());
+                        // NS_LOG_INFO("Detected packet stream start. Total size: "
+                        //             << metadata.GetFrameSize());
+                        // todo: 스트림 정보 가져와서 몇번쨰 스트림인지 확인하기
+                        NS_LOG_UNCOND("Detected packet stream start. Total size: "
+            << metadata.GetFrameSize());
                         client.isReassembly = true;                      // Use user's field name
-                        client.expectedBytes = metadata.GetPacketSize(); // 전체 패킷 크기 저장
+                        client.expectedBytes = metadata.GetFrameSize(); // 전체 패킷 크기 저장
                         client.txTime = metadata.GetTxTime();            // Use user's field name
-                        client.packtNum = metadata.GetPacketNum();       // Use user's field name
+                        client.packtNum = metadata.GetFrameNum();       // Use user's field name
                     }
                 }
 
@@ -287,7 +290,7 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                 if (client.isReassembly) // If it's a Uu reassembly
                 {
                     // Uu의 경우, expectedBytes가 전체 크기(헤더 포함)이므로 버퍼에 그만큼 있어야 함
-                    requiredBytesInBuffer = client.expectedBytes;
+                    requiredBytesInBuffer = client.expectedBytes + 20; // Corrected: payload + header
                 }
 
                 // C. 버퍼에 충분한 데이터가 있는지 확인
@@ -299,11 +302,6 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
                     if (client.isReassembly) // If it's a Uu reassembly
                     {
                         InterfaceType interface = GetInterface(from);
-                        // Uu 패킷 재조립 완료 및 처리
-
-                        NS_LOG_UNCOND(((interface==0)?"UU":"SL")<<" packet reassembly complete. Total size: "
-                                      << requiredBytesInBuffer
-                                      << " Packet num: " << client.packtNum);
 
                         // 버퍼에서 전체 패킷(헤더+몸통) 생성
                         completePacket =
@@ -315,9 +313,15 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
 
                         Time delay = Simulator::Now() - metadata.GetTxTime();
 
-                        NS_LOG_UNCOND("Processed packet. Seq: " << metadata.GetPacketNum()
-                                                                << ", Latency: "
-                                                                << delay.GetMilliSeconds() << "ms");
+                        // Uu 패킷 재조립 완료 및 처리
+                        NS_LOG_UNCOND(((interface==0)?"UU":"SL")<<" Total size: "
+                        << requiredBytesInBuffer<<", PacketNum: " << metadata.GetFrameNum()<<", type: "<<metadata.GetFrameTypeString()
+                                                  << ", Latency: "
+                                                  << delay.GetMilliSeconds() << "ms"); //내가 붙인 버퍼 16 바이트 제거 kohmetadata
+
+                        // NS_LOG_UNCOND("PacketNum: " << metadata.GetFrameNum()<<", type: "<<metadata.GetFrameType()
+                        //                                         << ", Latency: "
+                        //                                         << delay.GetMilliSeconds() << "ms");
 
                         m_totalRx += requiredBytesInBuffer;
                         m_totalReceived++;

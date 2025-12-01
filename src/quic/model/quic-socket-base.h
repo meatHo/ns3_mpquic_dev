@@ -523,6 +523,9 @@ public:
    * \returns the size (in bytes)
    */
   uint32_t GetInitialPacketSize (void) const;
+  Time GetSmoothedRtt(void);
+  Time GetRttVar(void);
+  Time GetMinRtt(void);
 
   // Implementation of ns3::Socket virtuals
 

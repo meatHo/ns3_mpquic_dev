@@ -329,6 +329,8 @@ QuicL5Protocol::DispatchRecv(Ptr<Packet> data, Address& address)
             if (stream and (stream->GetStreamDirectionType() == QuicStream::RECEIVER or
                             stream->GetStreamDirectionType() == QuicStream::BIDIRECTIONAL))
             {
+                // NS_LOG_UNCOND("스트림QuicL5protocol:Receiving frame on stream " << stream->GetStreamId()
+                //                                          << " trigger stream");
                 NS_LOG_INFO("Receiving frame on stream " << stream->GetStreamId()
                                                          << " trigger stream");
                 stream->Recv((*it).first, sub, address);

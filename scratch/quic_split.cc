@@ -188,7 +188,7 @@ ApplyInterfaceSwitch(uint32_t a, uint16_t ueId)
     // 1) 전 슬롯의 그랜트/통계/HARQ 큐 flush (사용 중인 헬퍼/스케줄러 API에 맞춰 구현)
     // 2) 베어러/라우팅/LCID 매핑(필요시) 재설정
     g_clientApps[ueId]->clearCount();
-    g_clientApps[ueId]->SelectInterface(a);
+    // g_clientApps[ueId]->SelectInterface(a);
     lastSwitchTime = Simulator::Now();
 
     // 3) 1 슬롯 유예(옵션): 유예 종료 시 트래픽 재개
@@ -470,7 +470,7 @@ main(void)
     Ipv4Address groupAddress4("224.1.1.1");
     Ipv4Address rsrpAddress("239.255.0.1");
     uint16_t ueNum = 1;
-    Time simTime = Seconds(61);
+    Time simTime = Seconds(140);
     // std::string csvFileName = "/home/kiho/ns-3-quic_copy/scratch/final_3d_trace";
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
@@ -1178,6 +1178,7 @@ main(void)
         clientApp->SetAttribute("Interval", TimeValue(Seconds(0.02)));//0.001
         clientApp->SetAttribute("IntervalSl", TimeValue(Seconds(0.04)));//0.001
         clientApp->SetAttribute("IntervalUu", TimeValue(Seconds(0.001)));//0.001
+        clientApp->SetAttribute("IntervalReadVideoData", TimeValue(Seconds(0.0416)));//0.0416
         clientApp->SetAttribute("PacketSize", UintegerValue(10000));
         clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
         clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
@@ -1186,6 +1187,8 @@ main(void)
 
         clientApp->m_KCallback = MakeBoundCallback(&TotalParameter, ueNodeContainer.Get(i));
 
+        //클라이언트에서 영상데이터 읽기
+        clientApp->LoadVideoData("/home/kiho/ns-3-quic/scratch/scientists_video_frame_bytes_real.txt");
         // 태그 설정
 
         clientApp->SetStartTime(Seconds(5.0));
@@ -1193,7 +1196,7 @@ main(void)
         clientApp->setInterface(ueUuNetDev.Get(i), ueSlNetDev.Get(i));
         ueNodeContainer.Get(i)->AddApplication(clientApp);
 
-        Simulator::Schedule(Seconds(10), &QuicKohClient::changeInterface, clientApp);
+        // Simulator::Schedule(Seconds(10), &QuicKohClient::changeInterface, clientApp);
 
         Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
         for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)

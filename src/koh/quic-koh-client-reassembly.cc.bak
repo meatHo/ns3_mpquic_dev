@@ -69,11 +69,6 @@ QuicKohClient::GetTypeId()
                           TimeValue(Seconds(1.0)),
                           MakeTimeAccessor(&QuicKohClient::m_intervalSl),
                           MakeTimeChecker())
-            .AddAttribute("IntervalReadVideoData",
-                          "The time to wait between packets",
-                          TimeValue(Seconds(1.0)),
-                          MakeTimeAccessor(&QuicKohClient::m_intervalReadVideoData),
-                          MakeTimeChecker())
             .AddAttribute("IntervalUu",
                           "The time to wait between packets",
                           TimeValue(Seconds(1.0)),
@@ -200,12 +195,12 @@ QuicKohClient::StartApplication()
     // m_sendSocket = m_uuSocket;
     // NS_LOG_UNCOND("Client starts with uu interface.");
 
-    m_readVideoDataEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::ReadVideoData, this);
-
-    // m_sendSlEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendSl, this);
-    // m_sendUuEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendUu, this);
+    m_sendSlEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendSl, this);
+    m_sendUuEvent = Simulator::Schedule(Seconds(0.0), &QuicKohClient::SendUu, this);
 
     // Simulator::Schedule(Seconds(0.0), &QuicKohClient::SyncSent, this);
+
+
 }
 
 void
@@ -300,204 +295,124 @@ QuicKohClient::StopApplication()
 void
 QuicKohClient::SendSplit()
 {
+
 }
+
 
 void
-QuicKohClient::LoadVideoData(std::string filename)
-{
-    std::ifstream infile(filename);
-
-    if (!infile.is_open())
-    {
-        NS_LOG_UNCOND("Failed to open trace file: " << filename);
-        return;
-    }
-
-    uint32_t frameNum;
-    std::string typeStr; // 파일에서 텍스트를 읽기 위한 임시 문자열 변수
-    uint32_t size;
-
-    uint32_t Iframe_num = 0;
-    uint32_t temp_gop = 0;
-    bool gop_found=false;
-
-    // 파일 끝까지 읽으면서 벡터에 저장
-    // 파일 포맷: [프레임번호] [타입문자열] [사이즈]
-    while (infile >> frameNum >> typeStr >> size)
-    {
-        frameType currentType;
-
-        // 문자열을 Enum으로 변환
-        if (typeStr == "IDR")
-        {
-            currentType = IDR;
-            Iframe_num++;
-        }
-        else if (typeStr == "P")
-        {
-            currentType = P;
-        }
-        else if (typeStr == "B")
-        {
-            currentType = B;
-        }
-        else
-        {
-            // 예외 처리: 알 수 없는 타입일 경우 (기본값 설정 또는 로그)
-            NS_LOG_UNCOND("Warning: Unknown frame type in trace: " << typeStr);
-            NS_FATAL_ERROR("Unknown frame type in trace: " << typeStr);
-        }
-
-        temp_gop++;
-
-        if (Iframe_num==2&&!gop_found)
-        {
-            gop_found = true;
-            m_gop=temp_gop-1;
-            NS_LOG_UNCOND("gop = " << m_gop);
-        }
-
-        // 변환된 enum을 사용하여 구조체 생성 및 저장
-        frameData temp{frameNum, currentType, size};
-        g_videoFrames.push_back(temp);
-    }
-
-    infile.close();
-    NS_LOG_UNCOND("Video data loaded. Total frames: " << g_videoFrames.size());
-    g_videoFramesIterator = g_videoFrames.begin();
-}
-
-void
-QuicKohClient::ReadVideoData()
-{
-    // 0.0416 24프레임 전송
-    if (g_videoFramesIterator == g_videoFrames.end())
-    {
-        return;
-    }
-    frameData temp = *g_videoFramesIterator;
-    SelectInterface(temp.type);
-    switch (temp.type)
-    {
-    case IDR:
-        SendUuFrame(temp);
-        break;
-    default:
-        SendSlFrame(temp);
-        break;
-    }
-    g_videoFramesIterator++;
-    m_readVideoDataEvent =
-        Simulator::Schedule(m_intervalReadVideoData, &QuicKohClient::ReadVideoData, this);
-}
-
-InterfaceType
-QuicKohClient::SelectInterface(frameType)
-{
-    Ptr<QuicSocketBase> quicSlSocket = DynamicCast<QuicSocketBase>(m_uuSocket);
-    Time smoothedRttSl = quicSlSocket->GetSmoothedRtt();
-    Time rttVarSl = quicSlSocket->GetRttVar();
-    Time minRttSl = quicSlSocket->GetMinRtt();
-
-    uint32_t maxTxBufSL = quicSlSocket->GetSocketSndBufSize();
-    uint32_t availableTxSl = quicSlSocket->GetTxAvailable();
-
-    Ptr<QuicSocketBase> quicUuSocket = DynamicCast<QuicSocketBase>(m_slSocket);
-    Time smoothedRttUu = quicUuSocket->GetSmoothedRtt();
-    Time rttVarUu = quicUuSocket->GetRttVar();
-    Time minRttUu = quicUuSocket->GetMinRtt();
-
-    uint32_t maxTxBufUu = quicUuSocket->GetSocketSndBufSize();
-    uint32_t availableTxUu = quicUuSocket->GetTxAvailable();
-
-    NS_LOG_UNCOND("smoothedRttSl: "<<smoothedRttSl<<", rttVarSl: "<<rttVarSl<<", minRttSl: "<<minRttSl<<", maxTxBufSl: "<<maxTxBufSL<<", availableTxSl: "<<availableTxSl);
-    NS_LOG_UNCOND("smoothedRttUu: "<<smoothedRttUu<<", rttVarUu: "<<rttVarUu<<", minRttUu: "<<minRttUu<<", maxTxBufUu: "<<maxTxBufUu<<", availableTxUu: "<<availableTxUu);
-
-    NS_LOG_DEBUG("smoothedRttSl: "<<smoothedRttSl<<", rttVarSl: "<<rttVarSl<<", minRttSl: "<<minRttSl<<", maxTxBufSl: "<<maxTxBufSL<<", availableTxSl: "<<availableTxSl);
-    NS_LOG_DEBUG("smoothedRttUu: "<<smoothedRttUu<<", rttVarUu: "<<rttVarUu<<", minRttUu: "<<minRttUu<<", maxTxBufUu: "<<maxTxBufUu<<", availableTxUu: "<<availableTxUu);
-
-    return UU;
-}
-
-void
-QuicKohClient::SendSlFrame(frameData fd)
+QuicKohClient::SendSl()
 {
     // NS_LOG_UNCOND("QuicKohClient::Send");
     NS_LOG_FUNCTION(this);
+    NS_ASSERT(m_sendSlEvent.IsExpired());
     // NS_LOG_UNCOND("UdpKohClient::Send()");
-    static uint16_t streamId = 2;
     Address from;
     Address to;
     m_slSocket->GetSockName(from);
     m_slSocket->GetPeerName(to);
 
-    Ptr<Packet> p = Create<Packet>(fd.size);
+
+    Ptr<Packet> p = Create<Packet>(m_size);
 
     KohMetadata header;
     header.SetTxTime(Simulator::Now());
-    header.SetFrameData(fd);
+    header.SetPacketNum(m_packetCounter++);
+    header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
 
     p->AddHeader(header);
 
     m_txTrace(p);
     m_txTraceWithAddresses(p, from, to);
 
+
     // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
     // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
     // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
     // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
-    // NS_LOG_UNCOND(header.toString());
 
-    if ((m_slSocket->Send(p, streamId)) >= 0)
+    if ((m_slSocket->Send(p,1)) >= 0)
     {
         ++m_sentSl;
         ++m_totalSent;
         m_totalTx += p->GetSize();
         m_seqSl += 1;
     }
-    streamId = (streamId + 1) % 10 + 1;
+    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
+    if (m_sentSl < m_count || m_count == 0)
+    {
+        m_sendSlEvent = Simulator::Schedule(m_intervalSl, &QuicKohClient::SendSl, this);
+    }
 }
 
 void
-QuicKohClient::SendUuFrame(frameData fd)
+QuicKohClient::SendUu()
 {
     // NS_LOG_UNCOND("QuicKohClient::Send");
     NS_LOG_FUNCTION(this);
+    NS_ASSERT(m_sendUuEvent.IsExpired());
     // NS_LOG_UNCOND("UdpKohClient::Send()");
-    static uint16_t streamId = 2;
     Address from;
     Address to;
     m_uuSocket->GetSockName(from);
     m_uuSocket->GetPeerName(to);
 
-    Ptr<Packet> p = Create<Packet>(fd.size);
+
+    Ptr<Packet> p = Create<Packet>(m_size);
 
     KohMetadata header;
     header.SetTxTime(Simulator::Now());
-    header.SetFrameData(fd);
+    header.SetPacketNum(m_packetCounter++);
+    header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
 
     p->AddHeader(header);
 
     m_txTrace(p);
-    m_txTraceWithAddresses(p, from, to);    // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
+    m_txTraceWithAddresses(p, from, to);
 
 
+    // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
     // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
     // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
     // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
-    // NS_LOG_UNCOND("SendUuFrame "<<header.toString());
 
-    if ((m_uuSocket->Send(p, streamId)) >= 0)
+    if ((m_uuSocket->Send(p,1)) >= 0)
     {
         ++m_sentUu;
         ++m_totalSent;
         m_totalTx += p->GetSize();
-        m_seqUu += 1;
+        m_seqUu += 2;
     }
-    streamId = (streamId + 1) % 10 + 1;
-    // m_streamId += 4;
+    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
+    if (m_sentUu < m_count || m_count == 0)
+    {
+        m_sendUuEvent = Simulator::Schedule(m_intervalUu, &QuicKohClient::SendUu, this);
+    }
 }
 
+void
+QuicKohClient::SelectInterface(uint32_t i)
+{
+    if (i == 0)
+    {
+        NS_LOG_UNCOND("UdpKohClient change to UU socket");
+        // m_interval = Seconds(1);
+        m_interval = Seconds(0.001);
+        m_size = 1000;
+        m_sendSocket = m_uuSocket;
+    }
+    else if (i == 1)
+    {
+        NS_LOG_UNCOND("UdpKohClient change to PC5 socket");
+        // m_interval = Seconds(1);
+        m_interval = Seconds(0.001);
+        m_size = 1000;
+        m_sendSocket = m_slSocket;
+    }
+    else
+    {
+        NS_LOG_UNCOND("selectinterface error");
+    }
+}
 
 // void
 // QuicKohClient::SetTag(KohTag temp)
@@ -624,92 +539,6 @@ uint64_t
 QuicKohClient::GetTotalSent()
 {
     return m_totalSent;
-}
-
-void
-QuicKohClient::SendSl()
-{
-    // NS_LOG_UNCOND("QuicKohClient::Send");
-    NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_sendSlEvent.IsExpired());
-    // NS_LOG_UNCOND("UdpKohClient::Send()");
-    Address from;
-    Address to;
-    m_slSocket->GetSockName(from);
-    m_slSocket->GetPeerName(to);
-
-    Ptr<Packet> p = Create<Packet>(m_size);
-
-    KohMetadata header;
-    header.SetTxTime(Simulator::Now());
-    // header.SetPacketNum(m_packetCounter++);
-    // header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
-
-    p->AddHeader(header);
-
-    m_txTrace(p);
-    m_txTraceWithAddresses(p, from, to);
-
-    // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
-    // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
-    // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
-    // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
-
-    if ((m_slSocket->Send(p, 1)) >= 0)
-    {
-        ++m_sentSl;
-        ++m_totalSent;
-        m_totalTx += p->GetSize();
-        m_seqSl += 1;
-    }
-    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
-    if (m_sentSl < m_count || m_count == 0)
-    {
-        m_sendSlEvent = Simulator::Schedule(m_intervalSl, &QuicKohClient::SendSl, this);
-    }
-}
-
-void
-QuicKohClient::SendUu()
-{
-    // NS_LOG_UNCOND("QuicKohClient::Send");
-    NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_sendUuEvent.IsExpired());
-    // NS_LOG_UNCOND("UdpKohClient::Send()");
-    Address from;
-    Address to;
-    m_uuSocket->GetSockName(from);
-    m_uuSocket->GetPeerName(to);
-
-    Ptr<Packet> p = Create<Packet>(m_size);
-
-    KohMetadata header;
-    header.SetTxTime(Simulator::Now());
-    // header.SetPacketNum(m_packetCounter++);
-    // header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
-
-    p->AddHeader(header);
-
-    m_txTrace(p);
-    m_txTraceWithAddresses(p, from, to);
-
-    // NS_LOG_UNCOND("Client KohTag size: " << sizeof(tag));
-    // NS_LOG_UNCOND("Client KohTag serial size: " << sizeof(tag.GetSerializedSize()));
-    // NS_LOG_UNCOND("Client SeqTsHeader size: " << sizeof(seqTs));
-    // NS_LOG_UNCOND("Client SeqTsHeader serial size: " << sizeof(seqTs.GetSerializedSize()));
-
-    if ((m_uuSocket->Send(p, 1)) >= 0)
-    {
-        ++m_sentUu;
-        ++m_totalSent;
-        m_totalTx += p->GetSize();
-        m_seqUu += 2;
-    }
-    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
-    if (m_sentUu < m_count || m_count == 0)
-    {
-        m_sendUuEvent = Simulator::Schedule(m_intervalUu, &QuicKohClient::SendUu, this);
-    }
 }
 
 } // Namespace ns3

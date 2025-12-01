@@ -4,10 +4,7 @@
 
 #ifndef QUIC_KOH_SERVER_H
 #define QUIC_KOH_SERVER_H
-enum InterfaceType {
-    UU = 0,
-    SL = 1
-};
+
 
 #endif
 /*
