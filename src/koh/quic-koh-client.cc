@@ -394,7 +394,7 @@ QuicKohClient::ReadVideoData()
 InterfaceType
 QuicKohClient::SelectInterface(frameType)
 {
-    Ptr<QuicSocketBase> quicSlSocket = DynamicCast<QuicSocketBase>(m_uuSocket);
+    Ptr<QuicSocketBase> quicSlSocket = DynamicCast<QuicSocketBase>(m_slSocket);
     Time smoothedRttSl = quicSlSocket->GetSmoothedRtt();
     Time rttVarSl = quicSlSocket->GetRttVar();
     Time minRttSl = quicSlSocket->GetMinRtt();
@@ -402,7 +402,7 @@ QuicKohClient::SelectInterface(frameType)
     uint32_t maxTxBufSL = quicSlSocket->GetSocketSndBufSize();
     uint32_t availableTxSl = quicSlSocket->GetTxAvailable();
 
-    Ptr<QuicSocketBase> quicUuSocket = DynamicCast<QuicSocketBase>(m_slSocket);
+    Ptr<QuicSocketBase> quicUuSocket = DynamicCast<QuicSocketBase>(m_uuSocket);
     Time smoothedRttUu = quicUuSocket->GetSmoothedRtt();
     Time rttVarUu = quicUuSocket->GetRttVar();
     Time minRttUu = quicUuSocket->GetMinRtt();

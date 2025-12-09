@@ -147,6 +147,8 @@ LteRlcUm::DoTransmitPdcpPdu(Ptr<Packet> p)
         m_txBufferSize += p->GetSize();
         NS_LOG_LOGIC("NumOfBuffers = " << m_txBuffer.size());
         NS_LOG_LOGIC("txBufferSize = " << m_txBufferSize);
+        //kohgiho
+        NS_LOG_UNCOND("LteRlcUm: [Uu] After adding packet, Current Tx Buffer Size = " << m_txBufferSize << " bytes, Max Tx Buffer Size = " << m_maxTxBufferSize << " bytes, Available = " << (m_maxTxBufferSize - m_txBufferSize) << " bytes.");
     }
     else
     {
@@ -1331,6 +1333,8 @@ LteRlcUm::DoTransmitNrSlPdcpPdu(const NrSlRlcSapProvider::NrSlTransmitPdcpPduPar
         m_txBufferSize += p->GetSize();
         NS_LOG_LOGIC("NR SL NumOfBuffers = " << m_txBuffer.size());
         NS_LOG_LOGIC("NR SL txBufferSize = " << m_txBufferSize);
+        //kohgiho
+        NS_LOG_UNCOND("LteRlcUm: [Sidelink] After adding packet, Current Tx Buffer Size = " << m_txBufferSize << " bytes, Max Tx Buffer Size = " << m_maxTxBufferSize << " bytes, Available = " << (m_maxTxBufferSize - m_txBufferSize) << " bytes.");
     }
     else
     {
