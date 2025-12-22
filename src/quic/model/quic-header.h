@@ -323,6 +323,8 @@ public:
    */
   friend bool operator== (const QuicHeader &lhs, const QuicHeader &rhs);
 
+    uint8_t GetPathId() const ;
+    void SetPathId (uint8_t pathId);
 private:
   /**
    * \brief Calculates the header length (in words)
@@ -341,6 +343,7 @@ private:
   uint64_t m_connectionId;          //!< Connection Id
   SequenceNumber32 m_packetNumber;  //!< Packet number
   uint32_t m_version;               //!< Version
+    uint8_t m_pathId;
 };
 
 } // namespace ns3
