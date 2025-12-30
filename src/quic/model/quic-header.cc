@@ -501,18 +501,6 @@ QuicHeader::IsVersionNegotiation() const
     return m_type == VERSION_NEGOTIATION;
 }
 
-uint8_t
-QuicHeader::GetPathId() const
-{
-    return m_pathId;
-}
-
-void
-QuicHeader::SetPathId(uint8_t pathId)
-{
-    m_pathId = pathId;
-}
-
 bool
 QuicHeader::IsInitial() const
 {
@@ -563,6 +551,19 @@ operator<<(std::ostream& os, QuicHeader& tc)
 {
     tc.Print(os);
     return os;
+}
+
+//multipath koh
+uint8_t
+QuicHeader::GetPathId() const
+{
+    return m_pathId;
+}
+
+void
+QuicHeader::SetPathId(uint8_t pathId)
+{
+    m_pathId = pathId;
 }
 
 } // namespace ns3

@@ -105,6 +105,10 @@ if(${NS3_MONOLIB})
                               "${lib-ns3-static-objs}"
           koh/udp-koh-client.h
           koh/kohTag.h
+          quic/model/mp-quic-congestion-ops.h
+          quic/model/mp-quic-path-manager.h
+          quic/model/mp-quic-scheduler.h
+          quic/model/mp-quic-subflow.h
   )
   set_target_properties(
     ${lib-ns3-monolib}

@@ -323,6 +323,7 @@ public:
    */
   friend bool operator== (const QuicHeader &lhs, const QuicHeader &rhs);
 
+    //multipath koh
     uint8_t GetPathId() const ;
     void SetPathId (uint8_t pathId);
 private:
@@ -343,6 +344,8 @@ private:
   uint64_t m_connectionId;          //!< Connection Id
   SequenceNumber32 m_packetNumber;  //!< Packet number
   uint32_t m_version;               //!< Version
+
+    //multipath koh
     uint8_t m_pathId;
 };
 

@@ -1037,4 +1037,67 @@ QuicL4Protocol::Is0RTTHandshakeAllowed() const
     return m_0RTTHandshakeStart;
 }
 
+//multipath koh
+void
+QuicL4Protocol::Set0RTTHandshake(bool set)
+{
+    m_0RTTHandshakeStart = set;
+}
+
+int
+QuicL4Protocol::AddPath(uint8_t pathId,
+                        Ptr<QuicSocketBase> socket,
+                        Address localAddress,
+                        Address peerAddress)
+{
+    int res=-1;
+    if (InetSocketAddress::IsMatchingType(localAddress))
+    {
+        Ptr<QuicUdpBinding> udpBinding = CreateObject<QuicUdpBinding> ();
+        Ptr<Socket> udpSocket = CreateObject<Socket> ();
+        res=udpSocket->Bind(localAddress);
+        udpSocket->Connect(peerAddress);
+        udpSocket->SetRecvCallback(MakeCallback(&QuicL4Protocol::ForwardUp,this));
+        udpBinding->m_budpSocket=udpSocket;
+        udpBinding->m_budpSocket6=nullptr;
+        udpBinding->m_quicSocket=socket;
+        udpBinding->m_pathId=pathId;
+        m_quicUdpBindingList.insert(m_quicUdpBindingList.end (),udpBinding);
+        return res;
+    }else     if (Inet6SocketAddress::IsMatchingType(localAddress))
+    {
+        Ptr<QuicUdpBinding> udpBinding = CreateObject<QuicUdpBinding> ();
+        Ptr<Socket> udpSocket = CreateObject<Socket> ();
+        res=udpSocket->Bind(localAddress);
+        udpSocket->Connect(peerAddress);
+        udpSocket->SetRecvCallback(MakeCallback(&QuicL4Protocol::ForwardUp,this));
+        udpBinding->m_budpSocket=nullptr;
+        udpBinding->m_budpSocket6=udpSocket;
+        udpBinding->m_quicSocket=socket;
+        udpBinding->m_pathId=pathId;
+        m_quicUdpBindingList.insert(m_quicUdpBindingList.end (),udpBinding);
+        return res;
+    }else
+    {
+        return -1;
+    }
+}
+int
+QuicL4Protocol::ReDoUdpConnect(uint8_t pathId, Address peerAddress)
+{
+    QuicUdpBindingList::iterator it;
+    Ptr<QuicSocketBase> socket;
+    for (it = m_quicUdpBindingList.begin (); it != m_quicUdpBindingList.end (); ++it)
+    {
+        Ptr<QuicUdpBinding> item = *it;
+        if (item->m_pathId == pathId)
+        {
+            return item->m_budpSocket->Connect(peerAddress);
+        }
+    }
+    return -1;
+}
+
+
+
 } // namespace ns3

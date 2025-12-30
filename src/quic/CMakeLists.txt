@@ -20,6 +20,10 @@ build_lib(
     model/quic-subheader.cc
     model/quic-transport-parameters.cc
     model/quic-bbr.cc
+        model/mp-quic-congestion-ops.cc
+        model/mp-quic-path-manager.cc
+        model/mp-quic-scheduler.cc
+        model/mp-quic-subflow.cc
     helper/quic-helper.cc
   HEADER_FILES
     model/quic-congestion-ops.h
@@ -43,6 +47,10 @@ build_lib(
     model/quic-bbr.h
     helper/quic-helper.h
     model/windowed-filter.h
+        model/mp-quic-congestion-ops.h
+        model/mp-quic-path-manager.h
+        model/mp-quic-scheduler.h
+        model/mp-quic-subflow.h
   LIBRARIES_TO_LINK ${libinternet}
                     ${libapplications}
                     ${libflow-monitor}

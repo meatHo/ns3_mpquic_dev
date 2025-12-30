@@ -764,7 +764,7 @@ class QuicSubheader : public Header
     bool IsPathAbandon() const;
     bool IsPathNewConnectionId() const;
     bool IsPathRetireConnectionId() const;
-    static QuicSubheader CreatePathAck (uint32_t largestAcknowledged, uint64_t ackDelay, uint32_t firstAckBlock, std::vector<uint32_t>& gaps, std::vector<uint32_t>& additionalAckBlocks, uint8_t pathId)
+    static QuicSubheader CreatePathAck (uint32_t largestAcknowledged, uint64_t ackDelay, uint32_t firstAckBlock, std::vector<uint32_t>& gaps, std::vector<uint32_t>& additionalAckBlocks, uint8_t pathId);
     static QuicSubheader CreatePathAbandon(uint8_t pathId, uint16_t errorCode);
     static QuicSubheader CreatePathNewConnectionId(uint8_t pathId, uint64_t sequence, uint64_t connectionId);
     static QuicSubheader CreatePathRetireConnectionId(uint8_t pathId, uint64_t sequence);

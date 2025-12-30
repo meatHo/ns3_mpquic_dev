@@ -44,10 +44,22 @@
 #include "ns3/tcp-congestion-ops.h"
 #include "quic-socket-tx-scheduler.h"
 
+//koh multipath
+#include "mp-quic-congestion-ops.h"
+#include "mp-quic-path-manager.h"
+#include "mp-quic-scheduler.h"
+#include "mp-quic-subflow.h"
+
 namespace ns3 {
 
 class QuicL5Protocol;
 class QuicL4Protocol;
+
+//koh multipath
+class MpQuicPathManager;
+class MpQuicScheduler;
+// class MpQuicSubFlow;
+// class MpQuicCongestionOps;
 
 /**
  * \brief Data structure that records the congestion state of a connection
@@ -124,6 +136,10 @@ public:
                                                                 marked asdelivered was first sent */
   uint32_t              m_lastAckedSackedBytes {0};         //!< Size of data sacked in the last ack
   uint32_t              m_ackBytesSent    {0};              //!< amount of ACK-only bytes sent
+
+    //For OLIA use
+    uint32_t m_bytesBeforeLost1;
+    uint32_t m_bytesBeforeLost2;
 };
 
 /**
@@ -192,6 +208,10 @@ public:
   QuicSocketBase (void);
   QuicSocketBase (const QuicSocketBase&);
 
+    //koh multipath
+    void SetSubsocket ();
+    bool IsSubsocket ();
+
   virtual ~QuicSocketBase (void);
 
   /**
@@ -242,7 +262,8 @@ public:
    *
    * \return the generated ACK frame
    */
-  Ptr<Packet> OnSendingAckFrame ();
+    //koh multipath
+  Ptr<Packet> OnSendingAckFrame (uint8_t pathId);
 
   /**
    * \brief Return an object with the transport parameters of this socket
@@ -313,14 +334,16 @@ public:
    *
    * \return the available window
    */
-  uint32_t AvailableWindow () const;
+    //koh multipath
+  uint32_t AvailableWindow (uint8_t pathId) const;
 
   /**
    * \brief Get the connection window
    *
    * \return the connection window
    */
-  uint32_t ConnectionWindow () const;
+    //koh multipath
+  uint32_t ConnectionWindow (uint8_t pathId) const;
 
 
 
@@ -329,7 +352,8 @@ public:
    *
    * \returns total bytes in flight
    */
-  uint32_t BytesInFlight () const;
+    //koh multipath
+  uint32_t BytesInFlight (uint8_t pathId) const;
 
   /**
    * \brief Get the maximum amount of data that can be sent on the connection
@@ -452,7 +476,8 @@ public:
   /**
    * \brief Schedule a queue ACK has if needed
    */
-  void MaybeQueueAck ();
+    //koh multipath
+  void MaybeQueueAck (uint8_t pathId);
 
   /**
    * \brief Callback function to hook to QuicSocketState congestion window
@@ -460,7 +485,15 @@ public:
    * \param oldValue old cWnd value
    * \param newValue new cWnd value
    */
-  void UpdateCwnd (uint32_t oldValue, uint32_t newValue);
+    //koh multipath
+  // void UpdateCwnd (uint32_t oldValue, uint32_t newValue);
+    // void UpdateCwnd1 (uint32_t oldValue, uint32_t newValue);
+    void UpdateCwnd(uint32_t oldValue, uint32_t newValue, uint8_t pathId);
+
+    // void TraceRTT0 (Time oldValue, Time newValue);
+    // void TraceRTT1 (Time oldValue, Time newValue);
+    void TraceRTT(Time oldValue, Time newValue, uint8_t pathId);
+
 
   /**
    * \brief Callback function to hook to QuicSocketState slow start threshold
@@ -468,8 +501,9 @@ public:
    * \param oldValue old ssTh value
    * \param newValue new ssTh value
    */
-  void UpdateSsThresh (uint32_t oldValue, uint32_t newValue);
-
+  // void UpdateSsThresh (uint32_t oldValue, uint32_t newValue);
+    // void UpdateSsThresh1 (uint32_t oldValue, uint32_t newValue);
+    void UpdateSsThresh(uint32_t oldValue, uint32_t newValue, uint8_t pathId);
   /**
    * \brief Callback function to hook to QuicSocketState congestion state
    *
@@ -522,10 +556,12 @@ public:
    *
    * \returns the size (in bytes)
    */
+
+    //koh stat
   uint32_t GetInitialPacketSize (void) const;
-  Time GetSmoothedRtt(void);
-  Time GetRttVar(void);
-  Time GetMinRtt(void);
+  std::vector<Time> GetSmoothedRtt(void);
+  std::vector<Time> GetRttVar(void);
+  std::vector<Time> GetMinRtt(void);
 
   // Implementation of ns3::Socket virtuals
 
@@ -607,6 +643,25 @@ public:
   typedef void (*QuicTxRxTracedCallback)(const Ptr<const Packet> packet, const QuicHeader& header,
                                          const Ptr<const QuicSocketBase> socket);
 
+    //koh multipath
+
+    typedef enum
+    {
+        QuicNewReno,
+        OLIA
+      } CcType_t;
+
+    void SendPathNewConnectionId(Address address, uint8_t pathId);
+    void SendPathChallenge(uint8_t pathId);
+    void SendPathResponse (uint8_t pathId);
+
+    void SubflowInsert(Ptr<MpQuicSubFlow> sflow);
+    void AddPath(Address address, Address from, uint8_t pathId);
+
+    // For scheduler use
+    std::vector<Ptr<MpQuicSubFlow>> GetActiveSubflows();
+    uint32_t GetBytesInBuffer();
+
 protected:
   // Implementation of QuicSocket virtuals
   virtual bool SetAllowBroadcast (bool allowBroadcast);
@@ -622,17 +677,20 @@ protected:
   /**
    * \brief Set the RTO timer (called when packets or ACKs are sent)
    */
-  void SetReTxTimeout ();
+    //koh multipath
+  void SetReTxTimeout (uint8_t pathId);
 
   /**
    * \brief Handle what happens in case of an RTO
    */
-  void ReTxTimeout ();
+    //koh multipath
+  void ReTxTimeout (uint8_t pathId);
 
   /**
    * \brief Handle retransmission after loss
    */
-  void DoRetransmit (std::vector<Ptr<QuicSocketTxItem> > lostPackets);
+    //koh multipath
+  void DoRetransmit (std::vector<Ptr<QuicSocketTxItem> > lostPackets, uint8_t pathId);
 
   /**
    * \brief Extract at most maxSize bytes from the TxBuffer at sequence packetNumber, add the
@@ -647,8 +705,9 @@ protected:
    * \param withAck forces an ACK to be sent
    * \returns the number of bytes sent
    */
+    //koh multipath
   uint32_t SendDataPacket (SequenceNumber32 packetNumber, uint32_t maxSize,
-                           bool withAck);
+                           bool withAck, uint8_t pathId);
 
   /**
    * \brief Send a Connection Close frame
@@ -722,7 +781,8 @@ protected:
   /**
    * \brief Send an ACK packet
    */
-  void SendAck ();
+    //koh multipath
+  void SendAck (uint8_t pathId);
 
   /**
    * \brief Call Socket::NotifyConnectionSucceeded()
@@ -794,7 +854,8 @@ protected:
   bool m_closeOnEmpty;                        //!< True if the socket will close after sending the buffered packets
 
   // Congestion Control
-  Ptr<QuicSocketState> m_tcb;                     //!< Congestion control informations
+    //koh multipath
+  // Ptr<QuicSocketState> m_tcb;                     //!< Congestion control informations
   Ptr<TcpCongestionOps> m_congestionControl;      //!< Congestion control
   TracedValue<Time> m_lastRtt;                                 //!< Latest measured RTT
   bool m_quicCongestionControlLegacy;             //!< Quic Congestion control if true, TCP Congestion control if false
@@ -811,12 +872,19 @@ protected:
   /**
   * \brief Callback pointer for cWnd trace chaining
   */
-  TracedCallback<uint32_t, uint32_t> m_cWndTrace;
+  TracedCallback<uint32_t, uint32_t> m_cWndTrace0;
+    TracedCallback<uint32_t, uint32_t> m_cWndTrace1;
+    std::vector<TracedCallback<uint32_t, uint32_t> > m_cWndTrace;
 
+    TracedCallback<Time, Time> m_rttTrace0;
+    TracedCallback<Time, Time> m_rttTrace1;
+    std::vector<TracedCallback<Time, Time> > m_rttTrace;
   /**
   * \brief Callback pointer for ssTh trace chaining
   */
-  TracedCallback<uint32_t, uint32_t> m_ssThTrace;
+  TracedCallback<uint32_t, uint32_t> m_ssThTrace0;
+    TracedCallback<uint32_t, uint32_t> m_ssThTrace1;
+    std::vector<TracedCallback<uint32_t, uint32_t> > m_ssThTrace;
 
   /**
   * \brief Callback pointer for congestion state trace chaining
@@ -839,7 +907,30 @@ protected:
 
   TracedCallback<Ptr<const Packet>, const QuicHeader&,
                  Ptr<const QuicSocketBase> > m_rxTrace; //!< Trace of received packets
+    // Protected: ------------ For Multipath Implementation -------------
 
+    bool m_enableMultipath;
+    CcType_t m_ccType;
+    Ptr<MpQuicPathManager> m_pathManager;
+    Ptr<MpQuicScheduler> m_scheduler;
+    std::vector <Ptr<MpQuicSubFlow>> m_subflows;
+    uint8_t m_currentPathId;
+    Address m_currentFromAddress;
+
+
+    void CreatePathManager ();
+    void CreateScheduler ();
+    void CreateNewSubflows ();
+    void OnReceivedPathNewConnectionIdFrame (QuicSubheader &sub);
+    void OnReceivedPathAbandonFrame (QuicSubheader &sub);
+    void OnReceivedPathChallengeFrame (QuicSubheader &sub);
+    void OnReceivedPathResponseFrame (QuicSubheader &sub);
+
+    double GetOliaAlpha(uint8_t pathId);
+
+    void UpdateReward (uint32_t oldValue, uint32_t newValue);
+    int m_appCloseSentListNoEmpty;
+    Time lastAckTime;
 };
 
 } //namespace ns3

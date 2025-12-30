@@ -61,6 +61,7 @@ public:
   Ptr<Socket> m_budpSocket6;         //!< The IPv6 UDP this binding is associated with
   Ptr<QuicSocketBase> m_quicSocket;  //!< The quic socket associated with this binding
   bool m_listenerBinding;            //!< A flag that indicates if in this binding resides the listening socket
+    uint8_t m_pathId;
 };
 
 /**
@@ -407,6 +408,11 @@ public:
   virtual int GetProtocolNumber (void) const;
   virtual IpL4Protocol::DownTargetCallback GetDownTarget (void) const;
   virtual IpL4Protocol::DownTargetCallback6 GetDownTarget6 (void) const;
+
+    //multipath koh
+    int AddPath(uint8_t pathId, Ptr<QuicSocketBase> socket, Address localAddress, Address peerAddress);
+    int ReDoUdpConnect(uint8_t pathId, Address peerAddress);
+    void Set0RTTHandshake (bool set);
 
 protected:
   virtual void DoDispose (void);
