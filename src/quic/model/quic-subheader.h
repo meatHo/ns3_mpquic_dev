@@ -109,34 +109,34 @@ class QuicSubheader : public Header
      */
     typedef enum
     {
-        PADDING = 0x00,                   //!< Padding
-        RST_STREAM = 0x01,                //!< Rst Stream
-        CONNECTION_CLOSE = 0x02,          //!< Connection Close
-        APPLICATION_CLOSE = 0x03,         //!< Application Close
-        MAX_DATA = 0x04,                  //!< Max Data
-        MAX_STREAM_DATA = 0x05,           //!< Max Stream Data
-        MAX_STREAM_ID = 0x06,             //!< Max Stream Id
-        PING = 0x07,                      //!< Ping
-        BLOCKED = 0x08,                   //!< Blocked
-        STREAM_BLOCKED = 0x09,            //!< Stream Blocked
-        STREAM_ID_BLOCKED = 0x0A,         //!< Stream Id Blocked
-        NEW_CONNECTION_ID = 0x0B,         //!< New Connection Id
-        STOP_SENDING = 0x0C,              //!< Stop Sending
-        ACK = 0x0D,                       //!< Ack
-        PATH_CHALLENGE = 0x0E,            //!< Path Challenge
-        PATH_RESPONSE = 0x0F,             //!< Path Response
-        STREAM000 = 0x10,                 //!< Stream (offset=0, length=0, fin=0)
-        STREAM001 = 0x11,                 //!< Stream (offset=0, length=0, fin=1)
-        STREAM010 = 0x12,                 //!< Stream (offset=0, length=1, fin=0)
-        STREAM011 = 0x13,                 //!< Stream (offset=0, length=1, fin=1)
-        STREAM100 = 0x14,                 //!< Stream (offset=1, length=0, fin=0)
-        STREAM101 = 0x15,                 //!< Stream (offset=1, length=0, fin=1)
-        STREAM110 = 0x16,                 //!< Stream (offset=1, length=1, fin=0)
-        STREAM111 = 0x17,                 //!< Stream (offset=1, length=1, fin=1)
-        PATH_NEW_CONNECTION_ID = 0x18,    //!< Multipath Implementation: Add address
-        PATH_RETIRE_CONNECTION_ID = 0x19, //!< Multipath Implementation: Remove address
-        PATH_ACK = 0x1A,                  //!< Multipath Implementation: Mp Ack
-        PATH_ABANDON = 0X1B               //!< Multipath Implementation: Path Abandon
+        PADDING = 0x00,            //!< Padding
+        RST_STREAM = 0x01,         //!< Rst Stream
+        CONNECTION_CLOSE = 0x02,   //!< Connection Close
+        APPLICATION_CLOSE = 0x03,  //!< Application Close
+        MAX_DATA = 0x04,           //!< Max Data
+        MAX_STREAM_DATA = 0x05,    //!< Max Stream Data
+        MAX_STREAM_ID = 0x06,      //!< Max Stream Id
+        PING = 0x07,               //!< Ping
+        BLOCKED = 0x08,            //!< Blocked
+        STREAM_BLOCKED = 0x09,     //!< Stream Blocked
+        STREAM_ID_BLOCKED = 0x0A,  //!< Stream Id Blocked
+        NEW_CONNECTION_ID = 0x0B,  //!< New Connection Id
+        STOP_SENDING = 0x0C,       //!< Stop Sending
+        ACK = 0x0D,                //!< Ack
+        PATH_CHALLENGE = 0x0E,     //!< Path Challenge
+        PATH_RESPONSE = 0x0F,      //!< Path Response
+        STREAM000 = 0x10,          //!< Stream (offset=0, length=0, fin=0)
+        STREAM001 = 0x11,          //!< Stream (offset=0, length=0, fin=1)
+        STREAM010 = 0x12,          //!< Stream (offset=0, length=1, fin=0)
+        STREAM011 = 0x13,          //!< Stream (offset=0, length=1, fin=1)
+        STREAM100 = 0x14,          //!< Stream (offset=1, length=0, fin=0)
+        STREAM101 = 0x15,          //!< Stream (offset=1, length=0, fin=1)
+        STREAM110 = 0x16,          //!< Stream (offset=1, length=1, fin=0)
+        STREAM111 = 0x17,          //!< Stream (offset=1, length=1, fin=1)
+        ADD_ADDRESS = 0x18,        //!< Multipath Implementation: Add address
+        REMOVE_ADDRESS = 0x19,     //!< Multipath Implementation: Remove address
+        MP_ACK = 0x1A,             //!< Multipath Implementation: Mp Ack
+        PATH_ABANDON = 0X1B        //!< Multipath Implementation: Path Abandon
     } TypeFrame_t;
 
     /**
@@ -757,17 +757,18 @@ class QuicSubheader : public Header
 
     //multipath koh
 
-
+    Address GetAddress() const;
+    void SetAddress (Address address);
     uint8_t GetPathId() const;
     void SetPathId(uint8_t pathId);
-    bool IsPathAck() const;
+    bool IsMpAck() const;
     bool IsPathAbandon() const;
-    bool IsPathNewConnectionId() const;
-    bool IsPathRetireConnectionId() const;
-    static QuicSubheader CreatePathAck (uint32_t largestAcknowledged, uint64_t ackDelay, uint32_t firstAckBlock, std::vector<uint32_t>& gaps, std::vector<uint32_t>& additionalAckBlocks, uint8_t pathId);
+    bool IsAddAddress() const;
+    bool IsRemoveAddress() const;
+    static QuicSubheader CreateMpAck (uint32_t largestAcknowledged, uint64_t ackDelay, uint32_t firstAckBlock, std::vector<uint32_t>& gaps, std::vector<uint32_t>& additionalAckBlocks, uint8_t pathId);
     static QuicSubheader CreatePathAbandon(uint8_t pathId, uint16_t errorCode);
-    static QuicSubheader CreatePathNewConnectionId(uint8_t pathId, uint64_t sequence, uint64_t connectionId);
-    static QuicSubheader CreatePathRetireConnectionId(uint8_t pathId, uint64_t sequence);
+    static QuicSubheader CreateAddAddress(Address addr, uint8_t pathId);
+    static QuicSubheader CreateRemoveAddress(Address addr, uint8_t pathId);
 
 
   private:
@@ -792,6 +793,7 @@ class QuicSubheader : public Header
     uint8_t m_data;                              //!< Data word
     uint64_t m_length;                           //!< Length
     uint8_t m_pathId;                            //!< Multipath Implementation: Path Id
+    Address m_address;                            //!< Multipath Implementation: Address
                                                  // uint64_t m_newPathConnectionId;
                                                  // uint64_t m_newPathSequence;
 };

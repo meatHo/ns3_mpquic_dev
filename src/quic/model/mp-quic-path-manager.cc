@@ -90,7 +90,7 @@ MpQuicPathManager::InitialSubflow0 (Address localAddress, Address peerAddress)
   NS_ASSERT_MSG (ok == true, "Failed connection to CWND0 trace");
   ok = sFlow->m_tcb->TraceConnectWithoutContext ("SlowStartThreshold", MakeCallback (&QuicSocketBase::UpdateSsThresh, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to SSTHR0 trace");
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT0, m_socket));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to RTT0 trace");
   return sFlow;
 

@@ -2158,35 +2158,28 @@ QuicSocketBase::OnReceivedFrame(QuicSubheader& sub)
     case QuicSubheader::PATH_RESPONSE:
         // TODO check if it matches what was sent in a PATH_CHALLENGE
         // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
-        NS_LOG_INFO("Received PATH_RESPONSE frame");
+        NS_LOG_INFO ("Received PATH_RESPONSE frame");
         OnReceivedPathResponseFrame(sub);
         break;
 
-    case QuicSubheader::PATH_NEW_CONNECTION_ID:
+    case QuicSubheader::ADD_ADDRESS:
         // TODO check if it matches what was sent in a PATH_CHALLENGE
         // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
         NS_LOG_INFO ("Received ADD_ADDRESS frame");
-        OnReceivedPathNewConnectionIdFrame (sub);
+        OnReceivedAddAddressFrame (sub);
         break;
 
-    case QuicSubheader::PATH_RETIRE_CONNECTION_ID:
+    case QuicSubheader::REMOVE_ADDRESS:
         // TODO check if it matches what was sent in a PATH_CHALLENGE
         // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
         NS_LOG_INFO ("Received REMOVE_ADDRESS frame");
         break;
 
-    case QuicSubheader::PATH_ACK:
+    case QuicSubheader::MP_ACK:
         // TODO check if it matches what was sent in a PATH_CHALLENGE
         // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
         NS_LOG_INFO ("Received MP_ACK frame");
         OnReceivedAckFrame (sub);
-        break;
-
-    case QuicSubheader::PATH_ABANDON:
-        // TODO check if it matches what was sent in a PATH_CHALLENGE
-        // otherwise abort with a UNSOLICITED_PATH_RESPONSE error
-        NS_LOG_INFO ("Abandon Path frame");
-        OnReceivedPathAbandonFrame(sub);
         break;
 
     default:
@@ -2243,7 +2236,7 @@ QuicSocketBase::OnSendingAckFrame (uint8_t pathId)
 
   Time delay = Simulator::Now () - m_lastReceived;
   uint64_t ack_delay = delay.GetMicroSeconds ();
-  QuicSubheader sub = QuicSubheader::CreatePathAck (
+  QuicSubheader sub = QuicSubheader::CreateMpAck (
     largestAcknowledged.GetValue (), ack_delay, largestAcknowledged.GetValue (),
     gaps, additionalAckBlocks, pathId);// m_subflows[pathId]->m_receivedSeqNumbers.back().GetValue());
 

@@ -86,35 +86,34 @@ QuicSubheader::GetInstanceTypeId(void) const
 std::string
 QuicSubheader::FrameTypeToString() const
 {
-    static const char* frameTypeNames[28] = {"PADDING",
-                                             "RST_STREAM",
-                                             "CONNECTION_CLOSE",
-                                             "APPLICATION_CLOSE",
-                                             "MAX_DATA",
-                                             "MAX_STREAM_DATA",
-                                             "MAX_STREAM_ID",
-                                             "PING",
-                                             "BLOCKED",
-                                             "STREAM_BLOCKED",
-                                             "STREAM_ID_BLOCKED",
-                                             "NEW_CONNECTION_ID",
-                                             "STOP_SENDING",
-                                             "ACK",
-                                             "PATH_CHALLENGE",
-                                             "PATH_RESPONSE",
-                                             "STREAM000",
-                                             "STREAM001",
-                                             "STREAM010",
-                                             "STREAM011",
-                                             "STREAM100",
-                                             "STREAM101",
-                                             "STREAM110",
-                                             "STREAM111",
-                                             "PATH_RETIRE_CONNECTION_ID",
-                                             "PATH_NEW_CONNECTION_ID",
-                                             "PATH_ACK",
-                                             "PATH_ABANDON"
-
+    static const char* frameTypeNames[28] = {    "PADDING",
+    "RST_STREAM",
+    "CONNECTION_CLOSE",
+    "APPLICATION_CLOSE",
+    "MAX_DATA",
+    "MAX_STREAM_DATA",
+    "MAX_STREAM_ID",
+    "PING",
+    "BLOCKED",
+    "STREAM_BLOCKED",
+    "STREAM_ID_BLOCKED",
+    "NEW_CONNECTION_ID",
+    "STOP_SENDING",
+    "ACK",
+    "PATH_CHALLENGE",
+    "PATH_RESPONSE",
+    "STREAM000",
+    "STREAM001",
+    "STREAM010",
+    "STREAM011",
+    "STREAM100",
+    "STREAM101",
+    "STREAM110",
+    "STREAM111",
+    "ADD_ADDRESS",
+    "REMOVE_ADDRESS",
+    "MP_ACK",
+    "PATH_ABANDON"
     };
     std::string typeDescription = "";
 
@@ -155,755 +154,800 @@ QuicSubheader::GetSerializedSize(void) const
 }
 
 uint32_t
-QuicSubheader::CalculateSubHeaderLength() const
+QuicSubheader::CalculateSubHeaderLength () const
 {
-    NS_LOG_FUNCTION(this);
-    NS_ASSERT(m_frameType >= PADDING and m_frameType <= PATH_ABANDON);
-    uint32_t len = 8;
+  NS_LOG_FUNCTION (this);
+  NS_ASSERT (m_frameType >= PADDING and m_frameType <= PATH_ABANDON);
+  uint32_t len = 8;
 
-    switch (m_frameType)
+  switch (m_frameType)
     {
-    case PADDING:
+      case PADDING:
 
         break;
 
-    case RST_STREAM:
+      case RST_STREAM:
 
-        len += GetVarInt64Size(m_streamId);
+        len += GetVarInt64Size (m_streamId);
         len += 16;
-        len += GetVarInt64Size(m_offset);
+        len += GetVarInt64Size (m_offset);
         break;
 
-    case CONNECTION_CLOSE:
+      case CONNECTION_CLOSE:
 
         len += 16;
-        len += GetVarInt64Size(m_reasonPhraseLength);
+        len += GetVarInt64Size (m_reasonPhraseLength);
         len += (m_reasonPhraseLength * 8);
         break;
 
-    case APPLICATION_CLOSE:
+      case APPLICATION_CLOSE:
 
         len += 16;
-        len += GetVarInt64Size(m_reasonPhraseLength);
+        len += GetVarInt64Size (m_reasonPhraseLength);
         len += (m_reasonPhraseLength * 8);
         break;
 
-    case MAX_DATA:
+      case MAX_DATA:
 
-        len += GetVarInt64Size(m_maxData);
+        len += GetVarInt64Size (m_maxData);
         break;
 
-    case MAX_STREAM_DATA:
+      case MAX_STREAM_DATA:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_maxStreamData);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_maxStreamData);
         break;
 
-    case MAX_STREAM_ID:
+      case MAX_STREAM_ID:
 
-        len += GetVarInt64Size(m_maxStreamId);
+        len += GetVarInt64Size (m_maxStreamId);
         break;
 
-    case PING:
+      case PING:
 
         break;
 
-    case BLOCKED:
+      case BLOCKED:
 
-        len += GetVarInt64Size(m_offset);
+        len += GetVarInt64Size (m_offset);
         break;
 
-    case STREAM_BLOCKED:
+      case STREAM_BLOCKED:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_offset);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_offset);
         break;
 
-    case STREAM_ID_BLOCKED:
+      case STREAM_ID_BLOCKED:
 
-        len += GetVarInt64Size(m_streamId);
+        len += GetVarInt64Size (m_streamId);
         break;
 
-    case NEW_CONNECTION_ID:
+      case NEW_CONNECTION_ID:
 
-        len += GetVarInt64Size(m_sequence);
+        len += GetVarInt64Size (m_sequence);
         len += 64;
-        // len += 128;
+        //len += 128;
         break;
 
-    case STOP_SENDING:
+      case STOP_SENDING:
 
-        len += GetVarInt64Size(m_streamId);
+        len += GetVarInt64Size (m_streamId);
         len += 16;
         break;
 
-    case ACK:
+      case ACK:
 
-        len += GetVarInt64Size(m_largestAcknowledged);
-        len += GetVarInt64Size(m_ackDelay);
-        len += GetVarInt64Size(m_ackBlockCount);
-        len += GetVarInt64Size(m_firstAckBlock);
+        len += GetVarInt64Size (m_largestAcknowledged);
+        len += GetVarInt64Size (m_ackDelay);
+        len += GetVarInt64Size (m_ackBlockCount);
+        len += GetVarInt64Size (m_firstAckBlock);
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
-            len += GetVarInt64Size(m_gaps[j]);
-            len += GetVarInt64Size(m_additionalAckBlocks[j]);
-        }
+          {
+            len += GetVarInt64Size (m_gaps[j]);
+            len += GetVarInt64Size (m_additionalAckBlocks[j]);
+          }
         break;
 
-    case PATH_CHALLENGE:
+      case PATH_CHALLENGE:
 
         len += 8;
         break;
 
-    case PATH_RESPONSE:
+      case PATH_RESPONSE:
 
         len += 8;
         break;
 
-    case STREAM000:
+      case STREAM000:
 
-        len += GetVarInt64Size(m_streamId);
+        len += GetVarInt64Size (m_streamId);
         break;
 
-    case STREAM001:
 
-        len += GetVarInt64Size(m_streamId);
+      case STREAM001:
+
+        len += GetVarInt64Size (m_streamId);
         // The frame marks the end of the stream
         break;
 
-    case STREAM010:
+      case STREAM010:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_length);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_length);
         break;
 
-    case STREAM011:
+      case STREAM011:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_length);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_length);
         // The frame marks the end of the stream
         break;
 
-    case STREAM100:
+      case STREAM100:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_offset);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_offset);
         break;
 
-    case STREAM101:
+      case STREAM101:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_offset);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_offset);
         // The frame marks the end of the stream
         break;
 
-    case STREAM110:
+      case STREAM110:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_offset);
-        len += GetVarInt64Size(m_length);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_offset);
+        len += GetVarInt64Size (m_length);
         break;
 
-    case STREAM111:
+      case STREAM111:
 
-        len += GetVarInt64Size(m_streamId);
-        len += GetVarInt64Size(m_offset);
-        len += GetVarInt64Size(m_length);
+        len += GetVarInt64Size (m_streamId);
+        len += GetVarInt64Size (m_offset);
+        len += GetVarInt64Size (m_length);
         // The frame marks the end of the stream
         break;
-        //추가 koh
-    case PATH_RETIRE_CONNECTION_ID:
-        len += GetVarInt64Size(m_pathId);
-        len += GetVarInt64Size(m_sequence);
+
+      case ADD_ADDRESS:
+        len += 64;
+
         break;
-    case PATH_NEW_CONNECTION_ID:
-        len += GetVarInt64Size(m_pathId);
-        len += GetVarInt64Size(m_sequence);
-        len += GetVarInt64Size(m_connectionId);
+
+      case REMOVE_ADDRESS:
+        len += 64;
+
         break;
-    case PATH_ACK:
-        len += GetVarInt64Size(m_pathId);
-        len += GetVarInt64Size(m_largestAcknowledged);
-        len += GetVarInt64Size(m_ackDelay);
-        len += GetVarInt64Size(m_ackBlockCount);
-        len += GetVarInt64Size(m_firstAckBlock);
+
+      case MP_ACK:
+
+        len += GetVarInt64Size (m_pathId);
+        // len += GetVarInt64Size (m_largestSeq);
+        len += GetVarInt64Size (m_largestAcknowledged);
+        len += GetVarInt64Size (m_ackDelay);
+        len += GetVarInt64Size (m_ackBlockCount);
+        len += GetVarInt64Size (m_firstAckBlock);
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
-            len += GetVarInt64Size(m_gaps[j]);
-            len += GetVarInt64Size(m_additionalAckBlocks[j]);
-        }
+          {
+            len += GetVarInt64Size (m_gaps[j]);
+            len += GetVarInt64Size (m_additionalAckBlocks[j]);
+          }
         break;
-    case PATH_ABANDON:
-        len += GetVarInt64Size(m_pathId);
+
+      case PATH_ABANDON:
+        len += GetVarInt64Size (m_pathId);
         len += GetVarInt64Size (m_errorCode);
+
         break;
+
     }
 
-    NS_LOG_LOGIC("CalculateSubHeaderLength - len" << len << " " << len / 8);
+  NS_LOG_LOGIC ("CalculateSubHeaderLength - len" << len << " " << len / 8);
 
-    NS_ABORT_MSG_IF(len % 8 != 0, "len not divisible by 8 " << len);
-    // NS_ABORT_MSG_IF (len > 255, "len too long " << len);
+  NS_ABORT_MSG_IF (len % 8 != 0, "len not divisible by 8 " << len);
+  //NS_ABORT_MSG_IF (len > 255, "len too long " << len);
 
-    return (len / 8);
+  return (len / 8);
 }
 
 void
-QuicSubheader::Serialize(Buffer::Iterator start) const
+QuicSubheader::Serialize (Buffer::Iterator start) const
 {
-    NS_LOG_FUNCTION(this << (uint64_t)m_frameType);
-    NS_ASSERT(m_frameType >= PADDING and m_frameType <= STREAM111);
+  NS_LOG_FUNCTION (this << (uint64_t)m_frameType);
+  NS_ASSERT (m_frameType >= PADDING and m_frameType <= PATH_ABANDON);
 
-    Buffer::Iterator i = start;
-    i.WriteU8((uint8_t)m_frameType);
+  Buffer::Iterator i = start;
+  i.WriteU8 ((uint8_t)m_frameType);
 
-    switch (m_frameType)
+  switch (m_frameType)
     {
-    case PADDING:
+
+      case PADDING:
 
         break;
 
-    case RST_STREAM:
+      case RST_STREAM:
 
-        WriteVarInt64(i, m_streamId);
-        i.WriteU16(m_errorCode);
-        WriteVarInt64(i, m_offset);
+        WriteVarInt64 (i, m_streamId);
+        i.WriteU16 (m_errorCode);
+        WriteVarInt64 (i, m_offset);
         break;
 
-    case CONNECTION_CLOSE:
+      case CONNECTION_CLOSE:
 
-        i.WriteU16(m_errorCode);
-        WriteVarInt64(i, m_reasonPhraseLength);
+        i.WriteU16 (m_errorCode);
+        WriteVarInt64 (i, m_reasonPhraseLength);
         for (auto& elem : m_reasonPhrase)
-        {
-            i.WriteU8(elem);
-        }
+          {
+            i.WriteU8 (elem);
+          }
         break;
 
-    case APPLICATION_CLOSE:
+      case APPLICATION_CLOSE:
 
-        i.WriteU16(m_errorCode);
-        WriteVarInt64(i, m_reasonPhraseLength);
+        i.WriteU16 (m_errorCode);
+        WriteVarInt64 (i, m_reasonPhraseLength);
         for (auto& elem : m_reasonPhrase)
-        {
-            i.WriteU8(elem);
-        }
+          {
+            i.WriteU8 (elem);
+          }
         break;
 
-    case MAX_DATA:
+      case MAX_DATA:
 
-        WriteVarInt64(i, m_maxData);
+        WriteVarInt64 (i, m_maxData);
         break;
 
-    case MAX_STREAM_DATA:
+      case MAX_STREAM_DATA:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_maxStreamData);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_maxStreamData);
         break;
 
-    case MAX_STREAM_ID:
+      case MAX_STREAM_ID:
 
-        WriteVarInt64(i, m_maxStreamId);
+        WriteVarInt64 (i, m_maxStreamId);
         break;
 
-    case PING:
+      case PING:
 
         break;
 
-    case BLOCKED:
+      case BLOCKED:
 
-        WriteVarInt64(i, m_offset);
+        WriteVarInt64 (i, m_offset);
         break;
 
-    case STREAM_BLOCKED:
+      case STREAM_BLOCKED:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_offset);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_offset);
         break;
 
-    case STREAM_ID_BLOCKED:
+      case STREAM_ID_BLOCKED:
 
-        WriteVarInt64(i, m_streamId);
+        WriteVarInt64 (i, m_streamId);
         break;
 
-    case NEW_CONNECTION_ID:
+      case NEW_CONNECTION_ID:
 
-        WriteVarInt64(i, m_sequence);
-        i.WriteHtonU64(m_connectionId);
-        // i.WriteHtonU128 (m_statelessResetToken);
+        WriteVarInt64 (i, m_sequence);
+        i.WriteHtonU64 (m_connectionId);
+        //i.WriteHtonU128 (m_statelessResetToken);
         break;
 
-    case STOP_SENDING:
+      case STOP_SENDING:
 
-        WriteVarInt64(i, m_streamId);
-        i.WriteU16(m_errorCode);
+        WriteVarInt64 (i, m_streamId);
+        i.WriteU16 (m_errorCode);
         break;
 
-    case ACK:
+      case ACK:
 
-        WriteVarInt64(i, m_largestAcknowledged);
-        WriteVarInt64(i, m_ackDelay);
-        WriteVarInt64(i, m_ackBlockCount);
-        WriteVarInt64(i, m_firstAckBlock);
+        WriteVarInt64 (i, m_largestAcknowledged);
+        WriteVarInt64 (i, m_ackDelay);
+        WriteVarInt64 (i, m_ackBlockCount);
+        WriteVarInt64 (i, m_firstAckBlock);
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
-            WriteVarInt64(i, m_gaps[j]);
-            WriteVarInt64(i, m_additionalAckBlocks[j]);
-        }
+          {
+            WriteVarInt64 (i, m_gaps[j]);
+            WriteVarInt64 (i, m_additionalAckBlocks[j]);
+          }
         break;
 
-    case PATH_CHALLENGE:
+      case PATH_CHALLENGE:
 
-        i.WriteU8(m_data);
+        i.WriteU8 (m_data);
         break;
 
-    case PATH_RESPONSE:
+      case PATH_RESPONSE:
 
-        i.WriteU8(m_data);
+        i.WriteU8 (m_data);
         break;
 
-    case STREAM000:
+      case STREAM000:
 
-        WriteVarInt64(i, m_streamId);
+        WriteVarInt64 (i, m_streamId);
         break;
 
-    case STREAM001:
+      case STREAM001:
 
-        WriteVarInt64(i, m_streamId);
+        WriteVarInt64 (i, m_streamId);
         // The frame marks the end of the stream
         break;
 
-    case STREAM010:
+      case STREAM010:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_length);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_length);
         break;
 
-    case STREAM011:
+      case STREAM011:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_length);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_length);
         // The frame marks the end of the stream
         break;
 
-    case STREAM100:
+      case STREAM100:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_offset);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_offset);
         break;
 
-    case STREAM101:
+      case STREAM101:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_offset);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_offset);
         // The frame marks the end of the stream
         break;
 
-    case STREAM110:
+      case STREAM110:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_offset);
-        WriteVarInt64(i, m_length);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_offset);
+        WriteVarInt64 (i, m_length);
         break;
 
-    case STREAM111:
+      case STREAM111:
 
-        WriteVarInt64(i, m_streamId);
-        WriteVarInt64(i, m_offset);
-        WriteVarInt64(i, m_length);
+        WriteVarInt64 (i, m_streamId);
+        WriteVarInt64 (i, m_offset);
+        WriteVarInt64 (i, m_length);
         // The frame marks the end of the stream
         break;
-        //추가 koh
-    case PATH_RETIRE_CONNECTION_ID:
-        WriteVarInt64(i, m_pathId);
-        WriteVarInt64(i, m_sequence);
+
+      case ADD_ADDRESS:
+        WriteTo(i, m_address);
+        WriteVarInt64 (i, m_pathId);
         break;
-    case PATH_NEW_CONNECTION_ID:
-        WriteVarInt64(i, m_pathId);
-        WriteVarInt64(i, m_sequence);
-        i.WriteHtonU64(m_connectionId);
+
+      case REMOVE_ADDRESS:
+        WriteTo(i, m_address);
+        WriteVarInt64 (i, m_pathId);
         break;
-    case PATH_ACK:
+
+      case MP_ACK:
+
         WriteVarInt64 (i, m_pathId);
         WriteVarInt64 (i, m_largestAcknowledged);
         WriteVarInt64 (i, m_ackDelay);
         WriteVarInt64 (i, m_ackBlockCount);
         WriteVarInt64 (i, m_firstAckBlock);
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
+          {
             WriteVarInt64 (i, m_gaps[j]);
             WriteVarInt64 (i, m_additionalAckBlocks[j]);
-        }
+          }
         break;
-    case PATH_ABANDON:
+
+      case PATH_ABANDON:
         WriteVarInt64 (i, m_pathId);
         WriteVarInt64 (i, m_errorCode);
-        break;
+
     }
 }
 
 uint32_t
-QuicSubheader::Deserialize(Buffer::Iterator start)
+QuicSubheader::Deserialize (Buffer::Iterator start)
 {
-    Buffer::Iterator i = start;
-    m_frameType = i.ReadU8();
+  Buffer::Iterator i = start;
+  m_frameType = i.ReadU8 ();
 
-    NS_LOG_FUNCTION(this << (uint64_t)m_frameType);
+  NS_LOG_FUNCTION (this << (uint64_t)m_frameType);
 
-    NS_ASSERT(m_frameType >= PADDING and m_frameType <= STREAM111);
+  NS_ASSERT (m_frameType >= PADDING and m_frameType <= PATH_ABANDON);
 
-    switch (m_frameType)
+  switch (m_frameType)
     {
-    case PADDING:
+
+      case PADDING:
 
         break;
 
-    case RST_STREAM:
+      case RST_STREAM:
 
-        m_streamId = ReadVarInt64(i);
-        m_errorCode = i.ReadU16();
-        m_offset = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_errorCode = i.ReadU16 ();
+        m_offset = ReadVarInt64 (i);
         break;
 
-    case CONNECTION_CLOSE:
+      case CONNECTION_CLOSE:
 
-        m_errorCode = i.ReadU16();
-        m_reasonPhraseLength = ReadVarInt64(i);
+        m_errorCode = i.ReadU16 ();
+        m_reasonPhraseLength = ReadVarInt64 (i);
         for (uint64_t j = 0; j < m_reasonPhraseLength; j++)
-        {
-            m_reasonPhrase.push_back(i.ReadU8());
-        }
+          {
+            m_reasonPhrase.push_back (i.ReadU8 ());
+          }
         break;
 
-    case APPLICATION_CLOSE:
+      case APPLICATION_CLOSE:
 
-        m_errorCode = i.ReadU16();
-        m_reasonPhraseLength = ReadVarInt64(i);
+        m_errorCode = i.ReadU16 ();
+        m_reasonPhraseLength = ReadVarInt64 (i);
         for (uint64_t j = 0; j < m_reasonPhraseLength; j++)
-        {
-            m_reasonPhrase.push_back(i.ReadU8());
-        }
+          {
+            m_reasonPhrase.push_back (i.ReadU8 ());
+          }
         break;
 
-    case MAX_DATA:
+      case MAX_DATA:
 
-        m_maxData = ReadVarInt64(i);
+        m_maxData = ReadVarInt64 (i);
         break;
 
-    case MAX_STREAM_DATA:
+      case MAX_STREAM_DATA:
 
-        m_streamId = ReadVarInt64(i);
-        m_maxStreamData = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_maxStreamData = ReadVarInt64 (i);
         break;
 
-    case MAX_STREAM_ID:
+      case MAX_STREAM_ID:
 
-        m_maxStreamId = ReadVarInt64(i);
+        m_maxStreamId = ReadVarInt64 (i);
         break;
 
-    case PING:
+      case PING:
 
         break;
 
-    case BLOCKED:
+      case BLOCKED:
 
-        m_offset = ReadVarInt64(i);
+        m_offset = ReadVarInt64 (i);
         break;
 
-    case STREAM_BLOCKED:
+      case STREAM_BLOCKED:
 
-        m_streamId = ReadVarInt64(i);
-        m_offset = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_offset = ReadVarInt64 (i);
         break;
 
-    case STREAM_ID_BLOCKED:
+      case STREAM_ID_BLOCKED:
 
-        m_streamId = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
         break;
 
-    case NEW_CONNECTION_ID:
+      case NEW_CONNECTION_ID:
 
-        m_sequence = ReadVarInt64(i);
-        m_connectionId = i.ReadNtohU64();
-        // m_statelessResetToken = i.ReadNtohU128();
+        m_sequence = ReadVarInt64 (i);
+        m_connectionId = i.ReadNtohU64 ();
+        //m_statelessResetToken = i.ReadNtohU128();
         break;
 
-    case STOP_SENDING:
+      case STOP_SENDING:
 
-        m_streamId = ReadVarInt64(i);
-        m_errorCode = i.ReadU16();
+        m_streamId = ReadVarInt64 (i);
+        m_errorCode = i.ReadU16 ();
         break;
 
-    case ACK:
+      case ACK:
 
-        m_largestAcknowledged = ReadVarInt64(i);
-        m_ackDelay = ReadVarInt64(i);
-        m_ackBlockCount = ReadVarInt64(i);
-        m_firstAckBlock = ReadVarInt64(i);
+        m_largestAcknowledged = ReadVarInt64 (i);
+        m_ackDelay = ReadVarInt64 (i);
+        m_ackBlockCount = ReadVarInt64 (i);
+        m_firstAckBlock = ReadVarInt64 (i);
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
-            m_gaps.push_back(ReadVarInt64(i));
-            m_additionalAckBlocks.push_back(ReadVarInt64(i));
-        }
+          {
+            m_gaps.push_back (ReadVarInt64 (i));
+            m_additionalAckBlocks.push_back (ReadVarInt64 (i));
+          }
         break;
 
-    case PATH_CHALLENGE:
+      case PATH_CHALLENGE:
 
-        m_data = i.ReadU8();
+        m_data = i.ReadU8 ();
         break;
 
-    case PATH_RESPONSE:
+      case PATH_RESPONSE:
 
-        m_data = i.ReadU8();
+        m_data = i.ReadU8 ();
         break;
 
-    case STREAM000:
+      case STREAM000:
 
-        m_streamId = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
         break;
 
-    case STREAM001:
+      case STREAM001:
 
-        m_streamId = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
         // The frame marks the end of the stream
         break;
 
-    case STREAM010:
+      case STREAM010:
 
-        m_streamId = ReadVarInt64(i);
-        m_length = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_length = ReadVarInt64 (i);
         break;
 
-    case STREAM011:
+      case STREAM011:
 
-        m_streamId = ReadVarInt64(i);
-        m_length = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_length = ReadVarInt64 (i);
         // The frame marks the end of the stream
         break;
 
-    case STREAM100:
+      case STREAM100:
 
-        m_streamId = ReadVarInt64(i);
-        m_offset = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_offset = ReadVarInt64 (i);
         break;
 
-    case STREAM101:
+      case STREAM101:
 
-        m_streamId = ReadVarInt64(i);
-        m_offset = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_offset = ReadVarInt64 (i);
         // The frame marks the end of the stream
         break;
 
-    case STREAM110:
+      case STREAM110:
 
-        m_streamId = ReadVarInt64(i);
-        m_offset = ReadVarInt64(i);
-        m_length = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_offset = ReadVarInt64 (i);
+        m_length = ReadVarInt64 (i);
         break;
 
-    case STREAM111:
+      case STREAM111:
 
-        m_streamId = ReadVarInt64(i);
-        m_offset = ReadVarInt64(i);
-        m_length = ReadVarInt64(i);
+        m_streamId = ReadVarInt64 (i);
+        m_offset = ReadVarInt64 (i);
+        m_length = ReadVarInt64 (i);
         // The frame marks the end of the stream
         break;
-        //추가 koh
-    case PATH_RETIRE_CONNECTION_ID:
+
+      case ADD_ADDRESS:
+        ReadFrom(i, m_address, 7);
         m_pathId = ReadVarInt64(i);
-        m_sequence = ReadVarInt64(i);
         break;
-    case PATH_NEW_CONNECTION_ID:
+
+      case REMOVE_ADDRESS:
+        ReadFrom(i, m_address, 7);
         m_pathId = ReadVarInt64(i);
-        m_sequence = ReadVarInt64(i);
-        m_connectionId = i.ReadNtohU64();
         break;
-    case PATH_ACK:
+
+
+      case MP_ACK:
+
         m_pathId = ReadVarInt64(i);
         m_largestAcknowledged = ReadVarInt64 (i);
         m_ackDelay = ReadVarInt64 (i);
         m_ackBlockCount = ReadVarInt64 (i);
         m_firstAckBlock = ReadVarInt64 (i);
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
+          {
             m_gaps.push_back (ReadVarInt64 (i));
             m_additionalAckBlocks.push_back (ReadVarInt64 (i));
-        }
+          }
         break;
-    case PATH_ABANDON:
+
+      case PATH_ABANDON:
         m_pathId = ReadVarInt64(i);
         m_errorCode = ReadVarInt64(i);
-        break;
     }
 
-    NS_LOG_INFO("Deserialized a subheader of size " << GetSerializedSize());
-    return GetSerializedSize();
+  NS_LOG_INFO ("Deserialized a subheader of size " << GetSerializedSize ());
+  return GetSerializedSize ();
 }
 
 void
-QuicSubheader::Print(std::ostream& os) const
+QuicSubheader::Print (std::ostream &os) const
 {
-    NS_LOG_FUNCTION(this << (uint64_t)m_frameType);
-    NS_ASSERT(m_frameType >= PADDING and m_frameType <= STREAM111);
+   NS_LOG_FUNCTION (this << (uint64_t) m_frameType);
+  NS_ASSERT (m_frameType >= PADDING and m_frameType <= PATH_ABANDON);
 
-    os << "|" << FrameTypeToString() << "|\n";
-    switch (m_frameType)
+  os << "|" << FrameTypeToString () << "|\n";
+  switch (m_frameType)
     {
-    case PADDING:
+
+      case PADDING:
 
         break;
 
-    case RST_STREAM:
+      case RST_STREAM:
 
-        os << "|Stream Id " << m_streamId << "|\n";
+        //os << "|Stream Id " << m_streamId << "|\n";
         os << "|Application Error Code " << m_errorCode << "|\n";
         os << "|Final Offset " << m_offset << "|\n";
         break;
 
-    case CONNECTION_CLOSE:
+      case CONNECTION_CLOSE:
 
-        os << "|Application Error Code " << TransportErrorCodeToString() << "|\n";
+        os << "|Application Error Code " << TransportErrorCodeToString () << "|\n";
         os << "|Reason Phrase Length " << m_reasonPhraseLength << "|\n";
         os << "|Reason Phrase ";
         for (auto& elem : m_reasonPhrase)
-        {
+          {
             os << elem;
-        }
+          }
         os << "|\n";
         break;
 
-    case APPLICATION_CLOSE:
+      case APPLICATION_CLOSE:
 
         os << "|Application Error Code " << m_errorCode << "|\n";
         os << "|Reason Phrase Length " << m_reasonPhraseLength << "|\n";
         os << "|Reason Phrase ";
         for (auto& elem : m_reasonPhrase)
-        {
+          {
             os << elem;
-        }
+          }
         os << "|\n";
         break;
 
-    case MAX_DATA:
+      case MAX_DATA:
 
         os << "|Maximum Data " << m_maxData << "|\n";
         break;
 
-    case MAX_STREAM_DATA:
+      case MAX_STREAM_DATA:
 
         os << "|Stream Id " << m_streamId << "|\n";
         os << "|Maximum Stream Data " << m_maxStreamData << "|\n";
         break;
 
-    case MAX_STREAM_ID:
+      case MAX_STREAM_ID:
         os << "|Maximum Stream Id " << m_maxStreamId << "|\n";
         break;
 
-    case PING:
+      case PING:
 
         break;
 
-    case BLOCKED:
+      case BLOCKED:
         os << "|Offset " << m_offset << "|\n";
         break;
 
-    case STREAM_BLOCKED:
+      case STREAM_BLOCKED:
 
         os << "|Stream Id " << m_streamId << "|\n";
         os << "|Offset " << m_offset << "|\n";
         break;
 
-    case STREAM_ID_BLOCKED:
+      case STREAM_ID_BLOCKED:
 
         os << "|Stream Id " << m_streamId << "|\n";
         break;
 
-    case NEW_CONNECTION_ID:
+      case NEW_CONNECTION_ID:
 
         os << "|Sequence " << m_sequence << "|\n";
         os << "|Connection Id " << m_connectionId << "|\n";
-        // os << "|Stateless Reset Token " << m_statelessResetToken << "|\n";
+        //os << "|Stateless Reset Token " << m_statelessResetToken << "|\n";
         break;
 
-    case STOP_SENDING:
+      case STOP_SENDING:
 
         os << "|Stream Id " << m_streamId << "|\n";
         os << "|Application Error Code " << m_errorCode << "|\n";
         break;
 
-    case ACK:
+      case ACK:
 
         os << "|Largest Acknowledged " << m_largestAcknowledged << "|\n";
         os << "|Ack Delay " << m_ackDelay << "|\n";
         os << "|Ack Block Count " << m_ackBlockCount << "|\n";
         os << "|First Ack Block " << m_firstAckBlock << "|\n";
         for (uint64_t j = 0; j < m_ackBlockCount; j++)
-        {
+          {
             os << "|Gap " << m_gaps[j] << "|\n";
             os << "|Additional Ack Block " << m_additionalAckBlocks[j] << "|\n";
-        }
+          }
         break;
 
-    case PATH_CHALLENGE:
+      case PATH_CHALLENGE:
 
         os << "|Data " << (uint64_t)m_data << "|\n";
         break;
 
-    case PATH_RESPONSE:
+      case PATH_RESPONSE:
 
         os << "|Data " << (uint64_t)m_data << "|\n";
         break;
 
-    case STREAM000:
+      case STREAM000:
 
         os << "|Stream Id " << m_streamId << "|\n";
         break;
 
-    case STREAM001:
+      case STREAM001:
 
         os << "|Stream Id " << m_streamId << "|\n";
         // The frame marks the end of the stream
         break;
 
-    case STREAM010:
+      case STREAM010:
 
         os << "|Stream Id " << m_streamId << "|\n";
         os << "|Length " << m_length << "|\n";
         break;
 
-    case STREAM011:
+      case STREAM011:
 
         os << "|Stream Id " << m_streamId << "|\n";
+        os << "|Length " << m_length << "|\n";
+        // The frame marks the end of the stream
+        break;
+
+      case STREAM100:
+
+        os << "|Stream Id " << m_streamId << "|\n";
+        os << "|Offset " << m_offset << "|\n";
+        break;
+
+      case STREAM101:
+
+        os << "|Stream Id " << m_streamId << "|\n";
+        os << "|Offset " << m_offset << "|\n";
+        // The frame marks the end of the stream
+        break;
+
+      case STREAM110:
+
+/*         os << "|Stream Id " << m_streamId << "|\n";
+        os << "|Offset " << m_offset << "|\n";
+        os << "|Length " << m_length << "|\n"; */
+        break;
+
+      case STREAM111:
+
+        os << "|Stream Id " << m_streamId << "|\n";
+        os << "|Offset " << m_offset << "|\n";
         os << "|Length " << m_length << "|\n";
         // The frame marks the end of the stream
         break;
 
-    case STREAM100:
-
-        os << "|Stream Id " << m_streamId << "|\n";
-        os << "|Offset " << m_offset << "|\n";
+      case ADD_ADDRESS:
+        os << "|ADD Address " << m_address << "|\n";
+        os << "|Path Id" << m_pathId << "|\n";
         break;
 
-    case STREAM101:
-
-        os << "|Stream Id " << m_streamId << "|\n";
-        os << "|Offset " << m_offset << "|\n";
-        // The frame marks the end of the stream
+      case REMOVE_ADDRESS:
+        os << "|REMOVE Address " << m_address << "|\n";
+        os << "|Path Id" << m_pathId << "|\n";
         break;
 
-    case STREAM110:
+      case MP_ACK:
 
-        os << "|Stream Id " << m_streamId << "|\n";
-        os << "|Offset " << m_offset << "|\n";
-        os << "|Length " << m_length << "|\n";
+        os << "|Path Id" << m_pathId << "|\n";
+        os << "|Largest Acknowledged " << m_largestAcknowledged << "|\n";
+        os << "|Ack Delay " << m_ackDelay << "|\n";
+        os << "|Ack Block Count " << m_ackBlockCount << "|\n";
+        os << "|First Ack Block " << m_firstAckBlock << "|\n";
+        for (uint64_t j = 0; j < m_ackBlockCount; j++)
+          {
+            os << "|Gap " << m_gaps[j] << "|\n";
+            os << "|Additional Ack Block " << m_additionalAckBlocks[j] << "|\n";
+          }
         break;
 
-    case STREAM111:
+      case PATH_ABANDON:
+        os << "|Path Id" << m_pathId << "|\n";
+       break;
 
-        os << "|Stream Id " << m_streamId << "|\n";
-        os << "|Offset " << m_offset << "|\n";
-        os << "|Length " << m_length << "|\n";
-        // The frame marks the end of the stream
-        break;
     }
 }
 
@@ -1656,24 +1700,6 @@ QuicSubheader::SetFirstAckBlock(uint64_t firstAckBlock)
 
 //multipath koh
 
-uint8_t
-QuicSubheader::GetPathId() const
-{
-    return m_pathId;
-}
-
-void
-QuicSubheader::SetPathId(uint8_t pathId)
-{
-    m_pathId=pathId;
-}
-
-bool
-QuicSubheader::IsPathAck() const
-{
-    return m_frameType == PATH_ACK;
-}
-
 bool
 QuicSubheader::IsPathAbandon() const
 {
@@ -1681,24 +1707,57 @@ QuicSubheader::IsPathAbandon() const
 }
 
 bool
-QuicSubheader::IsPathNewConnectionId() const
+QuicSubheader::IsMpAck () const
 {
-    return m_frameType == PATH_NEW_CONNECTION_ID;
+    return m_frameType == MP_ACK;
 }
 
+
 bool
-QuicSubheader::IsPathRetireConnectionId() const
+QuicSubheader::IsAddAddress () const
 {
-    return m_frameType == PATH_RETIRE_CONNECTION_ID;
+    return m_frameType == ADD_ADDRESS;
+}
+
+
+bool
+QuicSubheader::IsRemoveAddress () const
+{
+    return m_frameType == REMOVE_ADDRESS;
 }
 
 QuicSubheader
-QuicSubheader::CreatePathAck (uint32_t largestAcknowledged, uint64_t ackDelay, uint32_t firstAckBlock, std::vector<uint32_t>& gaps, std::vector<uint32_t>& additionalAckBlocks, uint8_t pathId)
+QuicSubheader::CreateAddAddress(Address addr, uint8_t pathId)
+{
+    NS_LOG_INFO ("Create Add Address Header");
+
+    QuicSubheader sub;
+    sub.SetFrameType(ADD_ADDRESS);
+    sub.SetAddress(addr);
+    sub.SetPathId(pathId);
+    return sub;
+}
+
+QuicSubheader
+QuicSubheader::CreateRemoveAddress(Address addr, uint8_t pathId)
+{
+    NS_LOG_INFO ("Create Remove Address Header");
+
+    QuicSubheader sub;
+    sub.SetFrameType(REMOVE_ADDRESS);
+    sub.SetAddress(addr);
+    sub.SetPathId(pathId);
+    return sub;
+}
+
+
+QuicSubheader
+QuicSubheader::CreateMpAck (uint32_t largestAcknowledged, uint64_t ackDelay, uint32_t firstAckBlock, std::vector<uint32_t>& gaps, std::vector<uint32_t>& additionalAckBlocks, uint8_t pathId)
 {
     NS_LOG_INFO ("Created Ack Header");
 
     QuicSubheader sub;
-    sub.SetFrameType (PATH_ACK);
+    sub.SetFrameType (MP_ACK);
     sub.SetLargestAcknowledged (largestAcknowledged);
     sub.SetAckDelay (ackDelay);
     sub.SetAckBlockCount (gaps.size ());
@@ -1710,39 +1769,38 @@ QuicSubheader::CreatePathAck (uint32_t largestAcknowledged, uint64_t ackDelay, u
 }
 
 QuicSubheader
-QuicSubheader::CreatePathAbandon(uint8_t pathId, uint16_t errorCode)
+QuicSubheader::CreatePathAbandon (uint8_t pathId, uint16_t errorCode)
 {
-    NS_LOG_INFO ("Created Path Abandon Header");
+    NS_LOG_INFO ("Created Path Abandon");
 
     QuicSubheader sub;
+    sub.SetFrameType (PATH_ABANDON);
     sub.SetPathId(pathId);
-    sub.SetErrorCode (errorCode);
+    sub.SetErrorCode(errorCode);
 
     return sub;
 }
 
-QuicSubheader
-QuicSubheader::CreatePathNewConnectionId(uint8_t pathId, uint64_t sequence, uint64_t connectionId)
+Address QuicSubheader::GetAddress () const
 {
-    NS_LOG_INFO ("Created Path New ConnectionId Header");
-
-    QuicSubheader sub;
-    sub.SetPathId (pathId);
-    sub.SetSequence (sequence);
-    sub.SetConnectionId (connectionId);
-
-    return sub;
+    m_address.Register();
+    return m_address;
 }
 
-QuicSubheader
-QuicSubheader::CreatePathRetireConnectionId(uint8_t pathId, uint64_t sequence)
+void QuicSubheader::SetAddress (Address address)
 {
-    NS_LOG_INFO ("Created Path Retire ConnectionId Header");
-
-    QuicSubheader sub;
-    sub.SetPathId (pathId);
-    sub.SetSequence (sequence);
-    return sub;
+    m_address = address;
 }
 
+uint8_t
+QuicSubheader::GetPathId() const
+{
+    return m_pathId;
+}
+
+void
+QuicSubheader::SetPathId(uint8_t pathId)
+{
+    m_pathId=pathId;
+}
 } // namespace ns3

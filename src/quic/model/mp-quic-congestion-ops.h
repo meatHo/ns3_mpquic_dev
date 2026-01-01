@@ -26,14 +26,15 @@
 #ifndef MPMpQUICCONGESTIONOPS_H
 #define MPMpQUICCONGESTIONOPS_H
 
-#include "ns3/timer.h"
-#include "ns3/object.h"
-#include "quic-subheader.h"
-#include "ns3/tcp-congestion-ops.h"
-#include "ns3/tcp-socket-base.h"
+#include "quic-congestion-ops.h"
 #include "quic-socket-base.h"
 #include "quic-socket-tx-buffer.h"
-#include "quic-congestion-ops.h"
+#include "quic-subheader.h"
+
+#include "ns3/object.h"
+#include "ns3/tcp-congestion-ops.h"
+#include "ns3/tcp-socket-base.h"
+#include "ns3/timer.h"
 
 namespace ns3 {
 

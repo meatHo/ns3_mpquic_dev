@@ -45,7 +45,6 @@
 #include "quic-socket-tx-scheduler.h"
 
 //koh multipath
-#include "mp-quic-congestion-ops.h"
 #include "mp-quic-path-manager.h"
 #include "mp-quic-scheduler.h"
 #include "mp-quic-subflow.h"
@@ -651,7 +650,7 @@ public:
         OLIA
       } CcType_t;
 
-    void SendPathNewConnectionId(Address address, uint8_t pathId);
+    void SendAddAddress(Address address, uint8_t pathId);
     void SendPathChallenge(uint8_t pathId);
     void SendPathResponse (uint8_t pathId);
 
@@ -921,8 +920,7 @@ protected:
     void CreatePathManager ();
     void CreateScheduler ();
     void CreateNewSubflows ();
-    void OnReceivedPathNewConnectionIdFrame (QuicSubheader &sub);
-    void OnReceivedPathAbandonFrame (QuicSubheader &sub);
+    void OnReceivedAddAddressFrame (QuicSubheader &sub);
     void OnReceivedPathChallengeFrame (QuicSubheader &sub);
     void OnReceivedPathResponseFrame (QuicSubheader &sub);
 

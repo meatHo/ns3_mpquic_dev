@@ -20,6 +20,8 @@
  *          Michele Polese <michele.polese@gmail.com>
  *          Davide Marcato <davidemarcato@outlook.com>
  *          Umberto Paro <umberto.paro@me.com>
+ *          Wenjun Yang <wenjunyang@uvic.ca>
+ *          Shengjie Shu <shengjies@uvic.ca>
  */
 
 #ifndef QUICSOCKETTXBUFFER_H
@@ -149,13 +151,16 @@ public:
   bool Add (Ptr<Packet> p);
 
   /**
+   *
    * \brief Request the next packet to transmit
    *
    * \param numBytes the number of bytes of the next packet to transmit requested
    * \param seq the sequence number of the next packet to transmit
+   * \param pathId the path on which the packet will be sent
    * \return the next packet to transmit
    */
-  Ptr<Packet> NextSequence (uint32_t numBytes, const SequenceNumber32 seq);
+  Ptr<Packet> NextSequence (uint32_t numBytes, const SequenceNumber32 seq, uint8_t pathId);
+
 
   /**
    * \brief Get a block of data not transmitted yet and move it into SentList
@@ -164,6 +169,15 @@ public:
    * \return the item that contains the right packet
    */
   Ptr<QuicSocketTxItem> GetNewSegment (uint32_t numBytes);
+
+    /**
+   * \brief Get a block of data not transmitted yet and move it into SentList
+   *
+   * \param numBytes number of bytes of the QuicSocketTxItem requested
+   * \param pathId the path on which the packet will be sent
+   * \return the item that contains the right packet
+   */
+  Ptr<QuicSocketTxItem> GetNewSegment (uint32_t numBytes, uint8_t pathId);
 
   /**
    * Process an acknowledgment, set the packets in the send buffer as acknowledged, mark
@@ -178,10 +192,11 @@ public:
    * \param gaps The gaps in the acknowledgment
    * \return a vector containing the newly acked packets for congestion control purposes
    */
-  std::vector<Ptr<QuicSocketTxItem> > OnAckUpdate (Ptr<TcpSocketState> tcb,
+  std::vector<Ptr<QuicSocketTxItem> > OnAckUpdate (Ptr<QuicSocketState> tcb,
                                                    const uint32_t largestAcknowledged,
                                                    const std::vector<uint32_t> &additionalAckBlocks,
-                                                   const std::vector<uint32_t> &gaps);
+                                                   const std::vector<uint32_t> &gaps,
+                                                   uint8_t pathId);
 
   /**
    * Get the max size of the buffer
@@ -202,14 +217,14 @@ public:
    *
    * \return a vector containing the packets marked as lost
    */
-  std::vector<Ptr<QuicSocketTxItem> > DetectLostPackets ();
+  std::vector<Ptr<QuicSocketTxItem> > DetectLostPackets (uint8_t pathId);
 
   /**
    * \brief Count the amount of lost bytes
    *
    * \return the number of bytes considered lost
    */
-  uint32_t GetLost ();
+  uint32_t GetLost (uint8_t pathId);
 
   /**
    * Compute the available space in the buffer
@@ -230,7 +245,7 @@ public:
    *
    * \returns total bytes in flight
    */
-  uint32_t BytesInFlight () const;
+  uint32_t BytesInFlight (uint8_t pathId);
 
   /**
    * Return the number of frames for stream 0 is in the buffer
@@ -258,27 +273,27 @@ public:
    *
    * \param keepItems Keep a number of items at the front of the sent list
    */
-  void ResetSentList (uint32_t keepItems = 1);
+  void ResetSentList (uint8_t pathId, uint32_t keepItems = 1);
 
   /**
    * Mark a packet as lost
    * \param the sequence number of the packet
    * \return true if the packet is in the send buffer
    */
-  bool MarkAsLost (const SequenceNumber32 seq);
+  bool MarkAsLost (const SequenceNumber32 seq, uint8_t pathId);
 
   /**
    * Put the lost packets at the beginning of the application buffer to retransmit them
    * \param the sequence number of the retransmitted packet
    * \return the number of lost bytes
    */
-  uint32_t Retransmission (SequenceNumber32 packetNumber);
+  uint32_t Retransmission (SequenceNumber32 packetNumber, uint8_t pathId);
 
-  /**
-   * Set the TcpSocketState (tcb)
-   * \param The TcpSocketState object
-   */
-  void SetQuicSocketState (Ptr<QuicSocketState> tcb);
+  // /**
+  //  * Set the TcpSocketState (tcb)
+  //  * \param The TcpSocketState object
+  //  */
+  // void SetQuicSocketState (Ptr<QuicSocketState> tcb);
 
   /**
    * Set the socket scheduler
@@ -291,14 +306,14 @@ public:
    * \param The sequence number of the sent packet
    * \param The size of the sent packet
    */
-  void UpdatePacketSent (SequenceNumber32 seq, uint32_t sz);
+  void UpdatePacketSent (SequenceNumber32 seq, uint32_t sz, uint8_t pathId, Ptr<QuicSocketState> tcb);
 
   /**
    * Updates ACK related variables required by RateSample to discount the delivery rate.
    * \param The sequence number of the sent ACK packet
    * \param The size of the sent ACK packet
    */
-  void UpdateAckSent (SequenceNumber32 seq, uint32_t sz);
+  void UpdateAckSent (SequenceNumber32 seq, uint32_t sz, Ptr<QuicSocketState> tcb);
 
   /**
    * Get the current rate sample
@@ -310,13 +325,13 @@ public:
    * Updates rate samples rate on arrival of each acknowledgement.
    * \param The QuicSocketTxItem containing the acknowledgment
    */
-  void UpdateRateSample (Ptr<QuicSocketTxItem> pps);
+  void UpdateRateSample (Ptr<QuicSocketTxItem> pps, Ptr<QuicSocketState> tcb);
 
   /**
    * Calculates delivery rate on arrival of each acknowledgement.
    * \return True if the calculation is performed correctly
    */
-  bool GenerateRateSample ();
+  bool GenerateRateSample (Ptr<QuicSocketState> tcb);
 
   /**
    * Set the latency bound for a specified stream
@@ -349,26 +364,45 @@ public:
    */
   Time GetDefaultLatency ();
 
+
+  //For multipath Implementation
+
+  void AddSentList (uint8_t pathId);
+
+  int SentListIsEmpty();
+
 private:
   typedef std::list<Ptr<QuicSocketTxItem> > QuicTxPacketList;      //!< container for data stored in the buffer
 
   /**
    * Discard acknowledged data from the sent list
    */
-  void CleanSentList ();
+  void CleanSentList (uint8_t pathId);
 
 
-
-  QuicTxPacketList m_sentList;        //!< List of sent packets with additional info
   QuicTxPacketList m_streamZeroList;       //!< List of waiting stream 0 packets with additional info
   uint32_t m_maxBuffer;            //!< Max number of data bytes in buffer (SND.WND)
   uint32_t m_streamZeroSize;       //!< Size of all stream 0 data in the application list
-  uint32_t m_sentSize;                       //!< Size of all data in the sent list
+  // uint32_t m_sentSize;                       //!< Size of all data in the sent list
   uint32_t m_numFrameStream0InBuffer;        //!< Number of Stream 0 frames buffered
 
   Ptr<QuicSocketTxScheduler> m_scheduler { nullptr };         //!< Scheduler
-  Ptr<QuicSocketState> m_tcb { nullptr };
+  // Ptr<QuicSocketState> m_tcb { nullptr };
   struct RateSample m_rs;
+
+
+  //For multipath Implementation
+
+  std::vector<QuicTxPacketList> m_subflowSentList;
+  std::vector<uint32_t> m_sentSizeList;                       //!< Size of all data in the sent list
+
+  /**
+   * pass m_sentList 0 or m_sentList1 by reference to m_sentList
+   *
+   * \param sentList either m_sentList0 or m_sentList1
+   */
+  // void RefList (QuicTxPacketList & sentList);
+
 };
 
 } // namepsace ns3

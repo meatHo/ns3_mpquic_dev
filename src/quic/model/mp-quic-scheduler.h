@@ -24,6 +24,7 @@
 
 #include "ns3/node.h"
 #include "quic-socket-base.h"
+#include "mp-quic-subflow.h"
 #include <eigen3/Eigen/Dense>
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
