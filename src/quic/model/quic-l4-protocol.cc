@@ -1054,7 +1054,8 @@ QuicL4Protocol::AddPath(uint8_t pathId,
     if (InetSocketAddress::IsMatchingType(localAddress))
     {
         Ptr<QuicUdpBinding> udpBinding = CreateObject<QuicUdpBinding> ();
-        Ptr<Socket> udpSocket = CreateObject<Socket> ();
+        // Ptr<Socket> udpSocket = CreateObject<Socket> ();
+        Ptr<Socket> udpSocket = CreateUdpSocket();
         res=udpSocket->Bind(localAddress);
         udpSocket->Connect(peerAddress);
         udpSocket->SetRecvCallback(MakeCallback(&QuicL4Protocol::ForwardUp,this));
@@ -1067,7 +1068,8 @@ QuicL4Protocol::AddPath(uint8_t pathId,
     }else     if (Inet6SocketAddress::IsMatchingType(localAddress))
     {
         Ptr<QuicUdpBinding> udpBinding = CreateObject<QuicUdpBinding> ();
-        Ptr<Socket> udpSocket = CreateObject<Socket> ();
+        Ptr<Socket> udpSocket = CreateUdpSocket6 ();
+        // Ptr<Socket> udpSocket = CreateObject<Socket> ();
         res=udpSocket->Bind(localAddress);
         udpSocket->Connect(peerAddress);
         udpSocket->SetRecvCallback(MakeCallback(&QuicL4Protocol::ForwardUp,this));
