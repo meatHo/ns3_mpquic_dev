@@ -27,6 +27,7 @@
 
 #include "ns3/log.h"
 #include "ns3/uinteger.h"
+#include "ns3/core-module.h"
 #include "ns3/double.h"
 #include "ns3/boolean.h"
 #include "ns3/trace-source-accessor.h"
@@ -89,7 +90,7 @@ MpQuicCongestionOps::OnPacketSent (Ptr<TcpSocketState> tcb,
 {
   NS_LOG_FUNCTION (this << packetNumber << isAckOnly);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
 
   tcbd->m_timeOfLastSentPacket = Now ();
   tcbd->m_highTxMark = packetNumber;
@@ -102,13 +103,13 @@ MpQuicCongestionOps::OnAckReceived (Ptr<TcpSocketState> tcb,
                                   const struct RateSample *rs, double alpha, double sum_rate)
 {
   NS_LOG_FUNCTION (this);
-  NS_UNUSED (rs);
+  // NS_UNUSED (rs);
 
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
 
   tcbd->m_largestAckedPacket = SequenceNumber32 (ack.GetLargestAcknowledged ());
-  
+
   // newAcks are ordered from the highest packet number to the smalles
   Ptr<QuicSocketTxItem> lastAcked = newAcks.at (0);
 
@@ -142,7 +143,7 @@ MpQuicCongestionOps::UpdateRtt (Ptr<TcpSocketState> tcb, Time latestRtt,
 {
   NS_LOG_FUNCTION (this);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
 
   // m_minRtt ignores ack delay.
   tcbd->m_minRtt = std::min (tcbd->m_minRtt, latestRtt);
@@ -183,8 +184,8 @@ MpQuicCongestionOps::OnPacketAcked (Ptr<TcpSocketState> tcb,
 {
   NS_LOG_FUNCTION (this);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
-  
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
+
   OnPacketAckedCC (tcbd, ackedPacket, alpha, sum_rate);
 
   NS_LOG_LOGIC ("Handle possible RTO");
@@ -204,7 +205,7 @@ MpQuicCongestionOps::InRecovery (Ptr<TcpSocketState> tcb,
 {
   NS_LOG_FUNCTION (this << packetNumber.GetValue ());
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
 
   return packetNumber <= tcbd->m_endOfRecovery;
 }
@@ -215,7 +216,7 @@ MpQuicCongestionOps::OnPacketAckedCC (Ptr<TcpSocketState> tcb,
 {
   NS_LOG_FUNCTION (this);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
 
   NS_LOG_INFO ("Updating congestion window");
   if (InRecovery (tcb, ackedPacket->m_packetNumber))
@@ -252,7 +253,7 @@ MpQuicCongestionOps::OnPacketsLost (
 {
   NS_LOG_LOGIC (this);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
 
   auto largestLostPacket = *(lostPackets.end () - 1);
   //for OLIA
@@ -279,7 +280,7 @@ MpQuicCongestionOps::OnRetransmissionTimeoutVerified (
 {
   NS_LOG_FUNCTION (this);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
   NS_LOG_INFO ("Loss state");
   tcbd->m_cWnd = tcbd->m_kMinimumWindow;
   tcbd->m_congState = TcpSocketState::CA_LOSS;
@@ -291,7 +292,7 @@ MpQuicCongestionOps::OnRetransmissionTimeout (Ptr<TcpSocketState> tcb)
 {
   NS_LOG_FUNCTION (this);
   Ptr<QuicSocketState> tcbd = dynamic_cast<QuicSocketState*> (&(*tcb));
-  NS_ASSERT_MSG (tcbd != 0, "tcb is not a QuicSocketState");
+  NS_ASSERT_MSG (tcbd != nullptr, "tcb is not a QuicSocketState");
   NS_LOG_INFO ("Time Out");
   tcbd->m_cWnd = tcbd->m_kMinimumWindow;
   tcbd->m_congState = TcpSocketState::CA_LOSS;

@@ -136,11 +136,11 @@ MpQuicPathManager::AddSubflowWithPeerAddress(Address localAddress, Address peerA
   m_socket->SubflowInsert(sFlow);
   m_socket->SendPathChallenge(pathId);
   bool ok;
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("CongestionWindow", MakeCallback (&QuicSocketBase::UpdateCwnd1, m_socket));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("CongestionWindow", MakeCallback (&QuicSocketBase::UpdateCwnd, m_socket, pathId));
   NS_ASSERT_MSG (ok == true, "Failed connection to CWND trace");
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("SlowStartThreshold", MakeCallback (&QuicSocketBase::UpdateSsThresh1, m_socket));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("SlowStartThreshold", MakeCallback (&QuicSocketBase::UpdateSsThresh, m_socket, pathId));
   NS_ASSERT_MSG (ok == true, "Failed connection to SSTHR1 trace");
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT1, m_socket));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT, m_socket, pathId));
   NS_ASSERT_MSG (ok == true, "Failed connection to RTT1 trace");
   return sFlow;
 }

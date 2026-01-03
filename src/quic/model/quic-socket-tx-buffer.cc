@@ -359,7 +359,7 @@ Ptr<QuicSocketTxItem> QuicSocketTxBuffer::GetNewSegment (uint32_t numBytes, uint
 {
   NS_LOG_FUNCTION (this << numBytes);
 
-  Ptr<QuicSocketTxItem> outItem = m_scheduler->GetNewSegment (numBytes,pathId);
+  Ptr<QuicSocketTxItem> outItem = m_scheduler->GetNewSegment (numBytes);
 
   if (outItem->m_packet->GetSize () > 0)
     {

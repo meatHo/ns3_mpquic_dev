@@ -395,26 +395,26 @@ InterfaceType
 QuicKohClient::SelectInterface(frameType)
 {
     Ptr<QuicSocketBase> quicSlSocket = DynamicCast<QuicSocketBase>(m_slSocket);
-    Time smoothedRttSl = quicSlSocket->GetSmoothedRtt();
-    Time rttVarSl = quicSlSocket->GetRttVar();
-    Time minRttSl = quicSlSocket->GetMinRtt();
+    // Time smoothedRttSl = quicSlSocket->GetSmoothedRtt();
+    // Time rttVarSl = quicSlSocket->GetRttVar();
+    // Time minRttSl = quicSlSocket->GetMinRtt();
 
-    uint32_t maxTxBufSL = quicSlSocket->GetSocketSndBufSize();
-    uint32_t availableTxSl = quicSlSocket->GetTxAvailable();
+    // uint32_t maxTxBufSL = quicSlSocket->GetSocketSndBufSize();
+    // uint32_t availableTxSl = quicSlSocket->GetTxAvailable();
 
     Ptr<QuicSocketBase> quicUuSocket = DynamicCast<QuicSocketBase>(m_uuSocket);
-    Time smoothedRttUu = quicUuSocket->GetSmoothedRtt();
-    Time rttVarUu = quicUuSocket->GetRttVar();
-    Time minRttUu = quicUuSocket->GetMinRtt();
+    // Time smoothedRttUu = quicUuSocket->GetSmoothedRtt();
+    // Time rttVarUu = quicUuSocket->GetRttVar();
+    // Time minRttUu = quicUuSocket->GetMinRtt();
 
-    uint32_t maxTxBufUu = quicUuSocket->GetSocketSndBufSize();
-    uint32_t availableTxUu = quicUuSocket->GetTxAvailable();
+    // uint32_t maxTxBufUu = quicUuSocket->GetSocketSndBufSize();
+    // uint32_t availableTxUu = quicUuSocket->GetTxAvailable();
 
-    NS_LOG_UNCOND("smoothedRttSl: "<<smoothedRttSl<<", rttVarSl: "<<rttVarSl<<", minRttSl: "<<minRttSl<<", maxTxBufSl: "<<maxTxBufSL<<", availableTxSl: "<<availableTxSl);
-    NS_LOG_UNCOND("smoothedRttUu: "<<smoothedRttUu<<", rttVarUu: "<<rttVarUu<<", minRttUu: "<<minRttUu<<", maxTxBufUu: "<<maxTxBufUu<<", availableTxUu: "<<availableTxUu);
+    // NS_LOG_UNCOND("smoothedRttSl: "<<smoothedRttSl<<", rttVarSl: "<<rttVarSl<<", minRttSl: "<<minRttSl<<", maxTxBufSl: "<<maxTxBufSL<<", availableTxSl: "<<availableTxSl);
+    // NS_LOG_UNCOND("smoothedRttUu: "<<smoothedRttUu<<", rttVarUu: "<<rttVarUu<<", minRttUu: "<<minRttUu<<", maxTxBufUu: "<<maxTxBufUu<<", availableTxUu: "<<availableTxUu);
 
-    NS_LOG_DEBUG("smoothedRttSl: "<<smoothedRttSl<<", rttVarSl: "<<rttVarSl<<", minRttSl: "<<minRttSl<<", maxTxBufSl: "<<maxTxBufSL<<", availableTxSl: "<<availableTxSl);
-    NS_LOG_DEBUG("smoothedRttUu: "<<smoothedRttUu<<", rttVarUu: "<<rttVarUu<<", minRttUu: "<<minRttUu<<", maxTxBufUu: "<<maxTxBufUu<<", availableTxUu: "<<availableTxUu);
+    // NS_LOG_DEBUG("smoothedRttSl: "<<smoothedRttSl<<", rttVarSl: "<<rttVarSl<<", minRttSl: "<<minRttSl<<", maxTxBufSl: "<<maxTxBufSL<<", availableTxSl: "<<availableTxSl);
+    // NS_LOG_DEBUG("smoothedRttUu: "<<smoothedRttUu<<", rttVarUu: "<<rttVarUu<<", minRttUu: "<<minRttUu<<", maxTxBufUu: "<<maxTxBufUu<<", availableTxUu: "<<availableTxUu);
 
     return UU;
 }

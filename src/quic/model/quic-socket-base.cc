@@ -30,7 +30,7 @@
 
 #include "quic-socket-base.h"
 
-#include "quic-congestion-ops.h"
+#include "mp-quic-congestion-ops.h"
 #include "quic-header.h"
 #include "quic-l4-protocol.h"
 #include "quic-socket-tx-edf-scheduler.h"
@@ -1313,7 +1313,7 @@ QuicSocketBase::SendDataPacket(SequenceNumber32 packetNumber, uint32_t maxSize, 
                           << " of size " << maxSize << " at time "
                           << Simulator::Now().GetSeconds());
         m_idleTimeoutEvent = Simulator::Schedule(m_idleTimeout, &QuicSocketBase::Close, this);
-        p = m_txBuffer->NextSequence(maxSize, packetNumber);
+        p = m_txBuffer->NextSequence(maxSize, packetNumber, pathId);
     }
 
     uint32_t sz = p->GetSize();
@@ -3108,19 +3108,19 @@ QuicSocketBase::GetSocketRcvBufSize(void) const
 //koh multipath
 
 void
-QuicSocketBase::UpdateCwnd(uint32_t oldValue, uint32_t newValue,uint8_t pathId)
+QuicSocketBase::UpdateCwnd(uint8_t pathId, uint32_t oldValue, uint32_t newValue)
 {
     m_cWndTrace[pathId](oldValue, newValue);
 }
 
 void
-QuicSocketBase::UpdateSsThresh(uint32_t oldValue, uint32_t newValue,uint8_t pathId)
+QuicSocketBase::UpdateSsThresh(uint8_t pathId, uint32_t oldValue, uint32_t newValue)
 {
     m_ssThTrace[pathId](oldValue, newValue);
 }
 
 void
-QuicSocketBase::TraceRTT(Time oldValue, Time newValue, uint8_t pathId)
+QuicSocketBase::TraceRTT(uint8_t pathId, Time oldValue, Time newValue)
 {
     m_rttTrace[pathId](oldValue, newValue);
 }

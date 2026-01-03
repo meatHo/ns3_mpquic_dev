@@ -487,11 +487,11 @@ public:
     //koh multipath
   // void UpdateCwnd (uint32_t oldValue, uint32_t newValue);
     // void UpdateCwnd1 (uint32_t oldValue, uint32_t newValue);
-    void UpdateCwnd(uint32_t oldValue, uint32_t newValue, uint8_t pathId);
+    void UpdateCwnd(uint8_t pathId, uint32_t oldValue, uint32_t newValue);
 
     // void TraceRTT0 (Time oldValue, Time newValue);
     // void TraceRTT1 (Time oldValue, Time newValue);
-    void TraceRTT(Time oldValue, Time newValue, uint8_t pathId);
+    void TraceRTT(uint8_t pathId, Time oldValue, Time newValue);
 
 
   /**
@@ -502,7 +502,7 @@ public:
    */
   // void UpdateSsThresh (uint32_t oldValue, uint32_t newValue);
     // void UpdateSsThresh1 (uint32_t oldValue, uint32_t newValue);
-    void UpdateSsThresh(uint32_t oldValue, uint32_t newValue, uint8_t pathId);
+    void UpdateSsThresh(uint8_t pathId, uint32_t oldValue, uint32_t newValue);
   /**
    * \brief Callback function to hook to QuicSocketState congestion state
    *
