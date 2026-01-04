@@ -245,6 +245,7 @@ QuicHeader::Deserialize(Buffer::Iterator start)
         }
     }
     SetPathId(i.ReadU8());
+    // NS_LOG_UNCOND("QuicHeader::Deserialize Path ID: " << static_cast<uint32_t>(m_pathId));
     NS_LOG_INFO("Deserialize::Serialized Size " << CalculateHeaderLength());
 
     return GetSerializedSize();

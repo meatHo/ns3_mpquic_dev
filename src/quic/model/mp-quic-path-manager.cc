@@ -52,7 +52,7 @@ MpQuicPathManager::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::MpQuicPathManager")
     .SetParent<Object> ()
-    .SetGroupName ("Internet")                  
+    .SetGroupName ("Internet")
   ;
   return tid;
 }
@@ -63,13 +63,13 @@ MpQuicPathManager::MpQuicPathManager ()
   m_initialSsThresh(0)
 {
   NS_LOG_FUNCTION_NOARGS ();
- 
+
 }
 
 MpQuicPathManager::~MpQuicPathManager ()
 {
   NS_LOG_FUNCTION_NOARGS ();
-  
+
 }
 
 Ptr<MpQuicSubFlow>
@@ -78,7 +78,7 @@ MpQuicPathManager::InitialSubflow0 (Address localAddress, Address peerAddress)
   NS_LOG_FUNCTION(this);
 
   Ptr<MpQuicSubFlow> sFlow = CreateObject<MpQuicSubFlow> ();
-  sFlow->m_flowId    = 0; 
+  sFlow->m_flowId    = 0;
   sFlow->m_peerAddr  = peerAddress;
   sFlow->m_localAddr = localAddress;
   sFlow->m_subflowState = MpQuicSubFlow::Active;
@@ -90,7 +90,7 @@ MpQuicPathManager::InitialSubflow0 (Address localAddress, Address peerAddress)
   NS_ASSERT_MSG (ok == true, "Failed connection to CWND0 trace");
   ok = sFlow->m_tcb->TraceConnectWithoutContext ("SlowStartThreshold", MakeCallback (&QuicSocketBase::UpdateSsThresh, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to SSTHR0 trace");
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT, m_socket));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT0, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to RTT0 trace");
   return sFlow;
 
@@ -99,10 +99,10 @@ MpQuicPathManager::InitialSubflow0 (Address localAddress, Address peerAddress)
 Ptr<MpQuicSubFlow>
 MpQuicPathManager::AddSubflow(Address localAddress, Address peerAddress, uint8_t pathId)
 {
-    
+
   NS_LOG_FUNCTION(this);
   Ptr<MpQuicSubFlow> sFlow = CreateObject<MpQuicSubFlow> ();
-  sFlow->m_flowId    = pathId; 
+  sFlow->m_flowId    = pathId;
   sFlow->m_localAddr = localAddress;
   sFlow->m_peerAddr = peerAddress;
 
@@ -114,7 +114,7 @@ MpQuicPathManager::AddSubflow(Address localAddress, Address peerAddress, uint8_t
   m_socket->SubflowInsert(sFlow);
   m_socket->AddPath(localAddress, peerAddress, pathId);
   m_socket->SendAddAddress(localAddress, pathId);
-  
+
   return sFlow;
 
 }
@@ -125,7 +125,7 @@ MpQuicPathManager::AddSubflowWithPeerAddress(Address localAddress, Address peerA
 {
   NS_LOG_FUNCTION(this);
   Ptr<MpQuicSubFlow> sFlow = CreateObject<MpQuicSubFlow> ();
-  sFlow->m_flowId     = pathId; 
+  sFlow->m_flowId     = pathId;
   sFlow->m_localAddr  = localAddress;
   sFlow->m_peerAddr   = peerAddress;
   sFlow->m_subflowState = MpQuicSubFlow::Validating;
@@ -136,11 +136,11 @@ MpQuicPathManager::AddSubflowWithPeerAddress(Address localAddress, Address peerA
   m_socket->SubflowInsert(sFlow);
   m_socket->SendPathChallenge(pathId);
   bool ok;
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("CongestionWindow", MakeCallback (&QuicSocketBase::UpdateCwnd, m_socket, pathId));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("CongestionWindow", MakeCallback (&QuicSocketBase::UpdateCwnd1, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to CWND trace");
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("SlowStartThreshold", MakeCallback (&QuicSocketBase::UpdateSsThresh, m_socket, pathId));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("SlowStartThreshold", MakeCallback (&QuicSocketBase::UpdateSsThresh1, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to SSTHR1 trace");
-  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT, m_socket, pathId));
+  ok = sFlow->m_tcb->TraceConnectWithoutContext ("RTT", MakeCallback (&QuicSocketBase::TraceRTT1, m_socket));
   NS_ASSERT_MSG (ok == true, "Failed connection to RTT1 trace");
   return sFlow;
 }
@@ -153,14 +153,14 @@ MpQuicPathManager::SetSocket(Ptr<QuicSocketBase> sock)
   m_socket = sock;
 }
 
-void 
+void
 MpQuicPathManager::SetSegSize(uint32_t size)
 {
   NS_LOG_FUNCTION(this);
   m_segSize = size;
 }
 
-uint32_t 
+uint32_t
 MpQuicPathManager::GetSegSize() const
 {
   NS_LOG_FUNCTION(this);

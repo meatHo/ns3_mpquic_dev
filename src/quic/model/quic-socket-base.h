@@ -485,13 +485,13 @@ public:
    * \param newValue new cWnd value
    */
     //koh multipath
-  // void UpdateCwnd (uint32_t oldValue, uint32_t newValue);
-    // void UpdateCwnd1 (uint32_t oldValue, uint32_t newValue);
-    void UpdateCwnd(uint8_t pathId, uint32_t oldValue, uint32_t newValue);
+  void UpdateCwnd (uint32_t oldValue, uint32_t newValue);
+    void UpdateCwnd1 (uint32_t oldValue, uint32_t newValue);
+    // void UpdateCwnd(uint8_t pathId, uint32_t oldValue, uint32_t newValue);
 
-    // void TraceRTT0 (Time oldValue, Time newValue);
-    // void TraceRTT1 (Time oldValue, Time newValue);
-    void TraceRTT(uint8_t pathId, Time oldValue, Time newValue);
+    void TraceRTT0 (Time oldValue, Time newValue);
+    void TraceRTT1 (Time oldValue, Time newValue);
+    // void TraceRTT(uint8_t pathId, Time oldValue, Time newValue);
 
 
   /**
@@ -500,9 +500,9 @@ public:
    * \param oldValue old ssTh value
    * \param newValue new ssTh value
    */
-  // void UpdateSsThresh (uint32_t oldValue, uint32_t newValue);
-    // void UpdateSsThresh1 (uint32_t oldValue, uint32_t newValue);
-    void UpdateSsThresh(uint8_t pathId, uint32_t oldValue, uint32_t newValue);
+  void UpdateSsThresh (uint32_t oldValue, uint32_t newValue);
+    void UpdateSsThresh1 (uint32_t oldValue, uint32_t newValue);
+    // void UpdateSsThresh(uint8_t pathId, uint32_t oldValue, uint32_t newValue);
   /**
    * \brief Callback function to hook to QuicSocketState congestion state
    *
@@ -871,19 +871,19 @@ protected:
   /**
   * \brief Callback pointer for cWnd trace chaining
   */
-  TracedCallback<uint32_t, uint32_t> m_cWndTrace0;
+  TracedCallback<uint32_t, uint32_t> m_cWndTrace;
     TracedCallback<uint32_t, uint32_t> m_cWndTrace1;
-    std::vector<TracedCallback<uint32_t, uint32_t> > m_cWndTrace;
+    // std::vector<TracedCallback<uint32_t, uint32_t> > m_cWndTrace;
 
     TracedCallback<Time, Time> m_rttTrace0;
     TracedCallback<Time, Time> m_rttTrace1;
-    std::vector<TracedCallback<Time, Time> > m_rttTrace;
+    // std::vector<TracedCallback<Time, Time> > m_rttTrace;
   /**
   * \brief Callback pointer for ssTh trace chaining
   */
-  TracedCallback<uint32_t, uint32_t> m_ssThTrace0;
+  TracedCallback<uint32_t, uint32_t> m_ssThTrace;
     TracedCallback<uint32_t, uint32_t> m_ssThTrace1;
-    std::vector<TracedCallback<uint32_t, uint32_t> > m_ssThTrace;
+    // std::vector<TracedCallback<uint32_t, uint32_t> > m_ssThTrace;
 
   /**
   * \brief Callback pointer for congestion state trace chaining

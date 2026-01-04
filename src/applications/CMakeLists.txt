@@ -30,6 +30,8 @@ build_lib(
     model/quic-server.cc
     helper/quic-echo-helper.cc
     helper/quic-client-server-helper.cc
+    helper/mpquic-bulk-send-helper.cc
+        model/mpquic-bulk-send-application.cc
   HEADER_FILES
     helper/bulk-send-helper.h
     helper/on-off-helper.h
@@ -60,6 +62,8 @@ build_lib(
     model/quic-server.h
     helper/quic-echo-helper.h
     helper/quic-client-server-helper.h
+        helper/mpquic-bulk-send-helper.h
+        model/mpquic-bulk-send-application.h
   LIBRARIES_TO_LINK ${libinternet}
   TEST_SOURCES
     test/three-gpp-http-client-server-test.cc

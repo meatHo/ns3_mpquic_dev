@@ -3,6 +3,7 @@ build_lib(
   SOURCE_FILES
         udp-koh-client.cc
         udp-koh-server.cc
+        mpquic-koh-client.cc
         quic-koh-client.cc
         quic-koh-server.cc
         v2x-kpi.cc
@@ -10,6 +11,7 @@ build_lib(
         udp-koh-client.h
         udp-koh-server.h
         quic-koh-client.h
+        mpquic-koh-client.h
         quic-koh-server.h
         kohTag.h
         v2x-kpi.h

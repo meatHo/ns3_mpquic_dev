@@ -246,6 +246,20 @@ QuicSocketBase::GetTypeId(void)
                           MakeBooleanAccessor(&QuicSocketBase::m_quicCongestionControlLegacy),
                           MakeBooleanChecker())
     //koh multipath
+    .AddAttribute ("EnableMultipath",
+           "When true, multipath is supported",
+           BooleanValue (false),
+           MakeBooleanAccessor (&QuicSocketBase::m_enableMultipath),
+           MakeBooleanChecker ())
+.AddAttribute ("CcType",
+           "define the type of the scheduler",
+           IntegerValue (QuicNewReno),
+           MakeIntegerAccessor (&QuicSocketBase::m_ccType),
+           MakeIntegerChecker<int16_t> ())
+.AddAttribute ("SubflowList", "The list of QUIC subflows associated to this socket.",
+           ObjectVectorValue (),
+           MakeObjectVectorAccessor (&QuicSocketBase::m_subflows),
+           MakeObjectVectorChecker<MpQuicSubFlow> ())
             // .AddAttribute("TCB",
             //               "The connection's QuicSocketState",
             //               PointerValue(),
@@ -476,7 +490,12 @@ QuicSocketBase::QuicSocketBase(void)
       m_lastRtt(Seconds(0.0)),
       m_queue_ack(false),
       m_numPacketsReceivedSinceLastAckSent(0),
-      m_pacingTimer(Timer::REMOVE_ON_DESTROY)
+      m_pacingTimer(Timer::REMOVE_ON_DESTROY),
+//koh multipath
+m_enableMultipath(false),
+m_pathManager(0),
+m_scheduler (0),
+m_subflows (0)
 {
     NS_LOG_FUNCTION(this);
 
@@ -575,7 +594,11 @@ QuicSocketBase::QuicSocketBase(const QuicSocketBase& sock) // Copy constructor
       m_maxDataInterval(10),
       m_pacingTimer(Timer::REMOVE_ON_DESTROY),
       m_txTrace(sock.m_txTrace),
-      m_rxTrace(sock.m_rxTrace)
+      m_rxTrace(sock.m_rxTrace),
+m_enableMultipath(sock.m_enableMultipath),
+m_pathManager(sock.m_pathManager),
+m_scheduler (sock.m_scheduler),
+m_subflows (sock.m_subflows)
 {
     NS_LOG_FUNCTION(this);
 
@@ -601,6 +624,8 @@ QuicSocketBase::QuicSocketBase(const QuicSocketBase& sock) // Copy constructor
     //koh multipath
     // m_tcb->m_pacingRate = m_tcb->m_maxPacingRate;
     m_pacingTimer.SetFunction(&QuicSocketBase::NotifyPacingPerformed, this);
+    //koh multipath
+    m_pathManager->SetSocket(this);
 
     /**
      * [IETF DRAFT 10 - Quic Transport: sec 5.7.1]
@@ -638,6 +663,8 @@ QuicSocketBase::~QuicSocketBase(void)
         NS_ASSERT(!m_endPoint6);
     }
     m_quicl4 = 0;
+    //koh multipath
+    m_subflows.clear();
     // CancelAllTimers ();
     m_pacingTimer.Cancel();
 }
@@ -793,7 +820,9 @@ QuicSocketBase::Connect(const Address& address)
         InetSocketAddress transport = InetSocketAddress::ConvertFrom(address);
         m_endPoint->SetPeer(transport.GetIpv4(), transport.GetPort());
         // SetIpTos (transport.GetTos ());
-        //  m_endPoint6 = nullptr;
+        //koh multipath
+        m_endPoint6 = nullptr;
+        Ptr<MpQuicSubFlow> subflow0 = m_pathManager->InitialSubflow0(InetSocketAddress(m_node->GetObject<Ipv4>()->GetAddress(1,0).GetLocal()), address);
 
         // Get the appropriate local address and port number from the routing protocol and set up
         // endpoint
@@ -825,7 +854,7 @@ QuicSocketBase::Connect(const Address& address)
             NS_ASSERT(m_endPoint6);
         }
         m_endPoint6->SetPeer(v6Addr, transport.GetPort());
-        // m_endPoint = nullptr;
+        m_endPoint = nullptr;
 
         // Get the appropriate local address and port number from the routing protocol and set up
         // endpoint
@@ -2027,6 +2056,13 @@ QuicSocketBase::SendInitialHandshake(uint8_t type, const QuicHeader& quicHeader,
     else if (type == QuicHeader::INITIAL)
     {
         // Set initial congestion window and Ssthresh
+        // NS_LOG_UNCOND("m_subflows[0]->m_tcb->m_cWnd : "<< m_subflows[0]->m_tcb->m_cWnd);
+        // NS_LOG_UNCOND("m_subflows[0]->m_tcb->m_initialCWnd : "<< m_subflows[0]->m_tcb->m_initialCWnd);
+        // NS_LOG_UNCOND("m_subflows.size()"<<m_subflows.size());
+        // NS_LOG_UNCOND("sendinitialhandshake: subflows:"<<m_subflows.size()<<" isServer"<<m_quicl4->IsServer());
+        NS_ASSERT_MSG(m_subflows.size() > 0, "Error: m_subflows is empty! InitialSubflow() must be called first.");
+        NS_ASSERT_MSG(m_subflows[0] != nullptr, "Error: m_subflows[0] is NULL!");
+        NS_ASSERT_MSG(m_subflows[0]->m_tcb != nullptr, "Error: m_tcb is not initialized in Subflow 0!");
         m_subflows[0]->m_tcb->m_cWnd = m_subflows[0]->m_tcb->m_initialCWnd;
         m_subflows[0]->m_tcb->m_ssThresh = m_subflows[0]->m_tcb->m_initialSsThresh;
 
@@ -2662,6 +2698,7 @@ void
 QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
                               Address &address)
 {
+    //koh multipath
   NS_LOG_FUNCTION (this);
   m_rxTrace (p, quicHeader, this);
 
@@ -2733,6 +2770,9 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
         }
 
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
+      // NS_LOG_UNCOND("receiveddata: pathId:"<<static_cast<uint32_t>(pathId)<<" subflows:"<<m_subflows.size()<<" isServer"<<m_quicl4->IsServer());
+      NS_ASSERT_MSG(m_subflows.size() > 0, "Error: m_subflows is empty! InitialSubflow() must be called first.");
+      NS_ASSERT_MSG(m_subflows[0] != nullptr, "Error: m_subflows[0] is NULL!");
       m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
 
       if (IsVersionSupported (quicHeader.GetVersion ()))
@@ -3107,30 +3147,90 @@ QuicSocketBase::GetSocketRcvBufSize(void) const
 
 //koh multipath
 
+// void
+// QuicSocketBase::UpdateCwnd(uint8_t pathId, uint32_t oldValue, uint32_t newValue)
+// {
+//     if (pathId==0)
+//     {
+//         m_cWndTrace0(oldValue, newValue);
+//     }else if (pathId==1)
+//     {
+//         m_cWndTrace1(oldValue, newValue);
+//     }
+// }
+//
+// void
+// QuicSocketBase::UpdateSsThresh(uint8_t pathId, uint32_t oldValue, uint32_t newValue)
+// {
+//     // m_ssThTrace[pathId](oldValue, newValue);
+//     if (pathId==0)
+//     {
+//         m_ssThTrace0(oldValue, newValue);
+//     }else if (pathId==1)
+//     {
+//         m_ssThTrace1(oldValue, newValue);
+//     }
+// }
+//
+// void
+// QuicSocketBase::TraceRTT(uint8_t pathId, Time oldValue, Time newValue)
+// {
+//     // m_rttTrace[pathId](oldValue, newValue);
+//     if (pathId==0)
+//     {
+//         m_rttTrace0(oldValue, newValue);
+//     }else if (pathId==1)
+//     {
+//         m_rttTrace1(oldValue, newValue);
+//     }
+// }
+
 void
-QuicSocketBase::UpdateCwnd(uint8_t pathId, uint32_t oldValue, uint32_t newValue)
+QuicSocketBase::UpdateCwnd (uint32_t oldValue, uint32_t newValue)
 {
-    m_cWndTrace[pathId](oldValue, newValue);
+    m_cWndTrace (oldValue, newValue);
 }
 
 void
-QuicSocketBase::UpdateSsThresh(uint8_t pathId, uint32_t oldValue, uint32_t newValue)
+QuicSocketBase::UpdateCwnd1 (uint32_t oldValue, uint32_t newValue)
 {
-    m_ssThTrace[pathId](oldValue, newValue);
+    m_cWndTrace1 (oldValue, newValue);
+}
+
+
+
+void
+QuicSocketBase::TraceRTT0 (Time oldValue, Time newValue)
+{
+    m_rttTrace0 (oldValue, newValue);
+    // std::cout<<"1"<<oldValue<<","<<newValue<<"\n";
 }
 
 void
-QuicSocketBase::TraceRTT(uint8_t pathId, Time oldValue, Time newValue)
+QuicSocketBase::TraceRTT1 (Time oldValue, Time newValue)
 {
-    m_rttTrace[pathId](oldValue, newValue);
+    m_rttTrace1 (oldValue, newValue);
+    // std::cout<<"1"<<oldValue<<","<<newValue<<"\n";
 }
 
 void
-QuicSocketBase::UpdateCongState(TcpSocketState::TcpCongState_t oldValue,
-                                TcpSocketState::TcpCongState_t newValue)
+QuicSocketBase::UpdateSsThresh (uint32_t oldValue, uint32_t newValue)
 {
-    m_congStateTrace(oldValue, newValue);
+    m_ssThTrace (oldValue, newValue);
 }
+
+void
+QuicSocketBase::UpdateSsThresh1 (uint32_t oldValue, uint32_t newValue)
+{
+    m_ssThTrace1 (oldValue, newValue);
+}
+void
+QuicSocketBase::UpdateCongState (TcpSocketState::TcpCongState_t oldValue,
+                                 TcpSocketState::TcpCongState_t newValue)
+{
+    m_congStateTrace (oldValue, newValue);
+}
+
 
 void
 QuicSocketBase::UpdateNextTxSequence(SequenceNumber32 oldValue, SequenceNumber32 newValue)
