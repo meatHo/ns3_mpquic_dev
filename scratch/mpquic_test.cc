@@ -1174,21 +1174,21 @@ main(void)
     for (uint16_t i = 0; i < ueNodeContainer.GetN(); ++i)
     {
         Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
-        clientApp->SetAttribute("MaxPackets", UintegerValue(2));
-        clientApp->SetAttribute("Interval", TimeValue(Seconds(0.02)));//0.001
-        clientApp->SetAttribute("IntervalSl", TimeValue(Seconds(0.04)));//0.001
-        clientApp->SetAttribute("IntervalUu", TimeValue(Seconds(0.001)));//0.001
-        clientApp->SetAttribute("IntervalReadVideoData", TimeValue(Seconds(0.0416)));//0.0416
-        clientApp->SetAttribute("PacketSize", UintegerValue(10000));
-        clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
-        clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
-        clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
-        clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
+        clientApp->SetAttribute("MaxPackets", UintegerValue(100));
+        clientApp->SetAttribute("Interval", TimeValue(Seconds(1)));//0.001
+        // clientApp->SetAttribute("IntervalReadVideoData", TimeValue(Seconds(0.0416)));//0.0416
+        clientApp->SetAttribute("PacketSize", UintegerValue(1000));
+        clientApp->SetAttribute("ServerAddress", AddressValue(serverRouterIp));
+        clientApp->SetAttribute("ServerPort", UintegerValue(serverPort));
+        // clientApp->SetAttribute("slServerAddress", AddressValue(groupAddress4));
+        // clientApp->SetAttribute("slServerPort", UintegerValue(serverPort));
+        // clientApp->SetAttribute("uuServerAddress", AddressValue(serverRouterIp));
+        // clientApp->SetAttribute("uuServerPort", UintegerValue(serverPort));
 
         clientApp->m_KCallback = MakeBoundCallback(&TotalParameter, ueNodeContainer.Get(i));
 
         //클라이언트에서 영상데이터 읽기
-        clientApp->LoadVideoData("/home/kiho/ns-3-quic/scratch/scientists_video_frame_bytes_real.txt");
+        // clientApp->LoadVideoData("/home/kiho/ns-3-quic/scratch/scientists_video_frame_bytes_real.txt");
         // 태그 설정
 
         clientApp->SetStartTime(Seconds(5.0));
