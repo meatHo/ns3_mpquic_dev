@@ -411,8 +411,9 @@ MPQuicKohClient::GetTotalSent()
 
 
 void
-MPQuicKohClient::Send()
+MPQuicKohClient::Send()//테스트 함수
 {
+    static uint32_t frameNum=0;//임시
     // NS_LOG_UNCOND("MPQuicKohClient::Send");
     NS_LOG_FUNCTION(this);
     NS_ASSERT(m_sendEvent.IsExpired());
@@ -426,6 +427,8 @@ MPQuicKohClient::Send()
 
     KohMetadata header;
     header.SetTxTime(Simulator::Now());
+    frameData fd{frameNum++,IDR,m_size};
+    header.SetFrameData(fd);
     // header.SetPacketNum(m_packetCounter++);
     // header.SetPacketSize(p->GetSize()+header.GetSerializedSize());
 
@@ -446,7 +449,7 @@ MPQuicKohClient::Send()
         m_totalTx += p->GetSize();
         m_seq += 1;
     }
-    // NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
+    NS_LOG_UNCOND("클라이언트에서 보낸 패킷 크기 : "<<p->GetSize());
     if (m_sent < m_count || m_count == 0)
     {
         m_sendEvent = Simulator::Schedule(m_interval, &MPQuicKohClient::Send, this);

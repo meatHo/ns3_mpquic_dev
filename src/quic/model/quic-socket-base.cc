@@ -2707,7 +2707,8 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
   m_currentPathId = pathId;
   m_currentFromAddress = address;
 
-  NS_LOG_INFO ("Received packet of size " << p->GetSize ());
+  NS_LOG_UNCOND ("quicsocketbase::receiveddata::Received packet of size " << p->GetSize ());
+  NS_LOG_UNCOND ("quicsocketbase::receiveddata::m_socketstate " << m_socketState);
   if (!m_drainingPeriodEvent.IsPending ())
     {
       m_idleTimeoutEvent.Cancel ();   // reset the IDLE timeout
@@ -2793,6 +2794,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
   else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_CLT)   // Undefined compiler behaviour if i try to receive transport parameters
     {
       NS_LOG_INFO ("Client receives HANDSHAKE");
+      NS_LOG_UNCOND("이거 동작??????????"<<static_cast<uint32_t>(pathId));
 
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
       m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
@@ -2810,6 +2812,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
   else if (quicHeader.IsHandshake () and m_socketState == CONNECTING_SVR)
     {
       NS_LOG_INFO ("Server receives HANDSHAKE");
+      NS_LOG_UNCOND("이거 동작?");
 
       //For multipath implementation
       CreateNewSubflows();
@@ -2876,7 +2879,7 @@ QuicSocketBase::ReceivedData (Ptr<Packet> p, const QuicHeader& quicHeader,
       // we need to check if the packet contains only an ACK frame
       // in this case we cannot explicitely ACK it!
       // check if delayed ACK is used
-
+        NS_LOG_UNCOND("이거 실행?");
       m_subflows[pathId]->m_receivedPacketNumbers.push_back (quicHeader.GetPacketNumber ());
       onlyAckFrames = m_quicl5->DispatchRecv (p, address);
 

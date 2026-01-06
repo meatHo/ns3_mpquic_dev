@@ -513,21 +513,22 @@ QuicL4Protocol::ForwardUp(Ptr<Socket> sock)
         NS_LOG_INFO ("Retry " << header.IsRetry ());
         NS_LOG_INFO ("0Rtt " << header.IsORTT ());*/
 
-        // // ======================= DEBUG LOGGING START =======================
-        // NS_LOG_UNCOND("--------------------------------------------------");
-        // NS_LOG_UNCOND("ForwardUp Debug Info for Connection ID: " << connectionId);
-        // NS_LOG_UNCOND("Is Server? " << m_isServer);
-        // NS_LOG_UNCOND("Socket found in list? " << (socket ? "Yes" : "No"));
-        // if(socket) {
-        //     NS_LOG_UNCOND("Socket Ptr: " << socket);
-        // }
-        //
-        // NS_LOG_UNCOND("Packet Type - Initial: " << header.IsInitial ());
-        // NS_LOG_UNCOND("Packet Type - Handshake: " << header.IsHandshake ());
-        // NS_LOG_UNCOND("Packet Type - Short: " << header.IsShort ());
-        // NS_LOG_UNCOND("Packet Type - 0RTT: " << header.IsORTT ());
-        // NS_LOG_UNCOND("--------------------------------------------------");
-        // // ======================== DEBUG LOGGING END ========================
+        // ======================= DEBUG LOGGING START =======================
+        NS_LOG_UNCOND("--------------------------------------------------");
+        NS_LOG_UNCOND("ForwardUp Debug Info for Connection ID: " << connectionId);
+        NS_LOG_UNCOND("Is Server? " << m_isServer);
+        NS_LOG_UNCOND("Socket found in list? " << (socket ? "Yes" : "No"));
+        if(socket) {
+            NS_LOG_UNCOND("Socket Ptr: " << socket);
+        }
+        
+        NS_LOG_UNCOND("Packet Type - Initial: " << header.IsInitial ());
+        NS_LOG_UNCOND("Packet Type - Handshake: " << header.IsHandshake ());
+        NS_LOG_UNCOND("Packet Type - Short: " << header.IsShort ());
+        NS_LOG_UNCOND("Packet Type - 0RTT: " << header.IsORTT ());
+        NS_LOG_UNCOND("Packet Size " << packet->GetSize());
+        NS_LOG_UNCOND("--------------------------------------------------");
+        // ======================== DEBUG LOGGING END ========================
 
         if (header.IsInitial() and m_isServer and !socket)
         {

@@ -34,13 +34,13 @@
 #include "ns3/oh-buildings-propagation-loss-model.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/quic-helper.h"
-#include "ns3/quic-koh-client.h"
+#include "ns3/mpquic-koh-client.h"
 #include "ns3/quic-koh-server.h"
 #include <ns3/pointer.h>
 using namespace ns3;
 #include "ns3/opengym-module.h"
 static uint16_t g_targetUeId = 0; // 학습할 UE ID
-static std::map<uint16_t, Ptr<QuicKohClient>> g_clientApps;
+static std::map<uint16_t, Ptr<MPQuicKohClient>> g_clientApps;
 Ptr<QuicKohServer> serverApp = CreateObject<QuicKohServer>();
 
 static std::map<uint16_t, double> g_latencyMap;
@@ -1173,7 +1173,7 @@ main(void)
 
     for (uint16_t i = 0; i < ueNodeContainer.GetN(); ++i)
     {
-        Ptr<QuicKohClient> clientApp = CreateObject<QuicKohClient>();
+        Ptr<MPQuicKohClient> clientApp = CreateObject<MPQuicKohClient>();
         clientApp->SetAttribute("MaxPackets", UintegerValue(100));
         clientApp->SetAttribute("Interval", TimeValue(Seconds(1)));//0.001
         // clientApp->SetAttribute("IntervalReadVideoData", TimeValue(Seconds(0.0416)));//0.0416
@@ -1193,10 +1193,9 @@ main(void)
 
         clientApp->SetStartTime(Seconds(5.0));
         clientApp->SetStopTime(simTime - Seconds(2));
-        clientApp->setInterface(ueUuNetDev.Get(i), ueSlNetDev.Get(i));
         ueNodeContainer.Get(i)->AddApplication(clientApp);
 
-        // Simulator::Schedule(Seconds(10), &QuicKohClient::changeInterface, clientApp);
+        // Simulator::Schedule(Seconds(10), &MPQuicKohClient::changeInterface, clientApp);
 
         Ptr<Ipv4> ipv4 = clientApp->GetNode()->GetObject<Ipv4>();
         for (uint32_t ifIndex = 0; ifIndex < ipv4->GetNInterfaces(); ++ifIndex)

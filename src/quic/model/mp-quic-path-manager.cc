@@ -99,7 +99,7 @@ MpQuicPathManager::InitialSubflow0 (Address localAddress, Address peerAddress)
 Ptr<MpQuicSubFlow>
 MpQuicPathManager::AddSubflow(Address localAddress, Address peerAddress, uint8_t pathId)
 {
-
+  NS_LOG_UNCOND("MpQuicPathManager::AddSubFLow");
   NS_LOG_FUNCTION(this);
   Ptr<MpQuicSubFlow> sFlow = CreateObject<MpQuicSubFlow> ();
   sFlow->m_flowId    = pathId;
