@@ -465,7 +465,6 @@ main(void)
 {
     Ipv4Address groupAddress4("224.1.1.1");
     Ipv4Address rsrpAddress("239.255.0.1");
-    uint16_t ueNum = 1;
     Time simTime = Seconds(61);
     std::string csvFileName = "/home/kiho/ns-3-quic_copy/scratch/final_3d_trace";
 
@@ -479,18 +478,17 @@ main(void)
     rsuNodeContainer.Create(1);
     NodeContainer serverNodeContainer;
     serverNodeContainer.Create(1);
-    NodeContainer ueNodeContainer;
-    ueNodeContainer.Create(ueNum);
     NodeContainer routerNodeContainer;
     routerNodeContainer.Create(1);
+    NodeContainer ueNodeContainer;
 
     Ptr<Node> pgw = epcHelper->GetPgwNode(); // ipv4, Ipv4 둘다 설치되어 있음. 듀얼스택
     Ptr<Node> server = serverNodeContainer.Get(0);
     Ptr<Node> rsu = rsuNodeContainer.Get(0);
     Ptr<Node> gnb = gnbNodeContainer.Get(0);
     Ptr<Node> router = routerNodeContainer.Get(0);
-    Ptr<Node> ue1 = ueNodeContainer.Get(0);
-    Ptr<Node> ue2 = ueNodeContainer.Get(1);
+    // Ptr<Node> ue1 = ueNodeContainer.Get(0);
+    // Ptr<Node> ue2 = ueNodeContainer.Get(1);
 
     MobilityHelper mobility;
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
@@ -505,12 +503,13 @@ main(void)
     routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(900.0, 4000.0, 80.0));
 
-    // UE위치 할당 todo:여기 자동화로 수정 *************************************************************************
+    // UE위치 할당 todo:여기 자동화로 수정
+    // *************************************************************************
     mobility.SetMobilityModel("ns3::WaypointMobilityModel");
-    mobility.Install(ueNodeContainer);
-    for (uint32_t i = 0; i < ueNum; i++)
+
+    // 차량 등록 자동화 여러 차량 한번에 map으로 위치 등록
     {
-        std::vector<WaypointData> waypoints;
+        std::map<std::uint32_t, std::vector<WaypointData>> wayPoints;
         std::string finalFileName;
         if (i == 0)
         {
@@ -520,10 +519,6 @@ main(void)
         {
             finalFileName = csvFileName + "_" + std::to_string(i + 1) + ".csv";
         }
-
-        ueNodeContainer.Get(i)->GetObject<MobilityModel>()->SetPosition(Vector(294.0, 4355.03, 59));
-        Ptr<WaypointMobilityModel> ueMobility =
-            ueNodeContainer.Get(i)->GetObject<WaypointMobilityModel>();
 
         std::ifstream file(finalFileName);
 
@@ -536,6 +531,8 @@ main(void)
         std::string line;
         // 헤더 라인 무시
         std::getline(file, line);
+        uint32_t carId;
+        uint32_t carIdMax = 0;
 
         double maxTime = 0.0;
         while (std::getline(file, line))
@@ -547,7 +544,18 @@ main(void)
             // 각 열 파싱
             std::getline(ss, value, ','); // time
             data.time = std::stod(value);
-            std::getline(ss, value, ','); // vehicle_id (skip)
+            std::getline(ss, value, ','); // vehicle_id
+            size_t pos = value.find('_');
+            if (pos != std::string::npos)
+            {
+                std::string sub = value.substr(pos + 1);
+                int result = std::stoi(sub);
+                carId = result;
+                if (carIdMax < carId)
+                {
+                    carIdMax = carId;
+                }
+            }
             std::getline(ss, value, ','); // x
             data.x = std::stod(value);
             std::getline(ss, value, ','); // y
@@ -559,20 +567,35 @@ main(void)
             std::getline(ss, value, ','); // lon (skip)
             std::getline(ss, value, ','); // lat (skip)
 
-            waypoints.push_back(data);
+            wayPoints[carId].push_back(data);
             if (data.time > maxTime)
             {
                 maxTime = data.time;
             }
         }
         file.close();
-        NS_LOG_UNCOND("Successfully read " << waypoints.size() << " waypoints from CSV " << i);
+        NS_LOG_UNCOND("Successfully read " << wayPoints.size() << " cars from CSV ");
+
+        ueNodeContainer.Create(wayPoints.size());
+        mobility.Install(ueNodeContainer);
+
+        uint16_t temp_ueId=0;
 
         // 읽어온 CSV 데이터를 Waypoint로 추가
-        for (const auto& data : waypoints)
+        for (auto it = wayPoints.begin(); it != wayPoints.end(); ++it)
         {
-            Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
-            ueMobility->AddWaypoint(waypoint);
+            const std::vector<WaypointData>& waypointList = it->second;
+
+            Ptr<WaypointMobilityModel> ueMobility =
+                ueNodeContainer.Get(temp_ueId)->GetObject<WaypointMobilityModel>();
+            for (const auto& data : waypointList)
+            {
+                Waypoint waypoint(Seconds(data.time), Vector(data.x, data.y, data.z));
+                ueMobility->AddWaypoint(waypoint);
+            }
+            // 매핑 확인용 로그 예시 SUM의 어떤 차량이 몇번 uei인지 확인
+            // NS_LOG_UNCOND("Node " << temp_ueId << " is mapped to SUMO Vehicle ID " << it->first);
+            temp_ueId++;
         }
     }
 
@@ -962,13 +985,14 @@ main(void)
     // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
-    //todo:여기 자동화로 수정*************************************************************************
-    // 인터페이스 확인하는
-    // 코드=============================================================================
-    //  Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
-    //  Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
-    //  uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
-    //  std::cout << "PGW to Router Interface Index: " << temp << std::endl;
+    // todo:여기 자동화로
+    // 수정*************************************************************************
+    //  인터페이스 확인하는
+    //  코드=============================================================================
+    //   Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
+    //   Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
+    //   uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
+    //   std::cout << "PGW to Router Interface Index: " << temp << std::endl;
 
     Ipv4StaticRoutingHelper Ipv4RoutingHelper;
     uint32_t ueUuItf = 1;
@@ -982,7 +1006,8 @@ main(void)
     uint32_t pgwRouterItf = 3;
 
     // ue 라우팅
-    //todo:여기 자동화로 수정(가장 가까운 gnb 연결) *************************************************************************
+    // todo:여기 자동화로 수정(가장 가까운 gnb 연결)
+    // *************************************************************************
     for (uint16_t i = 0; i < ueNodeContainer.GetN(); i++)
     {
         Ptr<Ipv4StaticRouting> ueStaticRouting =
@@ -1109,7 +1134,8 @@ main(void)
     }
 
     //  todo: 앱설치 =============================================================
-    //todo:여기 자동화로 수정 *************************************************************************
+    // todo:여기 자동화로 수정
+    // *************************************************************************
     ApplicationContainer ueAppContainer;
     ApplicationContainer serverAppContainer;
     ApplicationContainer rsuAppContainer;
