@@ -466,7 +466,9 @@ main(void)
     Ipv4Address groupAddress4("224.1.1.1");
     Ipv4Address rsrpAddress("239.255.0.1");
     Time simTime = Seconds(61);
-    std::string csvFileName = "/home/kiho/ns-3-quic_copy/scratch/final_3d_trace";
+    std::string csvFileName = "/home/kiho/ns-3-quic_copy/scratch/final_3d_trace.csv";
+
+    uint32_t ueNum = 0;
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
@@ -484,8 +486,6 @@ main(void)
 
     Ptr<Node> pgw = epcHelper->GetPgwNode(); // ipv4, Ipv4 둘다 설치되어 있음. 듀얼스택
     Ptr<Node> server = serverNodeContainer.Get(0);
-    Ptr<Node> rsu = rsuNodeContainer.Get(0);
-    Ptr<Node> gnb = gnbNodeContainer.Get(0);
     Ptr<Node> router = routerNodeContainer.Get(0);
     // Ptr<Node> ue1 = ueNodeContainer.Get(0);
     // Ptr<Node> ue2 = ueNodeContainer.Get(1);
@@ -503,28 +503,18 @@ main(void)
     routerNodeContainer.Get(0)->GetObject<MobilityModel>()->SetPosition(
         Vector(900.0, 4000.0, 80.0));
 
-    // UE위치 할당 todo:여기 자동화로 수정
     // *************************************************************************
     mobility.SetMobilityModel("ns3::WaypointMobilityModel");
 
     // 차량 등록 자동화 여러 차량 한번에 map으로 위치 등록
     {
         std::map<std::uint32_t, std::vector<WaypointData>> wayPoints;
-        std::string finalFileName;
-        if (i == 0)
-        {
-            finalFileName = csvFileName + ".csv";
-        }
-        else
-        {
-            finalFileName = csvFileName + "_" + std::to_string(i + 1) + ".csv";
-        }
 
-        std::ifstream file(finalFileName);
+        std::ifstream file(csvFileName);
 
         if (!file.is_open())
         {
-            std::cout << "Could not open CSV file: " << finalFileName << std::endl;
+            std::cout << "Could not open CSV file: " << csvFileName << std::endl;
             return 2;
         }
 
@@ -575,11 +565,12 @@ main(void)
         }
         file.close();
         NS_LOG_UNCOND("Successfully read " << wayPoints.size() << " cars from CSV ");
+        ueNum = wayPoints.size();
 
-        ueNodeContainer.Create(wayPoints.size());
+        ueNodeContainer.Create(ueNum);
         mobility.Install(ueNodeContainer);
 
-        uint16_t temp_ueId=0;
+        uint16_t temp_ueId = 0;
 
         // 읽어온 CSV 데이터를 Waypoint로 추가
         for (auto it = wayPoints.begin(); it != wayPoints.end(); ++it)
@@ -693,7 +684,7 @@ main(void)
     // uint16_t RsuBandwidthPrb  = 106;
 
     uint16_t RsunumContiguousCc = 1;
-    uint16_t RsuNumerology = 3;
+    uint16_t RsuNumerology = 1;
     double RsuTxPower = 23.0; // 단위dBm
     // double Rsux = pow(10, RsuTxPower / 10); // to mW
 
@@ -782,14 +773,15 @@ main(void)
         DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(i))->UpdateConfig();
     }
 
-    NetDeviceContainer SlNetDev;
-    SlNetDev.Add(rsuNetDev);
-    SlNetDev.Add(ueSlNetDev);
+    // NetDeviceContainer SlNetDev;
+    // SlNetDev.Add(rsuNetDev);
+    // SlNetDev.Add(ueSlNetDev);
 
     nrSlHelper->SetNrSlSchedulerTypeId(NrSlUeMacSchedulerFixedMcs::GetTypeId());
     nrSlHelper->SetUeSlSchedulerAttribute("Mcs", UintegerValue(28));
 
-    nrSlHelper->PrepareUeForSidelink(SlNetDev, bwpIdContainer);
+    nrSlHelper->PrepareUeForSidelink(rsuNetDev, bwpIdContainer);
+    nrSlHelper->PrepareUeForSidelink(ueSlNetDev, bwpIdContainer);
 
     LteRrcSap::SlResourcePoolNr slResourcePoolNr;
     // get it from pool factory
@@ -889,7 +881,8 @@ main(void)
     slPreConfigNr.slUeSelectedPreConfig = slUeSelectedPreConfig;
     slPreConfigNr.slPreconfigFreqInfoList[0] = slFreConfigCommonNr;
 
-    nrSlHelper->InstallNrSlPreConfiguration(SlNetDev, slPreConfigNr);
+    nrSlHelper->InstallNrSlPreConfiguration(ueSlNetDev, slPreConfigNr);
+    nrSlHelper->InstallNrSlPreConfiguration(rsuNetDev, slPreConfigNr);
 
     // sidelink 무선 베어러
     // 설정=====================================================================
@@ -919,19 +912,11 @@ main(void)
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), ueSlNetDev, tft_rsrp); // UE에 활성화
     nrSlHelper->ActivateNrSlBearer(Seconds(0.0), rsuNetDev, tft_rsrp);  // RSU에도 활성화
 
-    // 진짜 시작todo:
     // ===============================================================================
 
     NodeContainer nodes(server);
-    NodeContainer routers(pgw, rsu, router);
-
-    // 여기서 p2p를 쓸지 csma를 쓸지 결정해야할듯
-    PointToPointHelper p2ph;
-    p2ph.SetDeviceAttribute("DataRate", StringValue("1Gbps"));
-    p2ph.SetChannelAttribute("Delay", StringValue("5ms"));
-    NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
-    NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
-    NetDeviceContainer routerToServerNetDev = p2ph.Install(router, server);
+    NodeContainer routers(pgw, router);
+    routers.Add(rsuNodeContainer);
 
     // 인터넷 설정
     InternetStackHelper internet;
@@ -939,185 +924,143 @@ main(void)
     internet.Install(nodes);
     internet.Install(routers);
 
-    // ip설정===================================================
+    // 여기서 p2p를 쓸지 csma를 쓸지 결정해야할듯
+    PointToPointHelper p2ph;
+    p2ph.SetDeviceAttribute("DataRate", StringValue("1Gbps"));
+    p2ph.SetChannelAttribute("Delay", StringValue("5ms"));
     Ipv4AddressHelper Ipv4h;
+    Ipv4StaticRoutingHelper Ipv4RoutingHelper;
 
-    // rsu router
-    Ipv4h.SetBase("10.1.1.0", "255.255.255.0");
-    Ipv4InterfaceContainer iic1 = Ipv4h.Assign(rsuToRouterNetDev); // 10.1.1.1
-    Ipv4Address rsuRouterIp = iic1.GetAddress(0);
-    Ipv4Address routerRsuIp = iic1.GetAddress(1);
-    std::cout << "rsuRouterIp : " << rsuRouterIp << std::endl;
-    std::cout << "routerRsuIp : " << routerRsuIp << std::endl;
+    NetDeviceContainer pgwToRouterNetDev = p2ph.Install(pgw, router);
+    NetDeviceContainer routerToServerNetDev = p2ph.Install(router, server);
+    // NetDeviceContainer rsuToRouterNetDev = p2ph.Install(rsu, router);
 
-    // pgw router
-    Ipv4h.SetBase("10.1.2.0", "255.255.255.0");
-    Ipv4InterfaceContainer iic2 = Ipv4h.Assign(pgwToRouterNetDev); // 10.1.1.2
-    Ipv4Address pgwRouterIp = iic2.GetAddress(0);
-    Ipv4Address routerPgwIp = iic2.GetAddress(1);
-    std::cout << "pgwRouterIp : " << pgwRouterIp << std::endl;
-    std::cout << "routerPgwIp : " << routerPgwIp << std::endl;
 
-    // router server
-    Ipv4h.SetBase("10.1.3.0", "255.255.255.0");
-    Ipv4InterfaceContainer iic3 = Ipv4h.Assign(routerToServerNetDev); // 10.1.1.3
-    Ipv4Address routerServerIp = iic3.GetAddress(0);
-    Ipv4Address serverRouterIp = iic3.GetAddress(1);
-    std::cout << "serverRouterIp : " << serverRouterIp << std::endl;
-    std::cout << "routerServerIp : " << routerServerIp << std::endl;
-
-    // ue uu
-    Ipv4InterfaceContainer ueUuIface = epcHelper->AssignUeIpv4Address(ueUuNetDev);
-    std::cout << "ueUUIp : " << ueUuIface.GetAddress(0) << std::endl;
-
-    // ue sl
-    // Ipv4InterfaceContainer ueSlIface = epcHelper->AssignUeIpv4Address(SlNetDev);
-    Ipv4h.SetBase("192.168.10.0", "255.255.255.0");
-    Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(SlNetDev);
-    Ipv4Address rsuSlIp = ueSlIface.GetAddress(0);
-    Ipv4Address ue1SlIp = ueSlIface.GetAddress(1);
-    // Ipv4Address ue2SlIp = ueSlIface.GetAddress(2);
-    std::cout << "rsuSlIp : " << rsuSlIp << std::endl;
-    std::cout << "ue1SlIp : " << ue1SlIp << std::endl;
-    // std::cout<<"ue2SlIp : "<<ue2SlIp<<std::endl;
-
-    // 라우팅======================================================
-    // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     nrHelper->AttachToClosestEnb(ueUuNetDev, gnbNetDev); // 이거는 eps베어러 생성 기지국과 연결해줌
 
-    // todo:여기 자동화로
-    // 수정*************************************************************************
-    //  인터페이스 확인하는
-    //  코드=============================================================================
-    //   Ptr<Ipv4> pgwIpv4 = rsu->GetObject<Ipv4>();
-    //   Ptr<NetDevice> deviceOnPgw = rsuToRouterNetDev.Get(0);
-    //   uint32_t temp = pgwIpv4->GetInterfaceForDevice(deviceOnPgw);
-    //   std::cout << "PGW to Router Interface Index: " << temp << std::endl;
+    Ipv4h.SetBase("10.1.2.0", "255.255.255.0");
+    Ipv4InterfaceContainer pgwRouterItfContainer = Ipv4h.Assign(pgwToRouterNetDev); // 10.1.1.2
+    Ipv4Address pgwRouterIp = pgwRouterItfContainer.GetAddress(0);
+    Ipv4Address routerPgwIp = pgwRouterItfContainer.GetAddress(1);
 
-    Ipv4StaticRoutingHelper Ipv4RoutingHelper;
-    uint32_t ueUuItf = 1;
-    uint32_t ueSlItf = 2;
-    uint32_t rsuSlItf = 2;
-    uint32_t rsuRouterItf = 1;
-    uint32_t routerServerItf = 3;
-    uint32_t serverRouterItf = 1;
-    uint32_t routerPgwItf = 2;
-    uint32_t routerRsuItf = 1;
-    uint32_t pgwRouterItf = 3;
+    Ipv4h.SetBase("10.1.3.0", "255.255.255.0");
+    Ipv4InterfaceContainer routerServerItfContainer = Ipv4h.Assign(routerToServerNetDev); // 10.1.1.3
+    Ipv4Address routerServerIp = routerServerItfContainer.GetAddress(0);
+    Ipv4Address serverRouterIp = routerServerItfContainer.GetAddress(1);
 
-    // ue 라우팅
-    // todo:여기 자동화로 수정(가장 가까운 gnb 연결)
-    // *************************************************************************
-    for (uint16_t i = 0; i < ueNodeContainer.GetN(); i++)
+    Ipv4InterfaceContainer ueUuIface = epcHelper->AssignUeIpv4Address(ueUuNetDev);
+
+    Ipv4h.SetBase("192.168.10.0", "255.255.255.0");
+    Ipv4InterfaceContainer ueSlIface = Ipv4h.Assign(ueSlNetDev);
+
+    Ipv4h.SetBase("192.168.15.0", "255.255.255.0");
+    Ipv4InterfaceContainer rsuSlIface = Ipv4h.Assign(rsuNetDev);
+
+    // rsu와 라우터 p2p로 연결과 ip 할당
+    Ipv4h.SetBase("10.1.1.0", "255.255.255.0");
+    for (const auto it : rsuNodeContainer)
     {
-        Ptr<Ipv4StaticRouting> ueStaticRouting =
-            Ipv4RoutingHelper.GetStaticRouting(ueNodeContainer.Get(i)->GetObject<Ipv4>());
-        ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), ueUuItf);
+        NetDeviceContainer rsuToRouterTemp = p2ph.Install(it, router);
+        Ipv4InterfaceContainer rsuRouterItfContainer = Ipv4h.Assign(rsuToRouterTemp);
+    }
+
+
+    // ================================라우팅===============================================
+
+    // rsu 라우팅
+    for (const auto it : rsuNodeContainer)
+    {
+        Ptr<Ipv4StaticRouting> rsuStaticRouting =
+            Ipv4RoutingHelper.GetStaticRouting(it->GetObject<Ipv4>());
+
+        // Ptr<Ipv4> rsuIp = it->GetObject<Ipv4>();//rsu ip 가져오기
+        // Ptr<NetDevice> rsuRouterNetDevTemp = rsuToRouterTemp.Get(0);//rsu의 라우터와 연결된 netdev
+        // Ptr<NetDevice> rsuSlNetDevTemp = it->GetObject<NetDevice>().Get(0);
+        // uint32_t rsuRouterItf = rsuIp->GetInterfaceForAddress(rsuRouterNetDevTemp);
+        // uint32_t rsuSlItf = rsuIp->GetInterfaceForAddress(rsuRouterNetDevTemp);
+
+        uint16_t rsuSlItf = 1; // rsu의 sidelin 방향 인터페이스
+        uint16_t rsuRouterItf = 2;
+
+        rsuStaticRouting->AddMulticastRoute(Ipv4Address("192.168.10.0"),
+                                            groupAddress4,
+                                            rsuSlItf,
+                                            std::vector<uint32_t>{rsuRouterItf});
+
+        rsuStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
+                                            Ipv4Mask("255.255.255.0"),
+                                            rsuSlItf);
+
+        Ptr<Ipv4> rsuIpv4 = it->GetObject<Ipv4>();
+        rsuIpv4->SetAttribute("IpForward", BooleanValue(true));
+        for (uint32_t i = 0; i < rsuIpv4->GetNInterfaces(); i++)
+        {
+            rsuIpv4->SetForwarding(i, true);
+        }
+    }
+
+    // ue UU 라우팅
+    for (const auto it : ueNodeContainer)
+    {
+        uint16_t ueSlItf = 2;
+        Ptr<Ipv4StaticRouting> ueStaticRouting = Ipv4RoutingHelper.GetStaticRouting(it->GetObject<Ipv4>());
+        ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress());
         ueStaticRouting->SetDefaultMulticastRoute(ueSlItf);
     }
 
-    // Ptr<NetDevice> ueSlNetDevice = ue->GetDevice(ueSlItf);
-    // Mac48Address ueSlMacAddress = Mac48Address::ConvertFrom(ueSlNetDevice->GetAddress());
-
-    // rsu 라우팅
-    Ptr<Ipv4StaticRouting> rsuStaticRouting =
-        Ipv4RoutingHelper.GetStaticRouting(rsu->GetObject<Ipv4>());
-    // rsuStaticRouting->SetDefaultRoute(routerRsuIp, rsuRouterItf);
-    rsuStaticRouting->AddMulticastRoute(
-        Ipv4Address("192.168.10.0"), // all sources (ASM)
-        groupAddress4,
-        /* input interface */ rsuSlItf,
-        /* output interfaces */ std::vector<uint32_t>{rsuRouterItf});
-    rsuStaticRouting->SetDefaultMulticastRoute(rsuSlItf);
-    // rsuStaticRouting->AddMulticastRoute(Ipv4Address("192.168.10.2"), // all sources (ASM)
-    //                            groupAddress4,
-    //                            /* input interface */ rsuSlItf,
-    //                            /* output interfaces */ std::vector<uint32_t>{ rsuRouterItf });
-
-    rsuStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
-                                        Ipv4Mask("255.255.255.0"),
-                                        rsuSlItf);
-
-    rsuStaticRouting->AddHostRouteTo(Ipv4Address("192.168.10.1"), rsuSlItf);
-
-    // // 2. RSU 노드의 Ipv4 스택에서 Sidelink에 해당하는 'Ipv4Interface'를 가져옵니다.
-    // Ptr<Node> rsuNode = rsu;
-    // Ptr<Ipv4L3Protocol> rsuIpv41 = rsuNode->GetObject<Ipv4L3Protocol>();
-    // Ptr<Ipv4Interface> rsuSlInterface = rsuIpv41->GetInterface(rsuSlItf); // rsuSlItf는 RSU의
-    // Sidelink 인터페이스 인덱스
-    //
-    //
-    // // 3. 해당 Ipv4Interface에서 ArpCache를 가져옵니다.
-    // Ptr<ArpCache> rsuArpCache = rsuSlInterface->GetArpCache();
-    // Mac48Address hardcodedMac("04:06:C0:A8:0A:01");
-    //
-    // // 4. ArpCache에 정적 항목을 'Add -> Set -> Mark' 3단계로 추가합니다.
-    // if (rsuArpCache) // rsuArpCache가 유효한지 확인
-    // {
-    //     // 1단계: IP 주소로 빈 엔트리 생성
-    //     ArpCache::Entry* entry = rsuArpCache->Add(Ipv4Address("192.168.10.1"));
-    //
-    //     // 2단계: 생성된 엔트리에 MAC 주소 설정
-    //     entry->SetMacAddress(hardcodedMac);
-    //
-    //     // 3단계: 엔트리를 영구(PERMANENT) 상태로 변경
-    //     entry->MarkPermanent();
-    // }
-
-    // pgw 라우팅
-    Ptr<Ipv4StaticRouting> pgwStaticRouting =
-        Ipv4RoutingHelper.GetStaticRouting(pgw->GetObject<Ipv4>());
-    pgwStaticRouting->SetDefaultRoute(routerPgwIp, pgwRouterItf);
-
-    // server 라우팅
-    Ptr<Ipv4StaticRouting> serverStaticRouting =
-        Ipv4RoutingHelper.GetStaticRouting(server->GetObject<Ipv4>());
-    serverStaticRouting->SetDefaultRoute(routerServerIp, serverRouterItf);
-    // serverStaticRouting->AddNetworkRouteTo(
-    //     Ipv4Address("7.0.0.0"),
-    //     Ipv4Mask("255.0.0.0"),
-    //     routerServerIp,
-    //     serverRouterItf
-    // );
-
-    // router 라우팅
-    Ptr<Ipv4StaticRouting> routerStaticRouting =
-        Ipv4RoutingHelper.GetStaticRouting(router->GetObject<Ipv4>());
-
-    routerStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
-                                           Ipv4Mask("255.0.0.0"), // EPC망의 서브넷 마스크
-                                           pgwRouterIp,
-                                           /* 라우터의 PGW 방향 인터페이스 */ routerPgwItf);
-
-    // -> UE의 Sidelink망으로 가는 길은 RSU를 통한다.
-    routerStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
-                                           Ipv4Mask("255.255.255.0"),
-                                           rsuRouterIp,
-                                           /* 라우터의 RSU 방향 인터페이스 */ routerRsuItf);
-
-    // -> 멀티캐스트 트래픽은 서버 쪽으로 포워딩한다.
-    //    (정적 멀티캐스트 라우팅 설정)
-    routerStaticRouting->AddMulticastRoute(
-        Ipv4Address("0.0.0.0"), // 모든 소스
-        groupAddress4,          // 멀티캐스트 그룹
-        /* 라우터의 RSU 방향 인터페이스 (입력) */ routerRsuItf,
-        /* 라우터의 서버 방향 인터페이스 목록 (출력) */ std::vector<uint32_t>{routerServerItf});
-
-    // 포워딩
-    Ptr<Ipv4> rsuIpv4 = rsu->GetObject<Ipv4>();
-    rsuIpv4->SetAttribute("IpForward", BooleanValue(true));
-    for (uint32_t i = 0; i < rsuIpv4->GetNInterfaces(); i++)
+    //서버 라우팅
     {
-        rsuIpv4->SetForwarding(i, true);
+        uint32_t serverRouterItf = 1;
+        Ptr<Ipv4StaticRouting> serverStaticRouting =
+            Ipv4RoutingHelper.GetStaticRouting(server->GetObject<Ipv4>());
+        serverStaticRouting->SetDefaultRoute(routerServerIp, serverRouterItf);
     }
 
-    Ptr<Ipv4> routerIpv4 = router->GetObject<Ipv4>();
-    routerIpv4->SetAttribute("IpForward", BooleanValue(true));
-    for (uint32_t i = 0; i < routerIpv4->GetNInterfaces(); i++)
+    //pgw 라우팅
     {
-        routerIpv4->SetForwarding(i, true);
+        //todo: 이건 확인 필요
+        uint32_t pgwRouterItf = 3;
+        Ptr<Ipv4StaticRouting> pgwStaticRouting =
+    Ipv4RoutingHelper.GetStaticRouting(pgw->GetObject<Ipv4>());
+        pgwStaticRouting->SetDefaultRoute(routerPgwIp, pgwRouterItf);
     }
 
+    //라우터 라우팅
+    {
+        //todo: 라우터 라우팅 어케함???? 레알 비상
+        Ptr<Ipv4StaticRouting> routerStaticRouting =
+    Ipv4RoutingHelper.GetStaticRouting(router->GetObject<Ipv4>());
+
+        routerStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"),
+                                               Ipv4Mask("255.0.0.0"), // EPC망의 서브넷 마스크
+                                               pgwRouterIp,
+                                               /* 라우터의 PGW 방향 인터페이스 */ routerPgwItf);
+
+        // -> UE의 Sidelink망으로 가는 길은 RSU를 통한다.
+        routerStaticRouting->AddNetworkRouteTo(Ipv4Address("192.168.10.0"),
+                                               Ipv4Mask("255.255.255.0"),
+                                               rsuRouterIp,
+                                               /* 라우터의 RSU 방향 인터페이스 */ routerRsuItf);
+
+        // -> 멀티캐스트 트래픽은 서버 쪽으로 포워딩한다.
+        //    (정적 멀티캐스트 라우팅 설정)
+        routerStaticRouting->AddMulticastRoute(
+            Ipv4Address("0.0.0.0"), // 모든 소스
+            groupAddress4,          // 멀티캐스트 그룹
+            /* 라우터의 RSU 방향 인터페이스 (입력) */ routerRsuItf,
+            /* 라우터의 서버 방향 인터페이스 목록 (출력) */ std::vector<uint32_t>{routerServerItf});
+
+        //포워딩
+        Ptr<Ipv4> routerIpv4 = router->GetObject<Ipv4>();
+        routerIpv4->SetAttribute("IpForward", BooleanValue(true));
+        for (uint32_t i = 0; i < routerIpv4->GetNInterfaces(); i++)
+        {
+            routerIpv4->SetForwarding(i, true);
+        }
+
+    }
+
+    //라우팅 테이블 확인하는 것
     // StackHelper stackHelper;
     // stackHelper.PrintRoutingTable(router);
     // stackHelper.PrintRoutingTable(rsu);
@@ -1126,17 +1069,22 @@ main(void)
     // sidelink 무선 베어러 설정
     // 끝=====================================================================
 
-    for (uint32_t i = 0; i < SlNetDev.GetN(); ++i)
+    for (uint32_t i = 0; i < rsuNetDev.GetN(); ++i)
     {
-        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(SlNetDev.Get(i));
+        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(rsuNetDev.Get(i));
         Ptr<NrUePhy> phy = ueDev->GetPhy(0);
         phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
     }
 
-    //  todo: 앱설치 =============================================================
-    // todo:여기 자동화로 수정
+    for (uint32_t i = 0; i < ueSlNetDev.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(ueSlNetDev.Get(i));
+        Ptr<NrUePhy> phy = ueDev->GetPhy(0);
+        phy->GetNrSlUeCphySapProvider()->EnableUeSlRsrpMeasurements();
+    }
+
+    //  앱설치 =============================================================
     // *************************************************************************
-    ApplicationContainer ueAppContainer;
     ApplicationContainer serverAppContainer;
     ApplicationContainer rsuAppContainer;
 
@@ -1194,7 +1142,7 @@ main(void)
         // ueNodeContainer.Get(i));
     }
 
-    // rsu 애플리케이션 sidelink rsrp
+    // rsu 애플리케이션 sidelink rsrp todo: sidelink rsrp 측정 어케함????? 레알 비상
     Ptr<OnOffApplication> rsuApp = CreateObject<OnOffApplication>();
     rsuApp->SetAttribute("PacketSize", UintegerValue(1));
     rsuApp->SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=0.01]"));
@@ -1207,8 +1155,6 @@ main(void)
     rsuApp->SetStartTime(Seconds(0.0));
     rsuApp->SetStopTime(simTime);
 
-    // todo:여기다가포트랑 주소 넣어야함
-    // clientApp->setAddressSlUu(gnbServerIpv4, serverPort, groupAddress6, rsuSlPort);
 
     for (uint16_t ueIndex = 0; ueIndex < ueUuNetDev.GetN(); ++ueIndex)
     {
