@@ -286,12 +286,12 @@ QuicKohServer::HandleRead(Ptr<Socket> socket)
             // === 상태: 특정 크기의 메시지를 재조립하는 중 ===
             if (client.expectedBytes > 0)
             {
-                uint32_t requiredBytesInBuffer;
-                if (client.isReassembly) // If it's a Uu reassembly
-                {
-                    // Uu의 경우, expectedBytes가 전체 크기(헤더 포함)이므로 버퍼에 그만큼 있어야 함
-                    requiredBytesInBuffer = client.expectedBytes + 20; // Corrected: payload + header
-                }
+                uint32_t requiredBytesInBuffer = 0;
+                // if (client.isReassembly) // If it's a Uu reassembly
+                // {
+                //     // Uu의 경우, expectedBytes가 전체 크기(헤더 포함)이므로 버퍼에 그만큼 있어야 함
+                //     requiredBytesInBuffer = client.expectedBytes + 20; // Corrected: payload + header
+                // }
 
                 // C. 버퍼에 충분한 데이터가 있는지 확인
                 if (client.buffer.size() >= requiredBytesInBuffer)
